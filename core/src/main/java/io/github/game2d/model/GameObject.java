@@ -7,13 +7,11 @@ public abstract class GameObject {
 
     protected float x;
     protected float y;
-    protected final Hitbox hitbox;
 
-    protected GameObject(float x, float y, Hitbox hitbox) {
+    protected GameObject(float x, float y) {
         this.id = nextId++;
         this.x = x;
         this.y = y;
-        this.hitbox = hitbox;
     }
 
     public abstract void update(float dt);
@@ -25,13 +23,14 @@ public abstract class GameObject {
     public int getId() {
         return id;
     }
+
     public float getX() {
         return x;
     }
+
     public float getY() {
         return y;
     }
-    public Hitbox getHitbox() {
-        return hitbox;
-    }
+
+    public abstract Hitbox getHitbox();
 }

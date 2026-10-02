@@ -49,9 +49,14 @@ class CollisionsTest {
     }
 
     private static GameObject at(float x, float y, Hitbox hitbox) {
-        return new GameObject(x, y, hitbox) {
+        return new GameObject(x, y) {
             @Override
             public void update(float dt) {}
+
+            @Override
+            public Hitbox getHitbox() {
+                return hitbox;
+            }
         };
     }
 }

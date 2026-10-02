@@ -26,6 +26,10 @@ public abstract class Weapon {
         return maxAmmo;
     }
 
+    public float getReloadProgress() {
+        return reloadTimer / reloadTime;
+    }
+
     protected abstract List<Projectile> createProjectiles(int ownerId, float x, float y, float dirX, float dirY);
 
     public List<Projectile> fire(int ownerId, float x, float y, float dirX, float dirY) {

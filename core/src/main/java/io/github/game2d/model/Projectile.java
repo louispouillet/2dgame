@@ -2,6 +2,7 @@ package io.github.game2d.model;
 import io.github.game2d.collision.Circle;
 
 public class Projectile extends GameObject {
+    private final Circle hitbox;
     private final int ownerId;
     private final int damage;
     private final float dirX;
@@ -12,13 +13,19 @@ public class Projectile extends GameObject {
     private boolean hit;
 
     public Projectile(int ownerId, float x, float y, float radius, float dirX, float dirY, float speed, float maxRange, int damage) {
-        super(x, y, new Circle(radius));
+        super(x, y);
+        this.hitbox = new Circle(radius);
         this.ownerId = ownerId;
         this.damage = damage;
         this.dirX = dirX;
         this.dirY = dirY;
         this.speed = speed;
         this.maxRange = maxRange;
+    }
+
+    @Override
+    public Circle getHitbox() {
+        return hitbox;
     }
 
     public int getOwnerId() {
