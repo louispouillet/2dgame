@@ -5,6 +5,8 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import io.github.game2d.arena.Arena;
 import io.github.game2d.arena.TileType;
+import io.github.game2d.collision.Circle;
+import io.github.game2d.collision.Rect;
 import io.github.game2d.model.GameObject;
 import io.github.game2d.world.GameWorld;
 
@@ -29,7 +31,10 @@ public class WorldRenderer {
         drawArena(arena);
         shapes.setColor(Color.WHITE);
         for (GameObject obj : world.getGameObjects()) {
-            shapes.rect(obj.getX(), obj.getY(), obj.getWidth(), obj.getHeight());
+            switch (obj.getHitbox()) {
+                case Circle c -> shapes.circle(obj.getX(), obj.getY(), c.radius(), 24);
+                case Rect r -> shapes.rect(obj.getX() - r.width() / 2, obj.getY() - r.height() / 2, r.width(), r.height());
+            }
         }
         shapes.end();
     }

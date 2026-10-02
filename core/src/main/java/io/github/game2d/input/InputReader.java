@@ -23,16 +23,9 @@ public class InputReader {
 
         mouse.set(Gdx.input.getX(), Gdx.input.getY());
         viewport.unproject(mouse);
-
-        float aimX = mouse.x - (player.getX() + player.getWidth() / 2);
-        float aimY = mouse.y - (player.getY() + player.getHeight() / 2);
-        float length = (float) Math.hypot(aimX, aimY);
-        if (length > 0) {
-            aimX /= length;
-            aimY /= length;
-        }
+        mouse.sub(player.getX(), player.getY()).nor();
 
         boolean shooting = Gdx.input.isButtonPressed(Input.Buttons.LEFT);
-        return new PlayerInput(moveX, moveY, aimX, aimY, shooting);
+        return new PlayerInput(moveX, moveY, mouse.x, mouse.y, shooting);
     }
 }

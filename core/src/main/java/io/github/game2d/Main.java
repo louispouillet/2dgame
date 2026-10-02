@@ -13,8 +13,6 @@ import io.github.game2d.render.WorldRenderer;
 import io.github.game2d.world.GameWorld;
 
 public class Main extends ApplicationAdapter {
-    private static final float BRAWLER_HALF_SIZE = 0.25f;
-
     private Arena arena;
     private GameWorld world;
     private WorldRenderer renderer;
@@ -28,8 +26,10 @@ public class Main extends ApplicationAdapter {
         renderer = new WorldRenderer();
         inputReader = new InputReader(renderer.getViewport());
         SpawnPoint spawn = arena.getSpawnPoint(1);
-        colt = new Shelly(spawn.x() - BRAWLER_HALF_SIZE, spawn.y() - BRAWLER_HALF_SIZE);
+        colt = new Shelly(spawn.x(), spawn.y());
         world.add(colt);
+        SpawnPoint target = arena.getSpawnPoint(2);
+        world.add(new Colt(target.x(), target.y()));
     }
 
     @Override

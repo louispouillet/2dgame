@@ -1,5 +1,7 @@
 package io.github.game2d.world;
+import io.github.game2d.collision.Collisions;
 import io.github.game2d.model.GameObject;
+import io.github.game2d.model.Projectile;
 import io.github.game2d.brawler.Brawler;
 import io.github.game2d.input.PlayerInput;
 import java.util.ArrayList;
@@ -25,7 +27,26 @@ public class GameWorld {
         for (GameObject object : gameObjects) {
             object.update(dt);
         }
+        resolveProjectileHits();
         gameObjects.removeIf(GameObject::isExpired);
+    }
+
+    private void resolveProjectileHits() {
+        for (GameObject object : gameObjects) {
+            if (!(object instanceof Projectile projectile) || projectile.isExpired()) {
+                continue;
+            }
+            for (GameObject other : gameObjects) {
+                if (other instanceof Brawler target
+                        && target.isAlive()
+                        && target.getId() != projectile.getOwnerId()
+                        && Collisions.overlaps(projectile, target)) {
+                    target.takeDamage(projectile.getDamage());
+                    projectile.markHit();
+                    break;
+                }
+            }
+        }
     }
 
     public void attack(Brawler brawler, float aimX, float aimY) {

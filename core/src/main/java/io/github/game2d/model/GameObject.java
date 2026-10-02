@@ -1,4 +1,5 @@
 package io.github.game2d.model;
+import io.github.game2d.collision.Hitbox;
 
 public abstract class GameObject {
     private static int nextId = 1;
@@ -6,15 +7,13 @@ public abstract class GameObject {
 
     protected float x;
     protected float y;
-    protected final float width;
-    protected final float height;
+    protected final Hitbox hitbox;
 
-    protected GameObject(float x, float y, float width, float height) {
+    protected GameObject(float x, float y, Hitbox hitbox) {
         this.id = nextId++;
         this.x = x;
         this.y = y;
-        this.width = width;
-        this.height = height;
+        this.hitbox = hitbox;
     }
 
     public abstract void update(float dt);
@@ -32,10 +31,7 @@ public abstract class GameObject {
     public float getY() {
         return y;
     }
-    public float getWidth() {
-        return width;
-    }
-    public float getHeight() {
-        return height;
+    public Hitbox getHitbox() {
+        return hitbox;
     }
 }

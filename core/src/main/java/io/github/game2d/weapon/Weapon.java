@@ -26,15 +26,15 @@ public abstract class Weapon {
         return maxAmmo;
     }
 
-    protected abstract List<Projectile> createProjectiles(float x, float y, float dirX, float dirY);
+    protected abstract List<Projectile> createProjectiles(int ownerId, float x, float y, float dirX, float dirY);
 
-    public List<Projectile> fire(float x, float y, float dirX, float dirY) {
+    public List<Projectile> fire(int ownerId, float x, float y, float dirX, float dirY) {
         if (cooldownTimer > 0 || ammo == 0) {
             return List.of();
         }
         ammo--;
         cooldownTimer = cooldown;
-        return createProjectiles(x, y, dirX, dirY);
+        return createProjectiles(ownerId, x, y, dirX, dirY);
     }
 
     public void update(float dt) {
