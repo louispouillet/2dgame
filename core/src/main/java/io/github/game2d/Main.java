@@ -2,6 +2,9 @@ package io.github.game2d;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import io.github.game2d.arena.Arena;
+import io.github.game2d.arena.ArenaLoader;
+import io.github.game2d.arena.SpawnPoint;
 import io.github.game2d.brawler.Colt;
 import io.github.game2d.brawler.Shelly;
 import io.github.game2d.input.InputReader;
@@ -10,6 +13,9 @@ import io.github.game2d.render.WorldRenderer;
 import io.github.game2d.world.GameWorld;
 
 public class Main extends ApplicationAdapter {
+    private static final float BRAWLER_HALF_SIZE = 0.25f;
+
+    private Arena arena;
     private GameWorld world;
     private WorldRenderer renderer;
     private InputReader inputReader;
@@ -17,10 +23,12 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void create() {
+        arena = ArenaLoader.parse(Gdx.files.internal("maps/arena1.txt").readString());
         world = new GameWorld();
         renderer = new WorldRenderer();
         inputReader = new InputReader(renderer.getViewport());
-        colt = new Shelly(8, 4.5f);
+        SpawnPoint spawn = arena.getSpawnPoint(1);
+        colt = new Shelly(spawn.x() - BRAWLER_HALF_SIZE, spawn.y() - BRAWLER_HALF_SIZE);
         world.add(colt);
     }
 
@@ -34,7 +42,7 @@ public class Main extends ApplicationAdapter {
         PlayerInput input = inputReader.read(colt);
         world.applyInput(colt, input);
         world.update(Gdx.graphics.getDeltaTime());
-        renderer.render(world);
+        renderer.render(world, arena);
     }
 
     @Override
