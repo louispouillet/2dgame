@@ -5,12 +5,13 @@ import io.github.game2d.weapon.Weapon;
 import java.util.List;
 
 public abstract class Brawler extends GameObject {
+    private final float speed;
+    private final int maxHealth;
+    private final Weapon weapon;
+    
     private float dirX;
     private float dirY;
-    private final float speed;
-    private int maxHealth;
     private int health;
-    private final Weapon weapon;
 
     protected Brawler(float x, float y, float width, float height, float speed, int maxHealth, Weapon weapon) {
         super(x, y, width, height);
@@ -20,20 +21,12 @@ public abstract class Brawler extends GameObject {
         this.weapon = weapon;
     }
 
-    public float getSpeed() {
-        return speed;
-    }
-
-    public int getMaxHealth() {
-        return maxHealth;
-    }
-
     public int getHealth() {
         return health;
     }
     
-    public Weapon getWeapon() {
-        return weapon;
+    public boolean isAlive() {
+        return health > 0;
     }
 
     @Override
@@ -43,6 +36,7 @@ public abstract class Brawler extends GameObject {
         }
         x += dirX * speed * dt;
         y += dirY * speed * dt;
+        weapon.update(dt);
     }
 
     public void setDirection(float dirX, float dirY) {
@@ -66,14 +60,10 @@ public abstract class Brawler extends GameObject {
         }
     }
 
-    public boolean isAlive() {
-        return health > 0;
-    }
-
     public List<Projectile> attack(float aimX, float aimY) {
         if (!isAlive()) {
             return List.of();
         }
-        return weapon.fire(x, y, aimX, aimY);
+        return weapon.fire(x + width / 2, y + height / 2, aimX, aimY);
     }
 }

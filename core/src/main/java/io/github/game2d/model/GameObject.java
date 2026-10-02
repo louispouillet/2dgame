@@ -3,6 +3,7 @@ package io.github.game2d.model;
 public abstract class GameObject {
     private static int nextId = 1;
     private final int id;
+
     protected float x;
     protected float y;
     protected final float width;
@@ -18,19 +19,23 @@ public abstract class GameObject {
 
     public abstract void update(float dt);
 
-    public int getId() { 
-        return id; 
+    public boolean isExpired() {
+        return false;
     }
-    public float getX() { 
-        return x; 
+
+    public int getId() {
+        return id;
     }
-    public float getY() { 
-        return y; 
+    public float getX() {
+        return x;
     }
-    public float getWidth() { 
-        return width; 
+    public float getY() {
+        return y;
     }
-    public float getHeight() { 
-        return height; 
+    public float getWidth() {
+        return width;
+    }
+    public float getHeight() {
+        return height;
     }
 }

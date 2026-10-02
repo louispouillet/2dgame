@@ -1,7 +1,7 @@
 package io.github.game2d.world;
 import io.github.game2d.model.GameObject;
 import io.github.game2d.brawler.Brawler;
-import io.github.game2d.model.Projectile;
+import io.github.game2d.input.PlayerInput;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +25,7 @@ public class GameWorld {
         for (GameObject object : gameObjects) {
             object.update(dt);
         }
+        gameObjects.removeIf(GameObject::isExpired);
     }
 
     public void attack(Brawler brawler, float aimX, float aimY) {
