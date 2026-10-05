@@ -14,18 +14,18 @@ Faisable en visant un périmètre réduit :
 ## 2. Architecture POO
 Diagrammes produits (classes, architecture client/serveur, séquence d'un tir).
 
-- Hiérarchie : `GameObject` → `Entity` → `Brawler` → `Shelly` / `Colt`; plus `Projectile`, `Wall`, `GameWorld`.
+- Hiérarchie : `GameObject` → `Brawler` → `Shelly` / `Colt`; plus `Projectile`, `GameWorld`, `GameServer`.
 - Interface `Weapon` (`Shotgun`, `Revolver`) : pattern Strategy, un `Brawler` possède une `Weapon`.
 
 Principes illustrés :
-- **Héritage** : `GameObject` → `Entity` → `Brawler`
+- **Héritage** : `GameObject` → `Brawler` → `Shelly` / `Colt`
 - **Abstraction** : classes abstraites
-- **Polymorphisme** : `GameWorld` appelle `update(dt)` sur tous les `GameObject`
+- **Polymorphisme** : `GameServer` appelle `update(dt)` sur tous les `GameObject`
 - **Composition / Strategy** : `Brawler` a une `Weapon`
 - **Encapsulation** : attributs protégés, modifiés via méthodes
 
 ## 3. Source de vérité et rendu
-- Le **serveur** est la source de vérité : il possède le vrai `GameWorld` (positions, PV, collisions).
+- Le **serveur** est la source de vérité : il possède le vrai `GameServer` (positions, PV, collisions).
 - Le **client** dessine une copie simplifiée de l'état reçu.
 - Cycle ~30 Hz : inputs envoyés → simulation serveur → snapshot diffusé → mise à jour locale → rendu à 60 FPS.
 - Latence : prédiction côté client (son propre mouvement) et interpolation (autres joueurs). Conseil : commencer sans prédiction.
@@ -38,16 +38,29 @@ Principes illustrés :
 5. Vrai réseau (KryoNet ou Netty)
 6. Interpolation, puis prédiction si besoin
 
-## 5. Module `core`
-Exemple `CoreExample.java` (fichier unique, Java 21, sans dépendance libGDX, donc réutilisable côté serveur). Démo : Shelly tire sur Colt, il perd 400 PV (2600/3000) car un seul plomb du fusil touche.
+## 5. Module `core` : packages
+Racine `io.github.game2d`. Règle de dépendance : `model` ← `protocol` ← `server` / `net` ← `client`. Seul `client` dépend de libGDX ; seul `net.kryo` dépend de KryoNet. Les tests suivent la même arborescence (`core/src/test`).
+
+- `model/` : domaine pur (`GameObject`, `Projectile`, `GameWorld`)
+  - `model.arena` : `Arena`, `ArenaLoader`, `TileType`, `SpawnPoint`, `ArenaFormatException`
+  - `model.brawler` : `Brawler`, `Shelly`, `Colt`
+  - `model.weapon` : `Weapon`, `Shotgun`, `Revolver`
+  - `model.collision` : `Hitbox`, `Circle`, `Rect`, `Collisions`
+- `protocol/` : messages échangés client/serveur (`PlayerInput`, `JoinAccepted`, `WorldSnapshot`, `BrawlerState`, `ProjectileState`)
+- `server/` : autorité de jeu (`GameServer`, `FixedTimestep`, `ServerLauncher`)
+- `net/` : transport. Interfaces `ClientChannel` / `ServerChannel`, `LocalChannel` (en mémoire)
+  - `net.kryo` : `NetworkServer`, `NetworkClient` (cycle de vie KryoNet), `NetworkClientChannel`, `NetworkServerChannel` (traducteurs de protocole), `NetworkRegistry`
+- `client/` : libGDX (`Main`, `InputReader`, `WorldRenderer`)
+
+Lancement : client `./gradlew lwjgl3:run`, serveur autonome `./gradlew core:runServer`.
 
 ## Reste à faire
-- Découper l'exemple en fichiers/packages (`core.model`, `core.weapon`, etc.)
-- Écrire les tests JUnit (non faits)
-- Étape 2 : fenêtre libGDX avec un carré déplacé au clavier
+- Séparer `Main` en lancement local / connexion distante (`GameClient` avec session locale ou distante)
+- Interpolation côté client, puis prédiction si besoin
+- Mode « dernier survivant »
 
 ## Structure du projet généré
-- `core/` : logique de jeu indépendante de la plateforme (`Main.java`, `ApplicationAdapter` avec create/render/dispose)
+- `core/` : logique de jeu, serveur et client libGDX (voir section 5)
 - `lwjgl3/` : lanceur desktop (`Lwjgl3Launcher.java`, fenêtre 640x480, vsync, `StartupHelper`)
 - `assets/` : ressources partagées entre plateformes
 

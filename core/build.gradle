@@ -9,6 +9,8 @@ dependencies {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
   }
 
+  api "com.github.crykn:kryonet:2.22.9"
+
   testImplementation platform("org.junit:junit-bom:$junitVersion")
   testImplementation "org.junit.jupiter:junit-jupiter"
   testRuntimeOnly "org.junit.platform:junit-platform-launcher"
@@ -21,4 +23,11 @@ test {
 
 jar {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// Lance le serveur de jeu seul (sans fenêtre) : ./gradlew core:runServer
+tasks.register('runServer', JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  mainClass = 'io.github.game2d.server.ServerLauncher'
+  workingDir = rootProject.projectDir
 }

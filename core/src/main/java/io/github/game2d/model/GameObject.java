@@ -1,15 +1,15 @@
 package io.github.game2d.model;
-import io.github.game2d.collision.Hitbox;
+
+import io.github.game2d.model.collision.Hitbox;
 
 public abstract class GameObject {
-    private static int nextId = 1;
     private final int id;
 
     protected float x;
     protected float y;
 
-    protected GameObject(float x, float y) {
-        this.id = nextId++;
+    protected GameObject(int id, float x, float y) {
+        this.id = id;
         this.x = x;
         this.y = y;
     }
