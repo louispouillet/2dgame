@@ -1,80 +1,86 @@
 package io.github.game2d.client;
 
-import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
 import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.TileType;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class ArenaModelFactory {
     static final float OUTSIDE_MARGIN = 3f;
 
-    private static final Color FLOOR_COLOR = new Color(0.86f, 0.74f, 0.52f, 1f);
-    private static final Color OUTSIDE_COLOR = new Color(0.62f, 0.52f, 0.36f, 1f);
+    private static final String TEXTURE_FOLDER = "textures/arena/";
     private static final float OUTSIDE_LEVEL = -0.01f;
-    private static final Color WALL_COLOR = new Color(0.55f, 0.38f, 0.25f, 1f);
-    private static final Color BUSH_COLOR = new Color(0.25f, 0.60f, 0.30f, 1f);
-    private static final Color WATER_COLOR = new Color(0.20f, 0.45f, 0.85f, 1f);
-    private static final float WALL_HEIGHT = 1f;
-    private static final float BUSH_HEIGHT = 1f;
+    private static final float FLOOR_LEVEL = 0f;
     private static final float WATER_LEVEL = 0.01f;
-    private static final long ATTRIBUTES = Usage.Position | Usage.Normal;
+    private static final float WALL_HEIGHT = 1f;
+    private static final float BUSH_HEIGHT = 0.6f;
+    private static final long ATTRIBUTES = Usage.Position | Usage.Normal | Usage.TextureCoordinates;
 
     private ArenaModelFactory() {
     }
 
     public static Model create(Arena arena) {
-        ModelBuilder builder = new ModelBuilder();
-        builder.begin();
-        addOutside(builder, arena);
-        addFloor(builder, arena);
-        addTiles(builder, arena, TileType.WALL, WALL_COLOR,
-            (part, col, row) -> addBlock(part, col, row, WALL_HEIGHT));
-        addTiles(builder, arena, TileType.BUSH, BUSH_COLOR,
-            (part, col, row) -> addBlock(part, col, row, BUSH_HEIGHT));
-        addTiles(builder, arena, TileType.WATER, WATER_COLOR, ArenaModelFactory::addWater);
-        return builder.end();
-    }
-
-    private static void addOutside(ModelBuilder builder, Arena arena) {
-        float left = -OUTSIDE_MARGIN;
-        float right = arena.getWidth() + OUTSIDE_MARGIN;
-        float near = OUTSIDE_MARGIN;
-        float far = -arena.getHeight() - OUTSIDE_MARGIN;
-        MeshPartBuilder outside = builder.part("outside", GL20.GL_TRIANGLES, ATTRIBUTES, material(OUTSIDE_COLOR));
-        outside.rect(
-            left, OUTSIDE_LEVEL, near,
-            right, OUTSIDE_LEVEL, near,
-            right, OUTSIDE_LEVEL, far,
-            left, OUTSIDE_LEVEL, far,
-            0f, 1f, 0f);
-    }
-
-    private static void addFloor(ModelBuilder builder, Arena arena) {
+        List<Texture> textures = new ArrayList<>();
         float width = arena.getWidth();
         float depth = arena.getHeight();
-        MeshPartBuilder floor = builder.part("floor", GL20.GL_TRIANGLES, ATTRIBUTES, material(FLOOR_COLOR));
-        floor.rect(
-            0f, 0f, 0f,
-            width, 0f, 0f,
-            width, 0f, -depth,
-            0f, 0f, -depth,
-            0f, 1f, 0f);
+
+        ModelBuilder builder = new ModelBuilder();
+        builder.begin();
+        MeshPartBuilder outside = part(builder, "outside", load(textures, "outside.png"));
+        outside.setUVRange(0f, 0f, width + 2 * OUTSIDE_MARGIN, depth + 2 * OUTSIDE_MARGIN);
+        addFlat(outside, -OUTSIDE_MARGIN, -OUTSIDE_MARGIN, width + OUTSIDE_MARGIN, depth + OUTSIDE_MARGIN, OUTSIDE_LEVEL);
+
+        MeshPartBuilder floor = part(builder, "floor", load(textures, "floor.png"));
+        floor.setUVRange(0f, 0f, width, depth);
+        addFlat(floor, 0f, 0f, width, depth, FLOOR_LEVEL);
+
+        addTiles(builder, arena, TileType.WALL, "wall_top", load(textures, "wall_top.png"),
+            (part, col, row) -> addTop(part, col, row, WALL_HEIGHT));
+        addTiles(builder, arena, TileType.WALL, "wall_side", load(textures, "wall_side.png"),
+            (part, col, row) -> addSides(part, col, row, WALL_HEIGHT));
+        addTiles(builder, arena, TileType.BUSH, "bush_top", load(textures, "bush_top.png"),
+            (part, col, row) -> addTop(part, col, row, BUSH_HEIGHT));
+        addTiles(builder, arena, TileType.BUSH, "bush_side", load(textures, "bush_side.png"),
+            (part, col, row) -> addSides(part, col, row, BUSH_HEIGHT));
+        addTiles(builder, arena, TileType.WATER, "water", load(textures, "water.png"),
+            (part, col, row) -> addFlat(part, col, row, col + 1f, row + 1f, WATER_LEVEL));
+
+        Model model = builder.end();
+        for (Texture texture : textures) {
+            model.manageDisposable(texture);
+        }
+        return model;
     }
 
-    private static void addTiles(ModelBuilder builder, Arena arena, TileType type, Color color, TileShape shape) {
+    private static Texture load(List<Texture> textures, String file) {
+        Texture texture = new Texture(Gdx.files.internal(TEXTURE_FOLDER + file), true);
+        texture.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
+        texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        textures.add(texture);
+        return texture;
+    }
+
+    private static MeshPartBuilder part(ModelBuilder builder, String name, Texture texture) {
+        return builder.part(name, GL20.GL_TRIANGLES, ATTRIBUTES, new Material(TextureAttribute.createDiffuse(texture)));
+    }
+
+    private static void addTiles(ModelBuilder builder, Arena arena, TileType type, String name, Texture texture,
+                                 TileShape shape) {
         MeshPartBuilder part = null;
         for (int row = 0; row < arena.getHeight(); row++) {
             for (int col = 0; col < arena.getWidth(); col++) {
                 if (arena.getTile(col, row) == type) {
                     if (part == null) {
-                        part = builder.part(type.name(), GL20.GL_TRIANGLES, ATTRIBUTES, material(color));
+                        part = part(builder, name, texture);
                     }
                     shape.build(part, col, row);
                 }
@@ -82,21 +88,28 @@ public final class ArenaModelFactory {
         }
     }
 
-    private static void addBlock(MeshPartBuilder part, int col, int row, float height) {
-        BoxShapeBuilder.build(part, col + 0.5f, height / 2, -(row + 0.5f), 1f, height, 1f);
-    }
-
-    private static void addWater(MeshPartBuilder part, int col, int row) {
+    private static void addFlat(MeshPartBuilder part, float left, float bottom, float right, float top, float level) {
         part.rect(
-            col, WATER_LEVEL, -row,
-            col + 1f, WATER_LEVEL, -row,
-            col + 1f, WATER_LEVEL, -(row + 1f),
-            col, WATER_LEVEL, -(row + 1f),
+            left, level, -bottom,
+            right, level, -bottom,
+            right, level, -top,
+            left, level, -top,
             0f, 1f, 0f);
     }
 
-    private static Material material(Color color) {
-        return new Material(ColorAttribute.createDiffuse(color));
+    private static void addTop(MeshPartBuilder part, int col, int row, float height) {
+        addFlat(part, col, row, col + 1f, row + 1f, height);
+    }
+
+    private static void addSides(MeshPartBuilder part, int col, int row, float height) {
+        float left = col;
+        float right = col + 1f;
+        float near = -row;
+        float far = -(row + 1f);
+        part.rect(left, 0f, near, right, 0f, near, right, height, near, left, height, near, 0f, 0f, 1f);
+        part.rect(right, 0f, far, left, 0f, far, left, height, far, right, height, far, 0f, 0f, -1f);
+        part.rect(right, 0f, near, right, 0f, far, right, height, far, right, height, near, 1f, 0f, 0f);
+        part.rect(left, 0f, far, left, 0f, near, left, height, near, left, height, far, -1f, 0f, 0f);
     }
 
     @FunctionalInterface
