@@ -10,7 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class ServerLauncher {
-    private static final String ARENA_FILE = "assets/maps/arena1.txt";
+    private static final String ARENA_FILE = "assets/maps/arena2.txt";
 
     public static void main(String[] args) throws IOException, InterruptedException {
         Arena arena = ArenaLoader.parse(Files.readString(Path.of(ARENA_FILE)));

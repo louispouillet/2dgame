@@ -3,15 +3,15 @@ package io.github.game2d.client;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.game2d.protocol.PlayerInput;
+import java.util.function.Supplier;
 
 public class InputReader {
-    private final Viewport viewport;
+    private final Supplier<GameView> view;
     private final Vector2 mouse = new Vector2();
 
-    public InputReader(Viewport viewport) {
-        this.viewport = viewport;
+    public InputReader(Supplier<GameView> view) {
+        this.view = view;
     }
 
     public PlayerInput read(float playerX, float playerY) {
@@ -22,8 +22,7 @@ public class InputReader {
         if (Gdx.input.isKeyPressed(Input.Keys.W)) moveY += 1;
         if (Gdx.input.isKeyPressed(Input.Keys.S)) moveY -= 1;
 
-        mouse.set(Gdx.input.getX(), Gdx.input.getY());
-        viewport.unproject(mouse);
+        mouse.set(view.get().screenToWorld(Gdx.input.getX(), Gdx.input.getY()));
         mouse.sub(playerX, playerY).nor();
 
         boolean shooting = Gdx.input.isButtonPressed(Input.Buttons.LEFT);

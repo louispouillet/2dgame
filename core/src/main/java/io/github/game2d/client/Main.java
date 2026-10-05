@@ -2,6 +2,7 @@ package io.github.game2d.client;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import io.github.game2d.client.InputReader;
 import io.github.game2d.client.WorldRenderer;
@@ -22,6 +23,8 @@ import java.util.function.IntSupplier;
 public class Main extends ApplicationAdapter {
     private Arena arena;
     private WorldRenderer renderer;
+    private WorldRenderer3D renderer3d;
+    private GameView view;
     private InputReader inputReader;
     private GameServer server;
     private ServerChannel connection;
@@ -39,9 +42,11 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void create() {
-        arena = ArenaLoader.parse(Gdx.files.internal("maps/arena1.txt").readString());
-        renderer = new WorldRenderer();
-        inputReader = new InputReader(renderer.getViewport());
+        arena = ArenaLoader.parse(Gdx.files.internal("maps/arena2.txt").readString());
+        renderer = new WorldRenderer(arena.getWidth(), arena.getHeight());
+        renderer3d = new WorldRenderer3D(arena);
+        view = renderer;
+        inputReader = new InputReader(() -> view);
         if (host == null) {
             startLocalGame();
         } else {
@@ -73,10 +78,14 @@ public class Main extends ApplicationAdapter {
     @Override
     public void resize(int width, int height) {
         renderer.resize(width, height);
+        renderer3d.resize(width, height);
     }
 
     @Override
     public void render() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.V)) {
+            view = view == renderer ? renderer3d : renderer;
+        }
         int myId = brawlerId.getAsInt();
         WorldSnapshot snapshot = connection.latestSnapshot();
         if (snapshot == null) {
@@ -88,7 +97,7 @@ public class Main extends ApplicationAdapter {
                 connection.sendInput(input);
             }
         }
-        renderer.render(snapshot, arena);
+        view.render(snapshot, arena, myId);
     }
 
     @Override
@@ -96,5 +105,6 @@ public class Main extends ApplicationAdapter {
         if (server != null) server.stop();
         if (remote != null) remote.stop();
         renderer.dispose();
+        renderer3d.dispose();
     }
 }

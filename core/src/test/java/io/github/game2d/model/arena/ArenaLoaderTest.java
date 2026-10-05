@@ -105,6 +105,15 @@ class ArenaLoaderTest {
         assertEquals(4, arena.getSpawnPoints().size());
     }
 
+    @Test
+    void shippedLargeArenaIsValid() throws IOException {
+        Arena arena = ArenaLoader.parse(Files.readString(Path.of(System.getProperty("assets.dir"), "maps", "arena2.txt")));
+
+        assertEquals(30, arena.getWidth());
+        assertEquals(20, arena.getHeight());
+        assertEquals(4, arena.getSpawnPoints().size());
+    }
+
     private static void assertRejected(String map, String expectedMessage) {
         ArenaFormatException error = assertThrows(ArenaFormatException.class, () -> ArenaLoader.parse(map));
         assertEquals(expectedMessage, error.getMessage());
