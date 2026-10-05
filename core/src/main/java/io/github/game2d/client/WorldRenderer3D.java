@@ -34,8 +34,8 @@ import java.util.Map;
 
 public class WorldRenderer3D implements GameView {
     private static final float FIELD_OF_VIEW = 28f;
-    private static final float CAMERA_HEIGHT = 10f;
-    private static final float CAMERA_BACK = 7f;
+    private static final float CAMERA_HEIGHT = 16.4f;
+    private static final float CAMERA_BACK = 11.5f;
     private static final float CAMERA_FOLLOW_SPEED = 5f;
     private static final float CAMERA_MARGIN = ArenaModelFactory.OUTSIDE_MARGIN / 2f;
 
