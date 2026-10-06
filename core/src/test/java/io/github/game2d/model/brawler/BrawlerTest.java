@@ -6,12 +6,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.game2d.model.Projectile;
-import io.github.game2d.model.collision.Obstacles;
+import io.github.game2d.model.arena.Arena;
+import io.github.game2d.model.arena.TestArenas;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 class BrawlerTest {
+    private static final Arena ARENA = TestArenas.open(30, 20);
+    private static final float X0 = 10f;
+    private static final float Y0 = 10f;
+
     private final AtomicInteger ids = new AtomicInteger();
 
     @Test
@@ -26,34 +31,34 @@ class BrawlerTest {
 
     @Test
     void movesAtItsSpeedInTheGivenDirection() {
-        Colt colt = new Colt(1, 0, 0);
+        Colt colt = new Colt(1, X0, Y0);
 
         colt.setDirection(1, 0);
-        colt.move(1f, Obstacles.NONE);
+        colt.move(1f, ARENA);
 
-        assertEquals(5f, colt.getX(), 1e-5);
-        assertEquals(0f, colt.getY(), 1e-5);
+        assertEquals(X0 + 5f, colt.getX(), 1e-5);
+        assertEquals(Y0, colt.getY(), 1e-5);
     }
 
     @Test
     void diagonalMovementIsNormalized() {
-        Colt colt = new Colt(1, 0, 0);
+        Colt colt = new Colt(1, X0, Y0);
 
         colt.setDirection(1, 1);
-        colt.move(1f, Obstacles.NONE);
+        colt.move(1f, ARENA);
 
-        assertEquals(5f, (float) Math.hypot(colt.getX(), colt.getY()), 1e-4);
+        assertEquals(5f, (float) Math.hypot(colt.getX() - X0, colt.getY() - Y0), 1e-4);
     }
 
     @Test
     void zeroDirectionStopsTheBrawler() {
-        Colt colt = new Colt(1, 0, 0);
+        Colt colt = new Colt(1, X0, Y0);
         colt.setDirection(1, 0);
 
         colt.setDirection(0, 0);
-        colt.move(1f, Obstacles.NONE);
+        colt.move(1f, ARENA);
 
-        assertEquals(0f, colt.getX(), 1e-6);
+        assertEquals(X0, colt.getX(), 1e-6);
     }
 
     @Test
@@ -86,13 +91,13 @@ class BrawlerTest {
 
     @Test
     void deadBrawlerDoesNotMove() {
-        Colt colt = new Colt(1, 0, 0);
+        Colt colt = new Colt(1, X0, Y0);
         colt.setDirection(1, 0);
         colt.takeDamage(100);
 
-        colt.move(1f, Obstacles.NONE);
+        colt.move(1f, ARENA);
 
-        assertEquals(0f, colt.getX(), 1e-6);
+        assertEquals(X0, colt.getX(), 1e-6);
     }
 
     @Test
