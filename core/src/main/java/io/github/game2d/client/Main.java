@@ -18,9 +18,12 @@ import io.github.game2d.protocol.WorldSnapshot;
 import io.github.game2d.server.GameServer;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.IntSupplier;
 
 public class Main extends ApplicationAdapter {
+    private static final float DELAY = 0.1f;
     private Arena arena;
     private WorldRenderer renderer;
     private WorldRenderer3D renderer3d;
@@ -29,6 +32,8 @@ public class Main extends ApplicationAdapter {
     private GameServer server;
     private ServerChannel connection;
     private NetworkClient remote;
+    private SnapshotBuffer buffer;
+    private WorldSnapshot lastReceived;
     private IntSupplier brawlerId;
     private final String host; // null = jeu local
 
@@ -47,6 +52,7 @@ public class Main extends ApplicationAdapter {
         renderer3d = new WorldRenderer3D(arena);
         view = renderer;
         inputReader = new InputReader(() -> view);
+        buffer = new SnapshotBuffer();
         if (host == null) {
             startLocalGame();
         } else {
@@ -86,18 +92,38 @@ public class Main extends ApplicationAdapter {
         if (Gdx.input.isKeyJustPressed(Input.Keys.V)) {
             view = view == renderer ? renderer3d : renderer;
         }
+        double now = System.nanoTime() / 1_000_000_000.0;
         int myId = brawlerId.getAsInt();
         WorldSnapshot snapshot = connection.latestSnapshot();
         if (snapshot == null) {
             return;
         }
+        if (snapshot != lastReceived) {
+            buffer.add(snapshot, now);
+            lastReceived = snapshot;
+        }
+        BrawlerState mine = null;
         for (BrawlerState brawler : snapshot.brawlers()) {
             if (brawler.id() == myId) {
+                mine = brawler;
                 PlayerInput input = inputReader.read(brawler.x(), brawler.y());
                 connection.sendInput(input);
             }
         }
-        view.render(snapshot, arena, myId);
+        WorldSnapshot interpolated = buffer.interpolate(now - DELAY);
+        view.render(withOwnBrawler(interpolated, mine), arena, myId);
+    }
+
+    // Other players are interpolated (shown slightly in the past); our own brawler is drawn as last received.
+    private static WorldSnapshot withOwnBrawler(WorldSnapshot view, BrawlerState mine) {
+        if (mine == null) {
+            return view;
+        }
+        List<BrawlerState> brawlers = new ArrayList<>();
+        for (BrawlerState brawler : view.brawlers()) {
+            brawlers.add(brawler.id() == mine.id() ? mine : brawler);
+        }
+        return new WorldSnapshot(brawlers, view.projectiles());
     }
 
     @Override
