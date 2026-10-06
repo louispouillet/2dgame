@@ -55,8 +55,18 @@ public class GameWorld {
             }
             object.update(dt);
         }
+        stopProjectilesOnObstacles();
         resolveProjectileHits();
         gameObjects.removeIf(GameObject::isExpired);
+    }
+
+    private void stopProjectilesOnObstacles() {
+        for (GameObject object : gameObjects) {
+            if (object instanceof Projectile projectile
+                    && obstacles.blocksShots(projectile.getX(), projectile.getY(), projectile.getHitbox().radius())) {
+                projectile.markHit();
+            }
+        }
     }
 
     private void resolveProjectileHits() {
