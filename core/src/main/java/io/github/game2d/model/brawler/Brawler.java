@@ -3,6 +3,7 @@ package io.github.game2d.model.brawler;
 import io.github.game2d.model.GameObject;
 import io.github.game2d.model.Projectile;
 import io.github.game2d.model.collision.Circle;
+import io.github.game2d.model.collision.Obstacles;
 import io.github.game2d.model.weapon.Weapon;
 import java.util.List;
 import java.util.function.IntSupplier;
@@ -10,6 +11,7 @@ import java.util.function.IntSupplier;
 public abstract class Brawler extends GameObject {
     private static final float REGEN_DELAY = 3f;
     private static final float REGEN_RATE = 0.2f;
+    private static final int MOVE_ATTEMPTS = 5;
 
     private final Circle hitbox;
     private final float speed;
@@ -66,10 +68,29 @@ public abstract class Brawler extends GameObject {
         if (!isAlive()) {
             return;
         }
-        x += dirX * speed * dt;
-        y += dirY * speed * dt;
         weapon.update(dt);
         regenerate(dt);
+    }
+
+    public void move(float dt, Obstacles obstacles) {
+        if (!isAlive()) {
+            return;
+        }
+        float radius = hitbox.radius();
+        float stepX = dirX * speed * dt;
+        for (int i = 0; i < MOVE_ATTEMPTS && stepX != 0; i++, stepX /= 2) {
+            if (!obstacles.blocksMovement(x + stepX, y, radius)) {
+                x += stepX;
+                break;
+            }
+        }
+        float stepY = dirY * speed * dt;
+        for (int i = 0; i < MOVE_ATTEMPTS && stepY != 0; i++, stepY /= 2) {
+            if (!obstacles.blocksMovement(x, y + stepY, radius)) {
+                y += stepY;
+                break;
+            }
+        }
     }
 
     private void regenerate(float dt) {

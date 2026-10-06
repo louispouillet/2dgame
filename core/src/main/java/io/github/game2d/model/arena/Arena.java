@@ -1,9 +1,10 @@
 package io.github.game2d.model.arena;
 
+import io.github.game2d.model.collision.Obstacles;
 import java.util.List;
 import java.util.function.Predicate;
 
-public final class Arena {
+public final class Arena implements Obstacles {
     private final TileType[][] tiles;
     private final List<SpawnPoint> spawnPoints;
 
@@ -36,6 +37,38 @@ public final class Arena {
 
     public boolean blocksShots(float x, float y, float width, float height) {
         return anyTile(x, y, width, height, TileType::blocksShots);
+    }
+
+    @Override
+    public boolean blocksMovement(float centerX, float centerY, float radius) {
+        return anyTileTouchingCircle(centerX, centerY, radius, TileType::blocksMovement);
+    }
+
+    @Override
+    public boolean blocksShots(float centerX, float centerY, float radius) {
+        return anyTileTouchingCircle(centerX, centerY, radius, TileType::blocksShots);
+    }
+
+    private boolean anyTileTouchingCircle(float centerX, float centerY, float radius, Predicate<TileType> condition) {
+        int firstCol = (int) Math.floor(centerX - radius);
+        int lastCol = (int) Math.floor(centerX + radius);
+        int firstRow = (int) Math.floor(centerY - radius);
+        int lastRow = (int) Math.floor(centerY + radius);
+        for (int row = firstRow; row <= lastRow; row++) {
+            for (int col = firstCol; col <= lastCol; col++) {
+                if (!condition.test(getTile(col, row))) {
+                    continue;
+                }
+                float nearestX = Math.clamp(centerX, col, col + 1);
+                float nearestY = Math.clamp(centerY, row, row + 1);
+                float dx = centerX - nearestX;
+                float dy = centerY - nearestY;
+                if (dx * dx + dy * dy < radius * radius) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public List<SpawnPoint> getSpawnPoints() {

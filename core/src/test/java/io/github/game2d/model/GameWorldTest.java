@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.github.game2d.model.brawler.Colt;
 import io.github.game2d.model.brawler.Shelly;
+import io.github.game2d.model.collision.Obstacles;
 import io.github.game2d.protocol.BrawlerState;
 import io.github.game2d.protocol.PlayerInput;
 import io.github.game2d.protocol.WorldSnapshot;
@@ -14,7 +15,7 @@ import org.junit.jupiter.api.Test;
 class GameWorldTest {
     @Test
     void projectileDamagesTargetAndDisappears() {
-        GameWorld world = new GameWorld();
+        GameWorld world = new GameWorld(Obstacles.NONE);
         Colt shooter = new Colt(world.nextId(), 0, 0);
         Shelly target = new Shelly(world.nextId(), 2, 0);
         world.addPlayer(shooter);
@@ -31,7 +32,7 @@ class GameWorldTest {
 
     @Test
     void projectileDoesNotHitItsOwner() {
-        GameWorld world = new GameWorld();
+        GameWorld world = new GameWorld(Obstacles.NONE);
         Colt shooter = new Colt(world.nextId(), 0, 0);
         world.addPlayer(shooter);
 
@@ -43,7 +44,7 @@ class GameWorldTest {
 
     @Test
     void deadBrawlerIsRemovedFromWorld() {
-        GameWorld world = new GameWorld();
+        GameWorld world = new GameWorld(Obstacles.NONE);
         Colt target = new Colt(world.nextId(), 0, 0);
         world.addPlayer(target);
 
@@ -55,7 +56,7 @@ class GameWorldTest {
 
     @Test
     void shotMissingTheTargetDoesNoDamage() {
-        GameWorld world = new GameWorld();
+        GameWorld world = new GameWorld(Obstacles.NONE);
         Colt shooter = new Colt(world.nextId(), 0, 0);
         Shelly target = new Shelly(world.nextId(), 2, 3);
         world.addPlayer(shooter);
@@ -71,8 +72,8 @@ class GameWorldTest {
 
     @Test
     void nextIdIsUniquePerWorldAndIndependentBetweenWorlds() {
-        GameWorld a = new GameWorld();
-        GameWorld b = new GameWorld();
+        GameWorld a = new GameWorld(Obstacles.NONE);
+        GameWorld b = new GameWorld(Obstacles.NONE);
 
         assertEquals(1, a.nextId());
         assertEquals(2, a.nextId());
@@ -81,7 +82,7 @@ class GameWorldTest {
 
     @Test
     void shotgunPelletsGetUniqueIds() {
-        GameWorld world = new GameWorld();
+        GameWorld world = new GameWorld(Obstacles.NONE);
         Shelly shooter = new Shelly(world.nextId(), 0, 0);
         world.addPlayer(shooter);
 
@@ -93,7 +94,7 @@ class GameWorldTest {
 
     @Test
     void inputIsRoutedToThePlayersBrawler() {
-        GameWorld world = new GameWorld();
+        GameWorld world = new GameWorld(Obstacles.NONE);
         Colt p1 = new Colt(world.nextId(), 0, 0);
         Colt p2 = new Colt(world.nextId(), 5, 0);
         world.addPlayer(p1);
@@ -108,7 +109,7 @@ class GameWorldTest {
 
     @Test
     void deadPlayerStaysRegisteredAfterRemovalFromWorld() {
-        GameWorld world = new GameWorld();
+        GameWorld world = new GameWorld(Obstacles.NONE);
         Colt p1 = new Colt(world.nextId(), 0, 0);
         world.addPlayer(p1);
 
@@ -121,7 +122,7 @@ class GameWorldTest {
 
     @Test
     void registeringTheSameBrawlerTwiceFails() {
-        GameWorld world = new GameWorld();
+        GameWorld world = new GameWorld(Obstacles.NONE);
         Colt brawler = new Colt(world.nextId(), 0, 0);
         world.addPlayer(brawler);
 
@@ -130,7 +131,7 @@ class GameWorldTest {
 
     @Test
     void snapshotContainsEveryLivingBrawler() {
-        GameWorld world = new GameWorld();
+        GameWorld world = new GameWorld(Obstacles.NONE);
         Colt colt = new Colt(world.nextId(), 1, 2);
         Shelly shelly = new Shelly(world.nextId(), 3, 4);
         world.addPlayer(colt);
@@ -151,7 +152,7 @@ class GameWorldTest {
 
     @Test
     void snapshotContainsProjectilesWithTheirRadius() {
-        GameWorld world = new GameWorld();
+        GameWorld world = new GameWorld(Obstacles.NONE);
         Shelly shooter = new Shelly(world.nextId(), 0, 0);
         world.addPlayer(shooter);
 
@@ -164,7 +165,7 @@ class GameWorldTest {
 
     @Test
     void snapshotOmitsDeadBrawlers() {
-        GameWorld world = new GameWorld();
+        GameWorld world = new GameWorld(Obstacles.NONE);
         Colt alive = new Colt(world.nextId(), 0, 0);
         Colt dead = new Colt(world.nextId(), 5, 0);
         world.addPlayer(alive);
@@ -179,7 +180,7 @@ class GameWorldTest {
 
     @Test
     void snapshotDoesNotChangeWhenTheWorldEvolves() {
-        GameWorld world = new GameWorld();
+        GameWorld world = new GameWorld(Obstacles.NONE);
         Colt colt = new Colt(world.nextId(), 0, 0);
         world.addPlayer(colt);
         WorldSnapshot before = world.snapshot();

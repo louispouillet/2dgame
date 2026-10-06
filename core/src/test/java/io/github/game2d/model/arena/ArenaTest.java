@@ -100,6 +100,46 @@ class ArenaTest {
     }
 
     @Test
+    void circleOnFloorIsNotBlocked() {
+        assertFalse(arena.blocksMovement(1.5f, 1.5f, 0.25f));
+        assertFalse(arena.blocksShots(1.5f, 1.5f, 0.25f));
+    }
+
+    @Test
+    void circleOverlappingWallIsBlocked() {
+        assertTrue(arena.blocksMovement(1.1f, 1.5f, 0.25f));
+        assertTrue(arena.blocksShots(1.1f, 1.5f, 0.25f));
+    }
+
+    @Test
+    void circleTouchingWallExactlyIsNotBlocked() {
+        assertFalse(arena.blocksMovement(1.25f, 1.5f, 0.25f));
+    }
+
+    @Test
+    void circleNearCornerIsNotBlockedWhereItsSquareWould() {
+        assertTrue(arena.blocksMovement(1.55f, 1.95f, 0.5f, 0.5f));
+        assertFalse(arena.blocksMovement(1.8f, 2.2f, 0.25f));
+    }
+
+    @Test
+    void circleOnWaterBlocksMovementButNotShots() {
+        assertTrue(arena.blocksMovement(2.5f, 1.5f, 0.25f));
+        assertFalse(arena.blocksShots(2.5f, 1.5f, 0.25f));
+    }
+
+    @Test
+    void circleOnBushBlocksNothing() {
+        assertFalse(arena.blocksMovement(1.5f, 2.5f, 0.25f));
+        assertFalse(arena.blocksShots(1.5f, 2.5f, 0.25f));
+    }
+
+    @Test
+    void circleOutsideArenaIsBlocked() {
+        assertTrue(arena.blocksMovement(-1f, 1.5f, 0.25f));
+    }
+
+    @Test
     void spawnPointsCannotBeModified() {
         assertThrows(UnsupportedOperationException.class,
             () -> arena.getSpawnPoints().add(new SpawnPoint(3, 1.5f, 2.5f)));

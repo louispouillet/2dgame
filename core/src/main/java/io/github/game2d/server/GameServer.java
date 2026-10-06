@@ -16,13 +16,14 @@ public class GameServer {
 
     private volatile boolean running;
     private Thread thread;
-    private final GameWorld world = new GameWorld();
+    private final GameWorld world;
     private final Arena arena;
     private final Map<Integer, ClientChannel> connections = new HashMap<>();
     private final FixedTimestep timestep = new FixedTimestep(1f / TICK_RATE);
 
     public GameServer(Arena arena) {
         this.arena = arena;
+        this.world = new GameWorld(arena);
     }
 
     public synchronized int join(ClientChannel connection) {

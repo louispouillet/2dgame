@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.game2d.model.Projectile;
+import io.github.game2d.model.collision.Obstacles;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ class BrawlerTest {
         Colt colt = new Colt(1, 0, 0);
 
         colt.setDirection(1, 0);
-        colt.update(1f);
+        colt.move(1f, Obstacles.NONE);
 
         assertEquals(5f, colt.getX(), 1e-5);
         assertEquals(0f, colt.getY(), 1e-5);
@@ -39,7 +40,7 @@ class BrawlerTest {
         Colt colt = new Colt(1, 0, 0);
 
         colt.setDirection(1, 1);
-        colt.update(1f);
+        colt.move(1f, Obstacles.NONE);
 
         assertEquals(5f, (float) Math.hypot(colt.getX(), colt.getY()), 1e-4);
     }
@@ -50,7 +51,7 @@ class BrawlerTest {
         colt.setDirection(1, 0);
 
         colt.setDirection(0, 0);
-        colt.update(1f);
+        colt.move(1f, Obstacles.NONE);
 
         assertEquals(0f, colt.getX(), 1e-6);
     }
@@ -89,7 +90,7 @@ class BrawlerTest {
         colt.setDirection(1, 0);
         colt.takeDamage(100);
 
-        colt.update(1f);
+        colt.move(1f, Obstacles.NONE);
 
         assertEquals(0f, colt.getX(), 1e-6);
     }
