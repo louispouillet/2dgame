@@ -1,9 +1,11 @@
 package io.github.game2d.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.github.game2d.model.GameWorld;
 import io.github.game2d.model.arena.Arena;
+import io.github.game2d.model.arena.ArenaLoader;
 import io.github.game2d.model.arena.TestArenas;
 import io.github.game2d.model.brawler.Colt;
 import io.github.game2d.model.brawler.Shelly;
@@ -16,6 +18,46 @@ class SnapshotBuilderTest {
     private static final Arena ARENA = TestArenas.open(30, 20);
     private static final float X0 = 10f;
     private static final float Y0 = 10f;
+    private static final Arena BUSH_ARENA = ArenaLoader.parse("""
+        #########
+        #1.....2#
+        #.......#
+        #..~~~..#
+        #.......#
+        #########
+        """);
+
+    private static boolean sees(WorldSnapshot snapshot, Colt brawler) {
+        return snapshot.brawlers().stream().anyMatch(state -> state.id() == brawler.getId());
+    }
+
+    @Test
+    void snapshotOmitsEnemiesHiddenFromTheViewer() {
+        GameWorld world = new GameWorld(BUSH_ARENA);
+        Colt viewer = new Colt(world.nextId(), 1.5f, 1.5f);
+        Colt hidden = new Colt(world.nextId(), 4.5f, 2.5f);
+        world.addPlayer(viewer);
+        world.addPlayer(hidden);
+
+        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, viewer.getId());
+
+        assertFalse(sees(snapshot, hidden));
+    }
+
+    @Test
+    void projectilesOfAHiddenEnemyStayVisible() {
+        GameWorld world = new GameWorld(BUSH_ARENA);
+        Colt viewer = new Colt(world.nextId(), 1.5f, 1.5f);
+        Colt hidden = new Colt(world.nextId(), 4.5f, 2.5f);
+        world.addPlayer(viewer);
+        world.addPlayer(hidden);
+
+        world.attack(hidden, 1, 0);
+        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, viewer.getId());
+
+        assertFalse(sees(snapshot, hidden));
+        assertFalse(snapshot.projectiles().isEmpty());
+    }
 
     @Test
     void snapshotContainsEveryLivingBrawler() {
@@ -25,7 +67,7 @@ class SnapshotBuilderTest {
         world.addPlayer(colt);
         world.addPlayer(shelly);
 
-        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0);
+        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, 1);
 
         assertEquals(2, snapshot.brawlers().size());
         BrawlerState state = snapshot.brawlers().stream().filter(b -> b.id() == shelly.getId()).findFirst().orElseThrow();
@@ -45,7 +87,7 @@ class SnapshotBuilderTest {
         world.addPlayer(shooter);
 
         world.attack(shooter, 1, 0);
-        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0);
+        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, 1);
 
         assertEquals(5, snapshot.projectiles().size());
         assertEquals(0.05f, snapshot.projectiles().get(0).radius());
@@ -63,8 +105,8 @@ class SnapshotBuilderTest {
         dead.takeDamage(100);
         world.update(1 / 60f);
 
-        assertEquals(1, builder.build(0, id -> 0).brawlers().size());
-        assertEquals(alive.getId(), builder.build(0, id -> 0).brawlers().get(0).id());
+        assertEquals(1, builder.build(0, id -> 0, 1).brawlers().size());
+        assertEquals(alive.getId(), builder.build(0, id -> 0, 1).brawlers().get(0).id());
     }
 
     @Test
@@ -74,13 +116,13 @@ class SnapshotBuilderTest {
         InputApplier applier = new InputApplier(world);
         Colt colt = new Colt(world.nextId(), X0, Y0);
         world.addPlayer(colt);
-        WorldSnapshot before = builder.build(0, id -> 0);
+        WorldSnapshot before = builder.build(0, id -> 0, 1);
 
         applier.apply(colt.getId(), new PlayerInput(1, 1, 0, 1, 0, true));
         world.update(1f);
 
         assertEquals(X0, before.brawlers().get(0).x());
         assertTrue(before.projectiles().isEmpty());
-        assertTrue(builder.build(0, id -> 0).brawlers().get(0).x() > X0);
+        assertTrue(builder.build(0, id -> 0, 1).brawlers().get(0).x() > X0);
     }
 }

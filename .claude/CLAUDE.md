@@ -26,6 +26,7 @@ Principes illustrés :
 
 ## 3. Source de vérité et rendu
 - Le **serveur** (`GameServer`) est la source de vérité : il possède le vrai `GameWorld` (positions, PV, collisions).
+- Le serveur envoie **un snapshot par joueur** (`SnapshotBuilder.build(tick, lastProcessed, viewerId)`) : chacun ne reçoit que ce qu'il a le droit de voir.
 - Le **client** dessine une copie de l'état reçu (`WorldSnapshot`), interpolée par `SnapshotBuffer`.
 - Cycle 30 Hz : inputs envoyés → simulation serveur → snapshot diffusé → mise à jour locale → rendu à 60 FPS.
 
@@ -37,7 +38,12 @@ Principes illustrés :
 - **Tirs** : `GameWorld` arrête un projectile dans un mur ; `Collisions.sweptOverlaps` détecte un brawler touché le long du trajet du tir.
 - Les tests utilisent une vraie arène (`TestArenas.open`, dans `src/test`).
 
-## 5. Module `core` : packages
+## 5. Buissons
+- Un brawler dont le centre est sur un buisson (`~`) est caché aux adversaires à plus de 2 cases (`REVEAL_DISTANCE`). On se voit toujours soi-même ; les projectiles restent visibles.
+- `Arena.hidesBrawlerAt(x, y)` : la case sous le point cache-t-elle ? `GameWorld.isVisibleTo(target, viewer)` : la règle. `SnapshotBuilder` filtre selon cette règle.
+- Filtrage côté serveur : un client ne reçoit jamais la position d'un ennemi caché (anti-triche).
+
+## 6. Module `core` : packages
 Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol` ne dépend de rien ; `server` → `model`, `protocol`, `net` ; `net` → `protocol`, `server` ; `client` → tous. Seul `client` dépend de libGDX ; seul `net.kryo` dépend de KryoNet. Les tests suivent la même arborescence (`core/src/test`).
 
 - `model/` : règles du jeu, Java pur (`GameObject`, `Projectile`, `GameWorld`)
@@ -51,14 +57,14 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
   - `net.kryo` : `NetworkServer`, `NetworkClient` (cycle de vie KryoNet), `NetworkClientChannel`, `NetworkServerChannel` (traducteurs de protocole), `NetworkRegistry`
 - `client/` : libGDX. `Main`, `InputReader`, `SnapshotBuffer` ; vues `GameView`, `WorldRenderer` (2D), `WorldRenderer3D` + `ArenaModelFactory` (3D, textures dans `assets/textures/arena`) ; HUD `BrawlerHud`, `HudAnchor`
 
-## 6. Lancement (Makefile)
+## 7. Lancement (Makefile)
 - `make solo` : partie locale ; `make server` : serveur multijoueur (TCP 54555 / UDP 54777) ; `make client [HOST=ip]` : client ; `make duo` : serveur + 2 fenêtres sur la même machine.
 - `make test`, `make build`, `make clean`.
 - Map chargée : `assets/maps/arena2.txt` (30x20), dans `client/Main` et `server/ServerLauncher` (garder les deux synchronisées).
 
 ## Reste à faire
 - Mode « dernier survivant » (gagnant, fin de partie)
-- Buissons qui cachent les brawlers (`TileType.hidesBrawler`), filtrés côté serveur
+- Buissons : se révéler en tirant ou en étant touché ; afficher son propre brawler en transparence dans un buisson
 - Caméra 3D : élargir la bande de décor pour que le joueur ne soit pas collé au coin au départ
 - Chemin de la map partagé entre client et serveur
 - `StartupHelper` ne transmet pas les arguments sur macOS (le Makefile passe `-XstartOnFirstThread`)
@@ -66,7 +72,7 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 - 3D : type et visée dans `BrawlerState`, puis gdx-gltf, personnages animés, ombres
 
 ## Structure du projet généré
-- `core/` : logique de jeu, serveur et client libGDX (voir section 5)
+- `core/` : logique de jeu, serveur et client libGDX (voir section 6)
 - `lwjgl3/` : lanceur desktop (`Lwjgl3Launcher.java`, fenêtre 1280x720, vsync, `StartupHelper`)
 - `assets/` : ressources partagées entre plateformes (maps, textures, polices)
 

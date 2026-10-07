@@ -18,7 +18,8 @@ public class SnapshotBuilder {
         this.world = world;
     }
 
-    public WorldSnapshot build(int tick, IntUnaryOperator lastProcessed) {
+    public WorldSnapshot build(int tick, IntUnaryOperator lastProcessed, int viewerId) {
+        Brawler viewer = world.getPlayer(viewerId);
         List<BrawlerState> brawlerStates = new ArrayList<>();
         List<ProjectileState> projectileStates = new ArrayList<>();
         for (GameObject object : world.getGameObjects()) {
@@ -32,7 +33,7 @@ public class SnapshotBuilder {
                     )
                 );
             }
-            if (object instanceof Brawler brawler) {
+            if (object instanceof Brawler brawler && world.isVisibleTo(brawler, viewer)) {
                 int lastProcessedSequence = lastProcessed.applyAsInt(brawler.getId());
                 brawlerStates.add(
                     new BrawlerState(

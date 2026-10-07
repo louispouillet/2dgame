@@ -55,9 +55,9 @@ public class GameServer {
             inputApplier.apply(entry.getKey(), entry.getValue().latestInput());
         }
         world.update(timestep.getStep());
-        WorldSnapshot snapshot = snapshotBuilder.build(timestep.getTicks(), inputApplier::lastProcessedSequence);
-        for (ClientChannel connection : connections.values()) {
-            connection.sendSnapshot(snapshot);
+        for (Map.Entry<Integer, ClientChannel> entry : connections.entrySet()) {
+            WorldSnapshot snapshot = snapshotBuilder.build(timestep.getTicks(), inputApplier::lastProcessedSequence, entry.getKey());
+            entry.getValue().sendSnapshot(snapshot);
         }
     }
 

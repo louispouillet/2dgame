@@ -39,6 +39,10 @@ public final class Arena {
         return anyTileTouchingCircle(centerX, centerY, radius, TileType::blocksShots);
     }
 
+    public boolean hidesBrawlerAt(float x, float y) {
+        return getTile((int) Math.floor(x), (int) Math.floor(y)).hidesBrawler();
+    }
+
     private boolean anyTileTouchingCircle(float centerX, float centerY, float radius, Predicate<TileType> condition) {
         int firstCol = (int) Math.floor(centerX - radius);
         int lastCol = (int) Math.floor(centerX + radius);

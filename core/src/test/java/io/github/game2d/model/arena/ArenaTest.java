@@ -105,6 +105,28 @@ class ArenaTest {
     }
 
     @Test
+    void bushHidesBrawler() {
+        assertTrue(arena.hidesBrawlerAt(1.5f, 2.5f));
+    }
+
+    @Test
+    void floorWaterAndWallDoNotHideBrawler() {
+        assertFalse(arena.hidesBrawlerAt(1.5f, 1.5f));
+        assertFalse(arena.hidesBrawlerAt(2.5f, 1.5f));
+        assertFalse(arena.hidesBrawlerAt(0.5f, 0.5f));
+    }
+
+    @Test
+    void onlyTheTileUnderTheCenterCounts() {
+        assertFalse(arena.hidesBrawlerAt(2.1f, 2.5f));
+    }
+
+    @Test
+    void outsideArenaDoesNotHideBrawler() {
+        assertFalse(arena.hidesBrawlerAt(-1f, 2.5f));
+    }
+
+    @Test
     void spawnPointsCannotBeModified() {
         assertThrows(UnsupportedOperationException.class,
             () -> arena.getSpawnPoints().add(new SpawnPoint(3, 1.5f, 2.5f)));

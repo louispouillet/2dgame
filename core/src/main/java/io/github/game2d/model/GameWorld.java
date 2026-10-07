@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Objects;
 
 public class GameWorld {
+    private static final float REVEAL_DISTANCE = 2f;
+
     private final List<GameObject> gameObjects;
     private final Map<Integer, Brawler> players;
     private final Arena arena;
@@ -49,6 +51,18 @@ public class GameWorld {
 
     public List<GameObject> getGameObjects() {
         return Collections.unmodifiableList(gameObjects);
+    }
+
+    public boolean isVisibleTo(Brawler target, Brawler viewer) {
+        if (target == viewer || !arena.hidesBrawlerAt(target.getX(), target.getY())) {
+            return true;
+        }
+        if (viewer == null) {
+            return false;
+        }
+        float dx = target.getX() - viewer.getX();
+        float dy = target.getY() - viewer.getY();
+        return dx * dx + dy * dy <= REVEAL_DISTANCE * REVEAL_DISTANCE;
     }
 
     public void update(float dt) {
