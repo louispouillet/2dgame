@@ -123,7 +123,7 @@ public class Main extends ApplicationAdapter {
         for (BrawlerState brawler : view.brawlers()) {
             brawlers.add(brawler.id() == mine.id() ? mine : brawler);
         }
-        return new WorldSnapshot(brawlers, view.projectiles());
+        return new WorldSnapshot(view.tick(), brawlers, view.projectiles());
     }
 
     @Override

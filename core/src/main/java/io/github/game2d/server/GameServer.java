@@ -46,6 +46,7 @@ public class GameServer {
     public synchronized void leave(int brawlerId) {
         if (connections.remove(brawlerId) != null) {
             world.removePlayer(brawlerId);
+            inputApplier.forget(brawlerId);
         }
     }
 
@@ -54,7 +55,7 @@ public class GameServer {
             inputApplier.apply(entry.getKey(), entry.getValue().latestInput());
         }
         world.update(timestep.getStep());
-        WorldSnapshot snapshot = snapshotBuilder.build();
+        WorldSnapshot snapshot = snapshotBuilder.build(timestep.getTicks(), inputApplier::lastProcessedSequence);
         for (ClientChannel connection : connections.values()) {
             connection.sendSnapshot(snapshot);
         }

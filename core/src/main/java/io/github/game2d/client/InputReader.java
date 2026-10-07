@@ -9,12 +9,14 @@ import java.util.function.Supplier;
 public class InputReader {
     private final Supplier<GameView> view;
     private final Vector2 mouse = new Vector2();
+    private int sequence;
 
     public InputReader(Supplier<GameView> view) {
         this.view = view;
     }
 
     public PlayerInput read(float playerX, float playerY) {
+        sequence++;
         float moveX = 0;
         float moveY = 0;
         if (Gdx.input.isKeyPressed(Input.Keys.D)) moveX += 1;
@@ -26,6 +28,6 @@ public class InputReader {
         mouse.sub(playerX, playerY).nor();
 
         boolean shooting = Gdx.input.isButtonPressed(Input.Buttons.LEFT);
-        return new PlayerInput(moveX, moveY, mouse.x, mouse.y, shooting);
+        return new PlayerInput(sequence, moveX, moveY, mouse.x, mouse.y, shooting);
     }
 }

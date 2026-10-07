@@ -31,7 +31,7 @@ class NetworkRegistryTest {
 
     @Test
     void playerInputSurvivesTheNetwork() {
-        PlayerInput input = new PlayerInput(1, 0, 0.6f, 0.8f, true);
+        PlayerInput input = new PlayerInput(7, 1, 0, 0.6f, 0.8f, true);
 
         assertEquals(input, roundTrip(input));
     }
@@ -46,9 +46,10 @@ class NetworkRegistryTest {
     @Test
     void worldSnapshotSurvivesTheNetwork() {
         WorldSnapshot snapshot = new WorldSnapshot(
+            42,
             new ArrayList<>(List.of(
-                new BrawlerState(1, 1.5f, 2.5f, 0.25f, 120, 120, 3, 3, 0f),
-                new BrawlerState(2, 4.5f, 2.5f, 0.25f, 80, 100, 1, 3, 0.4f))),
+                new BrawlerState(1, 1.5f, 2.5f, 0.25f, 120, 120, 3, 3, 0f, 7),
+                new BrawlerState(2, 4.5f, 2.5f, 0.25f, 80, 100, 1, 3, 0.4f, 5))),
             new ArrayList<>(List.of(
                 new ProjectileState(3, 2f, 2.5f, 0.05f))));
 
@@ -57,7 +58,7 @@ class NetworkRegistryTest {
 
     @Test
     void emptyWorldSnapshotSurvivesTheNetwork() {
-        WorldSnapshot snapshot = new WorldSnapshot(new ArrayList<>(), new ArrayList<>());
+        WorldSnapshot snapshot = new WorldSnapshot(0, new ArrayList<>(), new ArrayList<>());
 
         assertEquals(snapshot, roundTrip(snapshot));
     }

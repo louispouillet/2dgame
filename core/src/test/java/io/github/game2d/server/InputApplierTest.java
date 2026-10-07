@@ -23,7 +23,7 @@ class InputApplierTest {
         world.addPlayer(p1);
         world.addPlayer(p2);
 
-        applier.apply(p2.getId(), new PlayerInput(1, 0, 1, 0, false));
+        applier.apply(p2.getId(), new PlayerInput(1, 1, 0, 1, 0, false));
         world.update(1f);
 
         assertEquals(X0, p1.getX());
@@ -35,7 +35,7 @@ class InputApplierTest {
         GameWorld world = new GameWorld(ARENA);
         InputApplier applier = new InputApplier(world);
 
-        applier.apply(42, new PlayerInput(1, 0, 1, 0, true));
+        applier.apply(42, new PlayerInput(1, 1, 0, 1, 0, true));
 
         assertTrue(world.getGameObjects().isEmpty());
     }

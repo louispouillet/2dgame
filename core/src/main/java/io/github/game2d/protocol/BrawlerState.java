@@ -9,5 +9,6 @@ public record BrawlerState(
     int maxHealth,
     int ammo,
     int maxAmmo,
-    float reloadProgress
+    float reloadProgress,
+    int lastProcessedInput
 ) {}

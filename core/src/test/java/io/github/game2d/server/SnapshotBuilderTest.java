@@ -25,7 +25,7 @@ class SnapshotBuilderTest {
         world.addPlayer(colt);
         world.addPlayer(shelly);
 
-        WorldSnapshot snapshot = new SnapshotBuilder(world).build();
+        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0);
 
         assertEquals(2, snapshot.brawlers().size());
         BrawlerState state = snapshot.brawlers().stream().filter(b -> b.id() == shelly.getId()).findFirst().orElseThrow();
@@ -45,7 +45,7 @@ class SnapshotBuilderTest {
         world.addPlayer(shooter);
 
         world.attack(shooter, 1, 0);
-        WorldSnapshot snapshot = new SnapshotBuilder(world).build();
+        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0);
 
         assertEquals(5, snapshot.projectiles().size());
         assertEquals(0.05f, snapshot.projectiles().get(0).radius());
@@ -63,8 +63,8 @@ class SnapshotBuilderTest {
         dead.takeDamage(100);
         world.update(1 / 60f);
 
-        assertEquals(1, builder.build().brawlers().size());
-        assertEquals(alive.getId(), builder.build().brawlers().get(0).id());
+        assertEquals(1, builder.build(0, id -> 0).brawlers().size());
+        assertEquals(alive.getId(), builder.build(0, id -> 0).brawlers().get(0).id());
     }
 
     @Test
@@ -74,13 +74,13 @@ class SnapshotBuilderTest {
         InputApplier applier = new InputApplier(world);
         Colt colt = new Colt(world.nextId(), X0, Y0);
         world.addPlayer(colt);
-        WorldSnapshot before = builder.build();
+        WorldSnapshot before = builder.build(0, id -> 0);
 
-        applier.apply(colt.getId(), new PlayerInput(1, 0, 1, 0, true));
+        applier.apply(colt.getId(), new PlayerInput(1, 1, 0, 1, 0, true));
         world.update(1f);
 
         assertEquals(X0, before.brawlers().get(0).x());
         assertTrue(before.projectiles().isEmpty());
-        assertTrue(builder.build().brawlers().get(0).x() > X0);
+        assertTrue(builder.build(0, id -> 0).brawlers().get(0).x() > X0);
     }
 }

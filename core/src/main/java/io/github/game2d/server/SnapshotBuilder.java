@@ -9,6 +9,7 @@ import io.github.game2d.protocol.ProjectileState;
 import io.github.game2d.protocol.WorldSnapshot;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.IntUnaryOperator;
 
 public class SnapshotBuilder {
     private final GameWorld world;
@@ -17,7 +18,7 @@ public class SnapshotBuilder {
         this.world = world;
     }
 
-    public WorldSnapshot build() {
+    public WorldSnapshot build(int tick, IntUnaryOperator lastProcessed) {
         List<BrawlerState> brawlerStates = new ArrayList<>();
         List<ProjectileState> projectileStates = new ArrayList<>();
         for (GameObject object : world.getGameObjects()) {
@@ -32,6 +33,7 @@ public class SnapshotBuilder {
                 );
             }
             if (object instanceof Brawler brawler) {
+                int lastProcessedSequence = lastProcessed.applyAsInt(brawler.getId());
                 brawlerStates.add(
                     new BrawlerState(
                         brawler.getId(),
@@ -42,11 +44,12 @@ public class SnapshotBuilder {
                         brawler.getMaxHealth(),
                         brawler.getAmmo(),
                         brawler.getMaxAmmo(),
-                        brawler.getReloadProgress()
+                        brawler.getReloadProgress(),
+                        lastProcessedSequence
                     )
                 );
             }
         }
-        return new WorldSnapshot(brawlerStates, projectileStates);
+        return new WorldSnapshot(tick, brawlerStates, projectileStates);
     }
 }

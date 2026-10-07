@@ -104,7 +104,7 @@ class KryoNetSpikeTest {
                 }
             }
         });
-        PlayerInput sent = new PlayerInput(1, 0, 0.6f, 0.8f, true);
+        PlayerInput sent = new PlayerInput(7, 1, 0, 0.6f, 0.8f, true);
 
         client.sendTCP(sent);
 
@@ -152,11 +152,11 @@ class KryoNetSpikeTest {
     private static WorldSnapshot sampleSnapshot() {
         // des ArrayList, comme celles que construit SnapshotBuilder.build()
         List<BrawlerState> brawlers = new ArrayList<>(List.of(
-            new BrawlerState(1, 1.5f, 2.5f, 0.25f, 120, 120, 3, 3, 0f),
-            new BrawlerState(2, 4.5f, 2.5f, 0.25f, 80, 100, 1, 3, 0.4f)));
+            new BrawlerState(1, 1.5f, 2.5f, 0.25f, 120, 120, 3, 3, 0f, 7),
+            new BrawlerState(2, 4.5f, 2.5f, 0.25f, 80, 100, 1, 3, 0.4f, 5)));
         List<ProjectileState> projectiles = new ArrayList<>(List.of(
             new ProjectileState(3, 2f, 2.5f, 0.05f),
             new ProjectileState(4, 2.1f, 2.6f, 0.05f)));
-        return new WorldSnapshot(brawlers, projectiles);
+        return new WorldSnapshot(42, brawlers, projectiles);
     }
 }

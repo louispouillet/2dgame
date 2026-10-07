@@ -67,7 +67,7 @@ class GameServerTest {
         LocalChannel channel = new LocalChannel();
         int id = server.join(channel);
 
-        channel.sendInput(new PlayerInput(1, 0, 1, 0, false));
+        channel.sendInput(new PlayerInput(1, 1, 0, 1, 0, false));
         server.tick();
 
         assertTrue(brawlerOf(channel, id).x() > 1.5f);
@@ -92,7 +92,7 @@ class GameServerTest {
         int firstId = server.join(first);
         int secondId = server.join(second);
 
-        first.sendInput(new PlayerInput(0, 1, 0, 1, false));
+        first.sendInput(new PlayerInput(1, 0, 1, 0, 1, false));
         server.tick();
 
         assertTrue(brawlerOf(first, firstId).y() > 2.5f);

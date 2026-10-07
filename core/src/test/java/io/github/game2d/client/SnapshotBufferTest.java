@@ -14,11 +14,11 @@ class SnapshotBufferTest {
     private static final float DELTA = 1e-4f;
 
     private static BrawlerState brawler(int id, float x, float y, int health) {
-        return new BrawlerState(id, x, y, 0.4f, health, 100, 3, 3, 0f);
+        return new BrawlerState(id, x, y, 0.4f, health, 100, 3, 3, 0f, 0);
     }
 
     private static WorldSnapshot world(BrawlerState... brawlers) {
-        return new WorldSnapshot(List.of(brawlers), List.of());
+        return new WorldSnapshot(0, List.of(brawlers), List.of());
     }
 
     @Test
@@ -108,8 +108,8 @@ class SnapshotBufferTest {
     @Test
     void projectilesAreInterpolatedToo() {
         SnapshotBuffer buffer = new SnapshotBuffer();
-        buffer.add(new WorldSnapshot(List.of(), List.of(new ProjectileState(7, 0, 0, 0.1f))), 1.0);
-        buffer.add(new WorldSnapshot(List.of(), List.of(new ProjectileState(7, 4, 2, 0.1f))), 1.1);
+        buffer.add(new WorldSnapshot(0, List.of(), List.of(new ProjectileState(7, 0, 0, 0.1f))), 1.0);
+        buffer.add(new WorldSnapshot(0, List.of(), List.of(new ProjectileState(7, 4, 2, 0.1f))), 1.1);
 
         ProjectileState result = buffer.interpolate(1.05).projectiles().get(0);
 

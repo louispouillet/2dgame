@@ -5,7 +5,7 @@ import io.github.game2d.protocol.WorldSnapshot;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class LocalChannel implements ClientChannel, ServerChannel {
-    private final AtomicReference<PlayerInput> input = new AtomicReference<>(new PlayerInput(0, 0, 0, 0, false));
+    private final AtomicReference<PlayerInput> input = new AtomicReference<>(new PlayerInput(0, 0, 0, 0, 0, false));
     private final AtomicReference<WorldSnapshot> snapshot = new AtomicReference<>();
 
     @Override

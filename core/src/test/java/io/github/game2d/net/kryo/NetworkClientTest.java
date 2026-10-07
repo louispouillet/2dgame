@@ -102,7 +102,7 @@ class NetworkClientTest {
         NetworkServerChannel channel = connectedRemote().channel();
         awaitTrue("brawler id", () -> channel.getBrawlerId() != -1);
 
-        channel.sendInput(new PlayerInput(1, 0, 1, 0, false));
+        channel.sendInput(new PlayerInput(1, 1, 0, 1, 0, false));
 
         awaitTrue("brawler moved to the right", () -> {
             gameServer.tick();
@@ -119,7 +119,7 @@ class NetworkClientTest {
         awaitTrue("second id", () -> second.getBrawlerId() != -1);
         assertNotEquals(first.getBrawlerId(), second.getBrawlerId());
 
-        first.sendInput(new PlayerInput(0, 1, 0, 1, false));
+        first.sendInput(new PlayerInput(1, 0, 1, 0, 1, false));
 
         awaitTrue("first brawler moved up, seen by the second remote", () -> {
             gameServer.tick();

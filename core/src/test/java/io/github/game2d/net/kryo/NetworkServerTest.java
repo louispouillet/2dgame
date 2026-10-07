@@ -143,7 +143,7 @@ class NetworkServerTest {
         awaitTrue("JoinAccepted", () -> client.joined.get() != null);
         int id = client.joined.get().brawlerId();
 
-        client.client.sendTCP(new PlayerInput(1, 0, 1, 0, false));
+        client.client.sendTCP(new PlayerInput(1, 1, 0, 1, 0, false));
 
         awaitTrue("brawler moved to the right", () -> {
             gameServer.tick();
@@ -177,7 +177,7 @@ class NetworkServerTest {
         int firstId = first.joined.get().brawlerId();
         int secondId = second.joined.get().brawlerId();
 
-        first.client.sendTCP(new PlayerInput(0, 1, 0, 1, false));
+        first.client.sendTCP(new PlayerInput(1, 0, 1, 0, 1, false));
 
         awaitTrue("first brawler moved up", () -> {
             gameServer.tick();

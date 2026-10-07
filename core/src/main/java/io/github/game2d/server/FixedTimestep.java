@@ -3,6 +3,7 @@ package io.github.game2d.server;
 public class FixedTimestep {
     private static final float MAX_FRAME_TIME = 0.25f;
 
+    private int ticks;
     private final float step;
     private float accumulator;
 
@@ -13,6 +14,10 @@ public class FixedTimestep {
         this.step = step;
     }
 
+    public int getTicks (){
+        return ticks;
+    }
+
     public float getStep() {
         return step;
     }
@@ -20,6 +25,7 @@ public class FixedTimestep {
     public void advance(float frameTime, Runnable tick) {
         accumulator += Math.min(frameTime, MAX_FRAME_TIME);
         while (accumulator >= step) {
+            ticks++;
             tick.run();
             accumulator -= step;
         }

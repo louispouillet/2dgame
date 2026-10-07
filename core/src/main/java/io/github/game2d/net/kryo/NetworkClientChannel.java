@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class NetworkClientChannel implements ClientChannel {
     private final Connection connection;
-    private final AtomicReference<PlayerInput> input = new AtomicReference<>(new PlayerInput(0, 0, 0, 0, false));
+    private final AtomicReference<PlayerInput> input = new AtomicReference<>(new PlayerInput(0, 0, 0, 0, 0, false));
 
     public NetworkClientChannel(Connection connection) {
         this.connection = connection;

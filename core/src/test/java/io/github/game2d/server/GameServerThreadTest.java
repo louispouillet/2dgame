@@ -19,7 +19,7 @@ class GameServerThreadTest {
         """;
     private static final int TICK_RATE = 30;
     private static final long TIMEOUT_MS = 2000;
-    private static final PlayerInput MOVE_RIGHT = new PlayerInput(1, 0, 1, 0, false);
+    private static final PlayerInput MOVE_RIGHT = new PlayerInput(1, 1, 0, 1, 0, false);
 
     private static GameServer newServer() {
         return new GameServer(ArenaLoader.parse(MAP));

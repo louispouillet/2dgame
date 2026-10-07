@@ -70,7 +70,7 @@ public class SnapshotBuffer {
             projectiles.add(earlier == null ? later : blend(earlier, later, t));
         }
 
-        return new WorldSnapshot(brawlers, projectiles);
+        return new WorldSnapshot(to.snapshot.tick(), brawlers, projectiles);
     }
 
     private static boolean tooFar(float ax, float ay, float bx, float by) {
@@ -85,7 +85,7 @@ public class SnapshotBuffer {
         }
         float x = lerp(a.x(), b.x(), t);
         float y = lerp(a.y(), b.y(), t);
-        return new BrawlerState(b.id(), x, y, b.radius(), b.health(), b.maxHealth(), b.ammo(), b.maxAmmo(), b.reloadProgress());
+        return new BrawlerState(b.id(), x, y, b.radius(), b.health(), b.maxHealth(), b.ammo(), b.maxAmmo(), b.reloadProgress(), b.lastProcessedInput());
     }
 
     private static ProjectileState blend(ProjectileState a, ProjectileState b, float t) {

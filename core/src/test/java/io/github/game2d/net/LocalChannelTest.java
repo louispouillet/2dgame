@@ -14,13 +14,13 @@ class LocalChannelTest {
     void inputIsNeutralBeforeAnythingIsSent() {
         LocalChannel channel = new LocalChannel();
 
-        assertEquals(new PlayerInput(0, 0, 0, 0, false), channel.latestInput());
+        assertEquals(new PlayerInput(0, 0, 0, 0, 0, false), channel.latestInput());
     }
 
     @Test
     void sentInputIsReadBackByTheServer() {
         LocalChannel channel = new LocalChannel();
-        PlayerInput input = new PlayerInput(1, 0, 0, 1, true);
+        PlayerInput input = new PlayerInput(1, 1, 0, 0, 1, true);
 
         channel.sendInput(input);
 
@@ -30,9 +30,9 @@ class LocalChannelTest {
     @Test
     void latestInputReplacesThePreviousOne() {
         LocalChannel channel = new LocalChannel();
-        PlayerInput second = new PlayerInput(0, -1, 1, 0, false);
+        PlayerInput second = new PlayerInput(2, 0, -1, 1, 0, false);
 
-        channel.sendInput(new PlayerInput(1, 0, 0, 1, true));
+        channel.sendInput(new PlayerInput(1, 1, 0, 0, 1, true));
         channel.sendInput(second);
 
         assertEquals(second, channel.latestInput());
@@ -48,7 +48,7 @@ class LocalChannelTest {
     @Test
     void sentSnapshotIsReadBackByTheClient() {
         LocalChannel channel = new LocalChannel();
-        WorldSnapshot snapshot = new WorldSnapshot(List.of(), List.of());
+        WorldSnapshot snapshot = new WorldSnapshot(0, List.of(), List.of());
 
         channel.sendSnapshot(snapshot);
 
@@ -58,9 +58,9 @@ class LocalChannelTest {
     @Test
     void latestSnapshotReplacesThePreviousOne() {
         LocalChannel channel = new LocalChannel();
-        WorldSnapshot second = new WorldSnapshot(List.of(), List.of());
+        WorldSnapshot second = new WorldSnapshot(2, List.of(), List.of());
 
-        channel.sendSnapshot(new WorldSnapshot(List.of(), List.of()));
+        channel.sendSnapshot(new WorldSnapshot(1, List.of(), List.of()));
         channel.sendSnapshot(second);
 
         assertSame(second, channel.latestSnapshot());
