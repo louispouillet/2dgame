@@ -18,12 +18,16 @@ public class GameServer {
     private Thread thread;
     private final GameWorld world;
     private final Arena arena;
+    private final InputApplier inputApplier;
+    private final SnapshotBuilder snapshotBuilder;
     private final Map<Integer, ClientChannel> connections = new HashMap<>();
     private final FixedTimestep timestep = new FixedTimestep(1f / TICK_RATE);
 
     public GameServer(Arena arena) {
         this.arena = arena;
         this.world = new GameWorld(arena);
+        this.inputApplier = new InputApplier(world);
+        this.snapshotBuilder = new SnapshotBuilder(world);
     }
 
     public synchronized int join(ClientChannel connection) {
@@ -41,10 +45,10 @@ public class GameServer {
 
     public synchronized void tick() {
         for (Map.Entry<Integer, ClientChannel> entry : connections.entrySet()) {
-            world.applyInput(entry.getKey(), entry.getValue().latestInput());
+            inputApplier.apply(entry.getKey(), entry.getValue().latestInput());
         }
         world.update(timestep.getStep());
-        WorldSnapshot snapshot = world.snapshot();
+        WorldSnapshot snapshot = snapshotBuilder.build();
         for (ClientChannel connection : connections.values()) {
             connection.sendSnapshot(snapshot);
         }

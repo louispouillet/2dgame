@@ -150,7 +150,7 @@ class KryoNetSpikeTest {
     }
 
     private static WorldSnapshot sampleSnapshot() {
-        // des ArrayList, comme celles que construit GameWorld.snapshot()
+        // des ArrayList, comme celles que construit SnapshotBuilder.build()
         List<BrawlerState> brawlers = new ArrayList<>(List.of(
             new BrawlerState(1, 1.5f, 2.5f, 0.25f, 120, 120, 3, 3, 0f),
             new BrawlerState(2, 4.5f, 2.5f, 0.25f, 80, 100, 1, 3, 0.4f)));

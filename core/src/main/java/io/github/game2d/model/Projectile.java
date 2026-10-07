@@ -11,10 +11,14 @@ public class Projectile extends GameObject {
     private final float speed;
     private final float maxRange;
     private float distanceTravelled;
+    private float previousX;
+    private float previousY;
     private boolean hit;
 
     public Projectile(int id, int ownerId, float x, float y, float radius, float dirX, float dirY, float speed, float maxRange, int damage) {
         super(id, x, y);
+        this.previousX = x;
+        this.previousY = y;
         this.hitbox = new Circle(radius);
         this.ownerId = ownerId;
         this.damage = damage;
@@ -37,12 +41,22 @@ public class Projectile extends GameObject {
         return damage;
     }
 
+    public float getPreviousX() {
+        return previousX;
+    }
+
+    public float getPreviousY() {
+        return previousY;
+    }
+
     public void markHit() {
         hit = true;
     }
 
     @Override
     public void update(float dt) {
+        previousX = x;
+        previousY = y;
         float step = speed * dt;
         x += dirX * step;
         y += dirY * step;

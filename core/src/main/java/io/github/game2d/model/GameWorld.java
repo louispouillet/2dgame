@@ -5,10 +5,6 @@ import io.github.game2d.model.Projectile;
 import io.github.game2d.model.brawler.Brawler;
 import io.github.game2d.model.collision.Collisions;
 import io.github.game2d.model.collision.Obstacles;
-import io.github.game2d.protocol.BrawlerState;
-import io.github.game2d.protocol.PlayerInput;
-import io.github.game2d.protocol.ProjectileState;
-import io.github.game2d.protocol.WorldSnapshot;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -91,46 +87,4 @@ public class GameWorld {
         gameObjects.addAll(brawler.attack(this::nextId, aimX, aimY));
     }
 
-    public void applyInput(int brawlerId, PlayerInput input) {
-        Brawler brawler = players.get(brawlerId);
-        if (brawler != null) {
-            brawler.setDirection(input.moveX(), input.moveY());
-            if (input.shooting()) {
-                attack(brawler, input.aimX(), input.aimY());
-            }
-        }
-    }
-
-    public WorldSnapshot snapshot() {
-        List<BrawlerState> brawlerStates = new ArrayList<>();
-        List<ProjectileState> projectileStates = new ArrayList<>();
-        for (GameObject object : gameObjects) {
-            if (object instanceof Projectile projectile) {
-                projectileStates.add(
-                    new ProjectileState(
-                        projectile.getId(),
-                        projectile.getX(),
-                        projectile.getY(),
-                        projectile.getHitbox().radius()
-                    )
-                );
-            }
-            if (object instanceof Brawler brawler) {
-                brawlerStates.add(
-                    new BrawlerState(
-                        brawler.getId(),
-                        brawler.getX(),
-                        brawler.getY(),
-                        brawler.getHitbox().radius(),
-                        brawler.getHealth(),
-                        brawler.getMaxHealth(),
-                        brawler.getAmmo(),
-                        brawler.getMaxAmmo(),
-                        brawler.getReloadProgress()
-                    )
-                );
-            }
-        }
-        return new WorldSnapshot(brawlerStates, projectileStates);
-    }
 }

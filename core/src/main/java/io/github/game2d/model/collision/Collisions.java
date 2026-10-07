@@ -22,6 +22,11 @@ public final class Collisions {
         };
     }
 
+    public static boolean sweptOverlaps(float fromX, float fromY, float toX, float toY, float radius, GameObject target) {
+
+        return true;
+    }
+
     private static boolean circleCircle(Circle a, float ax, float ay, Circle b, float bx, float by) {
         float dx = ax - bx;
         float dy = ay - by;

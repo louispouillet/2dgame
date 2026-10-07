@@ -73,8 +73,7 @@ public final class ArenaModelFactory {
         return builder.part(name, GL20.GL_TRIANGLES, ATTRIBUTES, new Material(TextureAttribute.createDiffuse(texture)));
     }
 
-    private static void addTiles(ModelBuilder builder, Arena arena, TileType type, String name, Texture texture,
-                                 TileShape shape) {
+    private static void addTiles(ModelBuilder builder, Arena arena, TileType type, String name, Texture texture, TileShape shape) {
         MeshPartBuilder part = null;
         for (int row = 0; row < arena.getHeight(); row++) {
             for (int col = 0; col < arena.getWidth(); col++) {
@@ -94,7 +93,8 @@ public final class ArenaModelFactory {
             right, level, -bottom,
             right, level, -top,
             left, level, -top,
-            0f, 1f, 0f);
+            0f, 1f, 0f
+        );
     }
 
     private static void addTop(MeshPartBuilder part, int col, int row, float height) {
