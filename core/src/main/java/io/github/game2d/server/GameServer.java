@@ -43,6 +43,12 @@ public class GameServer {
         return brawler.getId();
     }
 
+    public synchronized void leave(int brawlerId) {
+        if (connections.remove(brawlerId) != null) {
+            world.removePlayer(brawlerId);
+        }
+    }
+
     public synchronized void tick() {
         for (Map.Entry<Integer, ClientChannel> entry : connections.entrySet()) {
             inputApplier.apply(entry.getKey(), entry.getValue().latestInput());

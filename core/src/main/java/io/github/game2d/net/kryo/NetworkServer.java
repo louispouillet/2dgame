@@ -14,7 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class NetworkServer {
     private final Server server = new Server();
-    private final Map<Connection, NetworkClientChannel> clients = new ConcurrentHashMap<>();
+    private record Client(NetworkClientChannel channel, int brawlerId) {}
+    private final Map<Connection, Client> clients = new ConcurrentHashMap<>();
     private volatile boolean running;
     private Thread thread;
 
@@ -25,15 +26,23 @@ public class NetworkServer {
             public void connected(Connection connection) {
                 NetworkClientChannel networkClientChannel = new NetworkClientChannel(connection);
                 int id = gameServer.join(networkClientChannel);
-                clients.put(connection, networkClientChannel);
+                clients.put(connection, new Client(networkClientChannel, id));
                 connection.sendTCP(new JoinAccepted(id));
             }
 
             @Override
+            public void disconnected(Connection connection) {
+                Client client = clients.remove(connection);
+                if (client != null) {
+                    gameServer.leave(client.brawlerId());
+                }
+            }
+
+            @Override
             public void received(Connection connection, Object object) {
-                NetworkClientChannel networkClientChannel = clients.get(connection);
-                if (object instanceof PlayerInput input && networkClientChannel != null) {
-                    networkClientChannel.receive(input);
+                Client client = clients.get(connection);
+                if (object instanceof PlayerInput input && client != null) {
+                    client.channel().receive(input);
                 }
             }
         });

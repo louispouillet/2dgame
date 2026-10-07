@@ -113,6 +113,46 @@ class GameServerTest {
     }
 
     @Test
+    void leavingPlayerDisappearsFromTheSnapshot() {
+        LocalChannel stayer = new LocalChannel();
+        LocalChannel leaver = new LocalChannel();
+        int stayerId = server.join(stayer);
+        int leaverId = server.join(leaver);
+
+        server.leave(leaverId);
+        server.tick();
+
+        assertEquals(1, stayer.latestSnapshot().brawlers().size());
+        assertEquals(stayerId, stayer.latestSnapshot().brawlers().get(0).id());
+    }
+
+    @Test
+    void leavingPlayerNoLongerReceivesSnapshots() {
+        LocalChannel stayer = new LocalChannel();
+        LocalChannel leaver = new LocalChannel();
+        server.join(stayer);
+        int leaverId = server.join(leaver);
+
+        server.leave(leaverId);
+        server.tick();
+
+        assertNull(leaver.latestSnapshot());
+    }
+
+    @Test
+    void leavingTwiceOrWithAnUnknownIdIsHarmless() {
+        LocalChannel channel = new LocalChannel();
+        int id = server.join(channel);
+
+        server.leave(id);
+        server.leave(id);
+        server.leave(999);
+        server.tick();
+
+        assertNull(channel.latestSnapshot());
+    }
+
+    @Test
     void noSnapshotIsSentBeforeTheFirstTick() {
         LocalChannel channel = new LocalChannel();
 

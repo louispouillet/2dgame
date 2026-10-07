@@ -36,6 +36,13 @@ public class GameWorld {
         gameObjects.add(brawler);
     }
 
+    public void removePlayer(int brawlerId) {
+        Brawler brawler = players.remove(brawlerId);
+        if (brawler != null) {
+            gameObjects.remove(brawler);
+        }
+    }
+
     public Brawler getPlayer(int brawlerId) {
         return players.get(brawlerId);
     }
