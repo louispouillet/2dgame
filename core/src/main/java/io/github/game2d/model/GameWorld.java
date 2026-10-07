@@ -74,7 +74,7 @@ public class GameWorld {
                 if (other instanceof Brawler target
                         && target.isAlive()
                         && target.getId() != projectile.getOwnerId()
-                        && Collisions.overlaps(projectile, target)) {
+                        && Collisions.sweptOverlaps(projectile, target)) {
                     target.takeDamage(projectile.getDamage());
                     projectile.markHit();
                     break;

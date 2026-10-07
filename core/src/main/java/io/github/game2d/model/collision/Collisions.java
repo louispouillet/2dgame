@@ -1,6 +1,7 @@
 package io.github.game2d.model.collision;
 
 import io.github.game2d.model.GameObject;
+import io.github.game2d.model.Projectile;
 
 public final class Collisions {
     private Collisions() {}
@@ -22,9 +23,28 @@ public final class Collisions {
         };
     }
 
-    public static boolean sweptOverlaps(float fromX, float fromY, float toX, float toY, float radius, GameObject target) {
+    public static boolean sweptOverlaps(Projectile projectile, GameObject target) {
+        return switch (target.getHitbox()) {
+            case Circle c -> (segmentHitsCircle(
+                projectile.getPreviousX(), projectile.getPreviousY(),
+                projectile.getX(), projectile.getY(),
+                target.getX(), target.getY(),
+                c.radius() + projectile.getHitbox().radius())
+            );
+            case Rect r -> (false);
+        };
+    }
 
-        return true;
+    private static boolean segmentHitsCircle(float fromX, float fromY, float toX, float toY, float targetX, float targetY, float radius) {
+        float dx = toX - fromX;
+        float dy = toY - fromY;
+        float lengthSquared = dx * dx + dy * dy;
+        float t = lengthSquared == 0 ? 0 : Math.clamp(((targetX - fromX) * dx + (targetY - fromY) * dy) / lengthSquared, 0f, 1f);
+        float nearestX = fromX + t * dx;
+        float nearestY = fromY + t * dy;
+        float ex = targetX - nearestX;
+        float ey = targetY - nearestY;
+        return ex * ex + ey * ey <= radius * radius;
     }
 
     private static boolean circleCircle(Circle a, float ax, float ay, Circle b, float bx, float by) {
