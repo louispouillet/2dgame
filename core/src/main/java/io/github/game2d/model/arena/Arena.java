@@ -1,11 +1,10 @@
 package io.github.game2d.model.arena;
 
 import io.github.game2d.model.collision.Collisions;
-import io.github.game2d.model.collision.Obstacles;
 import java.util.List;
 import java.util.function.Predicate;
 
-public final class Arena implements Obstacles {
+public final class Arena {
     private final TileType[][] tiles;
     private final List<SpawnPoint> spawnPoints;
 
@@ -32,12 +31,10 @@ public final class Arena implements Obstacles {
         return tiles[row][col];
     }
 
-    @Override
     public boolean blocksMovement(float centerX, float centerY, float radius) {
         return anyTileTouchingCircle(centerX, centerY, radius, TileType::blocksMovement);
     }
 
-    @Override
     public boolean blocksShots(float centerX, float centerY, float radius) {
         return anyTileTouchingCircle(centerX, centerY, radius, TileType::blocksShots);
     }

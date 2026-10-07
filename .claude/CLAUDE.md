@@ -14,14 +14,13 @@ Faisable en visant un périmètre réduit :
 ## 2. Architecture POO
 - Hiérarchie : `GameObject` (position, rayon) → `Brawler` → `Shelly` / `Colt` ; `GameObject` → `Projectile`.
 - `Weapon` (classe abstraite : munitions, cadence, rechargement) → `Shotgun`, `Revolver` : pattern Strategy, un `Brawler` possède une `Weapon`.
-- `Obstacles` (interface) implémentée par `Arena` : `GameWorld` dépend de l'abstraction, pas de la map.
 - `GameView` (interface) implémentée par `WorldRenderer` (2D) et `WorldRenderer3D` (3D), interchangeables avec la touche `V`.
 - `ClientChannel` / `ServerChannel` : transport en mémoire (`LocalChannel`) ou réseau (`net.kryo`).
 
 Principes illustrés :
 - **Héritage** : `GameObject` → `Brawler` → `Shelly` / `Colt`
-- **Abstraction** : classes abstraites (`GameObject`, `Brawler`, `Weapon`) et interfaces (`Obstacles`, `GameView`, canaux)
-- **Polymorphisme** : `GameWorld` appelle `update(dt)` sur tous les `GameObject` ; vues, obstacles et canaux interchangeables
+- **Abstraction** : classes abstraites (`GameObject`, `Brawler`, `Weapon`) et interfaces (`GameView`, canaux), créées seulement quand il y a plusieurs implémentations
+- **Polymorphisme** : `GameWorld` appelle `update(dt)` sur tous les `GameObject` ; vues et canaux interchangeables
 - **Composition / Strategy** : `Brawler` a une `Weapon`
 - **Encapsulation** : attributs privés ou protégés, modifiés via méthodes (ex. position uniquement dans `Brawler.move`)
 
@@ -33,8 +32,8 @@ Principes illustrés :
 ## 4. Collisions
 - Toutes les collisions sont calculées côté serveur, dans `model`.
 - Chaque objet a un rayon (`GameObject.getRadius()`).
-- **Décor** : `Arena` (grille de cases) implémente `Obstacles` ; `blocksMovement` / `blocksShots` testent un cercle contre les cases voisines (`Collisions.circleTouchesBox`). Mur : bloque tout ; eau : bloque la marche ; buisson : rien ; hors map = mur.
-- **Brawlers** : `Brawler.move(dt, obstacles)` avance en x puis en y (glissement le long des murs), en réduisant le pas jusqu'à 5 fois pour finir collé au mur.
+- **Décor** : `Arena` (grille de cases) : `blocksMovement` / `blocksShots` testent un cercle contre les cases voisines (`Collisions.circleTouchesBox`). Mur : bloque tout ; eau : bloque la marche ; buisson : rien ; hors map = mur.
+- **Brawlers** : `Brawler.move(dt, arena)` avance en x puis en y (glissement le long des murs), en réduisant le pas jusqu'à 5 fois pour finir collé au mur.
 - **Tirs** : `GameWorld` arrête un projectile dans un mur ; `Collisions.sweptOverlaps` détecte un brawler touché le long du trajet du tir.
 - Les tests utilisent une vraie arène (`TestArenas.open`, dans `src/test`).
 
@@ -45,7 +44,7 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
   - `model.arena` : `Arena`, `ArenaLoader`, `TileType`, `SpawnPoint`, `ArenaFormatException`
   - `model.brawler` : `Brawler`, `Shelly`, `Colt`
   - `model.weapon` : `Weapon`, `Shotgun`, `Revolver`
-  - `model.collision` : `Collisions`, `Obstacles`
+  - `model.collision` : `Collisions`
 - `protocol/` : messages échangés client/serveur (`PlayerInput`, `JoinAccepted`, `WorldSnapshot`, `BrawlerState`, `ProjectileState`)
 - `server/` : autorité de jeu (`GameServer`, `FixedTimestep`, `ServerLauncher`) et traduction protocole ↔ modèle (`InputApplier`, `SnapshotBuilder`)
 - `net/` : transport. Interfaces `ClientChannel` / `ServerChannel`, `LocalChannel` (en mémoire)

@@ -2,9 +2,9 @@ package io.github.game2d.model;
 
 import io.github.game2d.model.GameObject;
 import io.github.game2d.model.Projectile;
+import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.brawler.Brawler;
 import io.github.game2d.model.collision.Collisions;
-import io.github.game2d.model.collision.Obstacles;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,13 +15,13 @@ import java.util.Objects;
 public class GameWorld {
     private final List<GameObject> gameObjects;
     private final Map<Integer, Brawler> players;
-    private final Obstacles obstacles;
+    private final Arena arena;
     private int nextId = 1;
 
-    public GameWorld(Obstacles obstacles) {
+    public GameWorld(Arena arena) {
         this.gameObjects = new ArrayList<>();
         this.players = new HashMap<>();
-        this.obstacles = Objects.requireNonNull(obstacles);
+        this.arena = Objects.requireNonNull(arena);
     }
 
     public int nextId() {
@@ -54,7 +54,7 @@ public class GameWorld {
     public void update(float dt) {
         for (GameObject object : gameObjects) {
             if (object instanceof Brawler brawler) {
-                brawler.move(dt, obstacles);
+                brawler.move(dt, arena);
             }
             object.update(dt);
         }
@@ -66,7 +66,7 @@ public class GameWorld {
     private void stopProjectilesOnObstacles() {
         for (GameObject object : gameObjects) {
             if (object instanceof Projectile projectile
-                    && obstacles.blocksShots(projectile.getX(), projectile.getY(), projectile.getRadius())) {
+                    && arena.blocksShots(projectile.getX(), projectile.getY(), projectile.getRadius())) {
                 projectile.markHit();
             }
         }

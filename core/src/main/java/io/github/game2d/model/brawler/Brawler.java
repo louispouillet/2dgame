@@ -2,7 +2,7 @@ package io.github.game2d.model.brawler;
 
 import io.github.game2d.model.GameObject;
 import io.github.game2d.model.Projectile;
-import io.github.game2d.model.collision.Obstacles;
+import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.weapon.Weapon;
 import java.util.List;
 import java.util.function.IntSupplier;
@@ -64,20 +64,20 @@ public abstract class Brawler extends GameObject {
         regenerate(dt);
     }
 
-    public void move(float dt, Obstacles obstacles) {
+    public void move(float dt, Arena arena) {
         if (!isAlive()) {
             return;
         }
         float stepX = dirX * speed * dt;
         for (int i = 0; i < MOVE_ATTEMPTS && stepX != 0; i++, stepX /= 2) {
-            if (!obstacles.blocksMovement(x + stepX, y, radius)) {
+            if (!arena.blocksMovement(x + stepX, y, radius)) {
                 x += stepX;
                 break;
             }
         }
         float stepY = dirY * speed * dt;
         for (int i = 0; i < MOVE_ATTEMPTS && stepY != 0; i++, stepY /= 2) {
-            if (!obstacles.blocksMovement(x, y + stepY, radius)) {
+            if (!arena.blocksMovement(x, y + stepY, radius)) {
                 y += stepY;
                 break;
             }
