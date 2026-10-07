@@ -20,10 +20,6 @@ public enum TileType {
         this.hidesBrawler = hidesBrawler;
     }
 
-    public char getSymbol() {
-        return symbol;
-    }
-
     public boolean blocksMovement() {
         return blocksMovement;
     }

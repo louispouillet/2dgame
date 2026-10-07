@@ -1,17 +1,17 @@
 package io.github.game2d.model;
 
-import io.github.game2d.model.collision.Hitbox;
-
 public abstract class GameObject {
     private final int id;
 
     protected float x;
     protected float y;
+    protected final float radius;
 
-    protected GameObject(int id, float x, float y) {
+    protected GameObject(int id, float x, float y, float radius) {
         this.id = id;
         this.x = x;
         this.y = y;
+        this.radius = radius;
     }
 
     public abstract void update(float dt);
@@ -32,5 +32,7 @@ public abstract class GameObject {
         return y;
     }
 
-    public abstract Hitbox getHitbox();
+    public float getRadius() {
+        return radius;
+    }
 }

@@ -1,62 +1,51 @@
 package io.github.game2d.model.collision;
-import io.github.game2d.model.GameObject;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.github.game2d.model.Projectile;
+import io.github.game2d.model.brawler.Colt;
 import org.junit.jupiter.api.Test;
 
 class CollisionsTest {
-    @Test
-    void circlesOverlapWhenCloserThanSumOfRadii() {
-        assertTrue(Collisions.overlaps(at(0, 0, new Circle(1)), at(1.5f, 0, new Circle(1))));
+    private static Projectile shotFromOriginToTheRight() {
+        Projectile projectile = new Projectile(1, 99, 0f, 0f, 0.05f, 1f, 0f, 12f, 20f, 10);
+        projectile.update(1f);
+        return projectile;
     }
 
     @Test
-    void circlesTouchingCount() {
-        assertTrue(Collisions.overlaps(at(0, 0, new Circle(1)), at(2, 0, new Circle(1))));
+    void shotHitsATargetItPassedThroughBetweenTwoTicks() {
+        assertTrue(Collisions.sweptOverlaps(shotFromOriginToTheRight(), new Colt(2, 6f, 0f)));
     }
 
     @Test
-    void distantCirclesDoNotOverlap() {
-        assertFalse(Collisions.overlaps(at(0, 0, new Circle(1)), at(3, 0, new Circle(1))));
+    void shotMissesATargetBesideItsPath() {
+        assertFalse(Collisions.sweptOverlaps(shotFromOriginToTheRight(), new Colt(2, 6f, 1f)));
     }
 
     @Test
-    void circleOverlapsRectFromSide() {
-        assertTrue(Collisions.overlaps(at(0, 0, new Circle(1)), at(1.5f, 0, new Rect(2, 10))));
+    void shotHitsATargetAtTheEndOfItsPath() {
+        assertTrue(Collisions.sweptOverlaps(shotFromOriginToTheRight(), new Colt(2, 12.2f, 0f)));
     }
 
     @Test
-    void circleDoesNotOverlapRectCornerEvenInsideBoundingBox() {
-        // coin du rect en (1,1) ; distance au centre du cercle = sqrt(2) > 1
-        assertFalse(Collisions.overlaps(at(0, 0, new Circle(1)), at(2, 2, new Rect(2, 2))));
+    void circleTouchesBoxWhenItOverlapsASide() {
+        assertTrue(Collisions.circleTouchesBox(1.1f, 0.5f, 0.25f, 0f, 0f, 1f, 1f));
     }
 
     @Test
-    void circleRectIsSymmetric() {
-        Circle c = new Circle(1);
-        Rect r = new Rect(2, 10);
-        assertTrue(Collisions.overlaps(at(1.5f, 0, r), at(0, 0, c)));
-        assertFalse(Collisions.overlaps(at(5, 0, r), at(0, 0, c)));
+    void circleExactlyAgainstABoxDoesNotTouchIt() {
+        assertFalse(Collisions.circleTouchesBox(1.25f, 0.5f, 0.25f, 0f, 0f, 1f, 1f));
     }
 
     @Test
-    void rectsOverlapOnlyWhenBothAxesOverlap() {
-        Rect r = new Rect(2, 2);
-        assertTrue(Collisions.overlaps(at(0, 0, r), at(1.5f, 1.5f, r)));
-        assertFalse(Collisions.overlaps(at(0, 0, r), at(1.5f, 3, r)));
+    void circleNearACornerDoesNotTouchTheBox() {
+        assertFalse(Collisions.circleTouchesBox(1.2f, 1.2f, 0.25f, 0f, 0f, 1f, 1f));
     }
 
-    private static GameObject at(float x, float y, Hitbox hitbox) {
-        return new GameObject(0, x, y) {
-            @Override
-            public void update(float dt) {}
-
-            @Override
-            public Hitbox getHitbox() {
-                return hitbox;
-            }
-        };
+    @Test
+    void circleInsideTheBoxTouchesIt() {
+        assertTrue(Collisions.circleTouchesBox(0.5f, 0.5f, 0.1f, 0f, 0f, 1f, 1f));
     }
 }

@@ -56,40 +56,6 @@ class ArenaTest {
     }
 
     @Test
-    void rectangleOnFloorIsNotBlocked() {
-        assertFalse(arena.blocksMovement(1.2f, 1.2f, 0.5f, 0.5f));
-        assertFalse(arena.blocksShots(1.2f, 1.2f, 0.5f, 0.5f));
-    }
-
-    @Test
-    void rectangleTouchingNeighbourEdgeIsNotBlockedByIt() {
-        assertFalse(arena.blocksMovement(1f, 1f, 1f, 1f));
-    }
-
-    @Test
-    void waterBlocksMovementButNotShots() {
-        assertTrue(arena.blocksMovement(1.6f, 1.2f, 0.5f, 0.5f));
-        assertFalse(arena.blocksShots(1.6f, 1.2f, 0.5f, 0.5f));
-    }
-
-    @Test
-    void wallBlocksMovementAndShots() {
-        assertTrue(arena.blocksMovement(0.8f, 1.2f, 0.5f, 0.5f));
-        assertTrue(arena.blocksShots(0.8f, 1.2f, 0.5f, 0.5f));
-    }
-
-    @Test
-    void bushBlocksNothing() {
-        assertFalse(arena.blocksMovement(1.2f, 2.2f, 0.5f, 0.5f));
-        assertFalse(arena.blocksShots(1.2f, 2.2f, 0.5f, 0.5f));
-    }
-
-    @Test
-    void rectangleOutsideGridIsBlocked() {
-        assertTrue(arena.blocksMovement(-2f, 1.2f, 0.5f, 0.5f));
-    }
-
-    @Test
     void getSpawnPointReturnsThePlayersSpawn() {
         assertEquals(new SpawnPoint(2, 2.5f, 2.5f), arena.getSpawnPoint(2));
     }
@@ -117,8 +83,7 @@ class ArenaTest {
     }
 
     @Test
-    void circleNearCornerIsNotBlockedWhereItsSquareWould() {
-        assertTrue(arena.blocksMovement(1.55f, 1.95f, 0.5f, 0.5f));
+    void circleNearCornerIsNotBlocked() {
         assertFalse(arena.blocksMovement(1.8f, 2.2f, 0.25f));
     }
 

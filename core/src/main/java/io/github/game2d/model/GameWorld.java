@@ -59,7 +59,7 @@ public class GameWorld {
     private void stopProjectilesOnObstacles() {
         for (GameObject object : gameObjects) {
             if (object instanceof Projectile projectile
-                    && obstacles.blocksShots(projectile.getX(), projectile.getY(), projectile.getHitbox().radius())) {
+                    && obstacles.blocksShots(projectile.getX(), projectile.getY(), projectile.getRadius())) {
                 projectile.markHit();
             }
         }

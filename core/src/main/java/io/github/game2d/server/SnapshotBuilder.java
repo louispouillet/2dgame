@@ -27,7 +27,7 @@ public class SnapshotBuilder {
                         projectile.getId(),
                         projectile.getX(),
                         projectile.getY(),
-                        projectile.getHitbox().radius()
+                        projectile.getRadius()
                     )
                 );
             }
@@ -37,7 +37,7 @@ public class SnapshotBuilder {
                         brawler.getId(),
                         brawler.getX(),
                         brawler.getY(),
-                        brawler.getHitbox().radius(),
+                        brawler.getRadius(),
                         brawler.getHealth(),
                         brawler.getMaxHealth(),
                         brawler.getAmmo(),

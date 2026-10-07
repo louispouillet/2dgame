@@ -2,7 +2,6 @@ package io.github.game2d.model.brawler;
 
 import io.github.game2d.model.GameObject;
 import io.github.game2d.model.Projectile;
-import io.github.game2d.model.collision.Circle;
 import io.github.game2d.model.collision.Obstacles;
 import io.github.game2d.model.weapon.Weapon;
 import java.util.List;
@@ -13,7 +12,6 @@ public abstract class Brawler extends GameObject {
     private static final float REGEN_RATE = 0.2f;
     private static final int MOVE_ATTEMPTS = 5;
 
-    private final Circle hitbox;
     private final float speed;
     private final int maxHealth;
     private final Weapon weapon;
@@ -24,18 +22,12 @@ public abstract class Brawler extends GameObject {
     private float timeSinceCombat;
     private float regenBuffer;
 
-    protected Brawler(int id, float x, float y, Circle hitbox, float speed, int maxHealth, Weapon weapon) {
-        super(id, x, y);
-        this.hitbox = hitbox;
+    protected Brawler(int id, float x, float y, float radius, float speed, int maxHealth, Weapon weapon) {
+        super(id, x, y, radius);
         this.speed = speed;
         this.maxHealth = maxHealth;
         this.health = maxHealth;
         this.weapon = weapon;
-    }
-
-    @Override
-    public Circle getHitbox() {
-        return hitbox;
     }
 
     public int getHealth() {
@@ -76,7 +68,6 @@ public abstract class Brawler extends GameObject {
         if (!isAlive()) {
             return;
         }
-        float radius = hitbox.radius();
         float stepX = dirX * speed * dt;
         for (int i = 0; i < MOVE_ATTEMPTS && stepX != 0; i++, stepX /= 2) {
             if (!obstacles.blocksMovement(x + stepX, y, radius)) {
