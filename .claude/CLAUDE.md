@@ -39,9 +39,10 @@ Principes illustrés :
 - Les tests utilisent une vraie arène (`TestArenas.open`, dans `src/test`).
 
 ## 5. Buissons
-- Un brawler dont le centre est sur un buisson (`~`) est caché aux adversaires à plus de 2 cases (`REVEAL_DISTANCE`). On se voit toujours soi-même ; les projectiles restent visibles.
+- Un brawler dont le centre est sur un buisson (`~`) est caché aux adversaires à plus de 2 cases (`Arena.REVEAL_DISTANCE`). On se voit toujours soi-même ; les projectiles restent visibles.
 - `Arena.hidesBrawlerAt(x, y)` : la case sous le point cache-t-elle ? `GameWorld.isVisibleTo(target, viewer)` : la règle. `SnapshotBuilder` filtre selon cette règle.
 - Filtrage côté serveur : un client ne reçoit jamais la position d'un ennemi caché (anti-triche).
+- Côté client, les cases buisson dans ce même rayon autour du joueur sont dessinées transparentes (40 %), en 2D et en 3D (`Arena.canSeeIntoBush`). En 3D, chaque buisson est une `ModelInstance` séparée (`ArenaModelFactory.createBush`) pour avoir sa propre opacité.
 
 ## 6. Module `core` : packages
 Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol` ne dépend de rien ; `server` → `model`, `protocol`, `net` ; `net` → `protocol`, `server` ; `client` → tous. Seul `client` dépend de libGDX ; seul `net.kryo` dépend de KryoNet. Les tests suivent la même arborescence (`core/src/test`).
@@ -64,7 +65,7 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 
 ## Reste à faire
 - Mode « dernier survivant » (gagnant, fin de partie)
-- Buissons : se révéler en tirant ou en étant touché ; afficher son propre brawler en transparence dans un buisson
+- Buissons : se révéler en tirant ou en étant touché
 - Caméra 3D : élargir la bande de décor pour que le joueur ne soit pas collé au coin au départ
 - Chemin de la map partagé entre client et serveur
 - `StartupHelper` ne transmet pas les arguments sur macOS (le Makefile passe `-XstartOnFirstThread`)

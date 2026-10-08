@@ -22,7 +22,7 @@ public final class ArenaModelFactory {
     private static final float FLOOR_LEVEL = 0f;
     private static final float WATER_LEVEL = 0.01f;
     private static final float WALL_HEIGHT = 1f;
-    private static final float BUSH_HEIGHT = 0.6f;
+    private static final float BUSH_HEIGHT = 1f;
     private static final long ATTRIBUTES = Usage.Position | Usage.Normal | Usage.TextureCoordinates;
 
     private ArenaModelFactory() {
@@ -47,13 +47,22 @@ public final class ArenaModelFactory {
             (part, col, row) -> addTop(part, col, row, WALL_HEIGHT));
         addTiles(builder, arena, TileType.WALL, "wall_side", load(textures, "wall_side.png"),
             (part, col, row) -> addSides(part, col, row, WALL_HEIGHT));
-        addTiles(builder, arena, TileType.BUSH, "bush_top", load(textures, "bush_top.png"),
-            (part, col, row) -> addTop(part, col, row, BUSH_HEIGHT));
-        addTiles(builder, arena, TileType.BUSH, "bush_side", load(textures, "bush_side.png"),
-            (part, col, row) -> addSides(part, col, row, BUSH_HEIGHT));
         addTiles(builder, arena, TileType.WATER, "water", load(textures, "water.png"),
             (part, col, row) -> addFlat(part, col, row, col + 1f, row + 1f, WATER_LEVEL));
 
+        return finish(builder, textures);
+    }
+
+    public static Model createBush() {
+        List<Texture> textures = new ArrayList<>();
+        ModelBuilder builder = new ModelBuilder();
+        builder.begin();
+        addTop(part(builder, "bush_top", load(textures, "bush_top.png")), 0, 0, BUSH_HEIGHT);
+        addSides(part(builder, "bush_side", load(textures, "bush_side.png")), 0, 0, BUSH_HEIGHT);
+        return finish(builder, textures);
+    }
+
+    private static Model finish(ModelBuilder builder, List<Texture> textures) {
         Model model = builder.end();
         for (Texture texture : textures) {
             model.manageDisposable(texture);

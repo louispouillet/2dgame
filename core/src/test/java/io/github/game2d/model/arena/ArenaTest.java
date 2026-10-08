@@ -127,6 +127,31 @@ class ArenaTest {
     }
 
     @Test
+    void canSeeIntoBushUnderViewer() {
+        assertTrue(arena.canSeeIntoBush(1, 2, 1.5f, 2.5f));
+    }
+
+    @Test
+    void canSeeIntoBushTwoTilesAway() {
+        assertTrue(arena.canSeeIntoBush(1, 2, 1.5f, 0.5f));
+    }
+
+    @Test
+    void cannotSeeIntoBushThreeTilesAway() {
+        assertFalse(arena.canSeeIntoBush(1, 2, 4.5f, 2.5f));
+    }
+
+    @Test
+    void cannotSeeIntoBushTwoTilesAwayDiagonally() {
+        assertFalse(arena.canSeeIntoBush(1, 2, 3.5f, 0.5f));
+    }
+
+    @Test
+    void cannotSeeIntoTileThatIsNotABush() {
+        assertFalse(arena.canSeeIntoBush(2, 2, 2.5f, 2.5f));
+    }
+
+    @Test
     void spawnPointsCannotBeModified() {
         assertThrows(UnsupportedOperationException.class,
             () -> arena.getSpawnPoints().add(new SpawnPoint(3, 1.5f, 2.5f)));

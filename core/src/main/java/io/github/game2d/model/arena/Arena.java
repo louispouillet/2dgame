@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public final class Arena {
+    public static final float REVEAL_DISTANCE = 2f;
+
     private final TileType[][] tiles;
     private final List<SpawnPoint> spawnPoints;
 
@@ -41,6 +43,15 @@ public final class Arena {
 
     public boolean hidesBrawlerAt(float x, float y) {
         return getTile((int) Math.floor(x), (int) Math.floor(y)).hidesBrawler();
+    }
+
+    public boolean canSeeIntoBush(int col, int row, float viewerX, float viewerY) {
+        if (!getTile(col, row).hidesBrawler()) {
+            return false;
+        }
+        float dx = col + 0.5f - viewerX;
+        float dy = row + 0.5f - viewerY;
+        return dx * dx + dy * dy <= REVEAL_DISTANCE * REVEAL_DISTANCE;
     }
 
     private boolean anyTileTouchingCircle(float centerX, float centerY, float radius, Predicate<TileType> condition) {

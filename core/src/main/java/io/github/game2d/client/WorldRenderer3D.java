@@ -5,28 +5,22 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g3d.Environment;
-import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.graphics.g3d.*;
+import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.HdpiUtils;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Plane;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.ScreenUtils;
 import io.github.game2d.model.arena.Arena;
+import io.github.game2d.model.arena.TileType;
 import io.github.game2d.protocol.BrawlerState;
 import io.github.game2d.protocol.ProjectileState;
 import io.github.game2d.protocol.WorldSnapshot;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,12 +41,18 @@ public class WorldRenderer3D implements GameView {
     private static final long ATTRIBUTES = Usage.Position | Usage.Normal;
     private static final Plane GROUND = new Plane(Vector3.Y, 0f);
     private static final Plane AIM_PLANE = new Plane(Vector3.Y, new Vector3(0f, PROJECTILE_HEIGHT, 0f));
+    private static final BlendingAttribute SEE_THROUGH = new BlendingAttribute(0.6f);
+
+    private record Bush(int col, int row, ModelInstance instance) {
+    }
 
     private final PerspectiveCamera camera;
     private final ModelBatch modelBatch = new ModelBatch();
     private final Environment environment = new Environment();
     private final Model arenaModel;
     private final ModelInstance arenaInstance;
+    private final Model bushModel;
+    private final List<Bush> bushes = new ArrayList<>();
     private final Model brawlerModel;
     private final Model projectileModel;
     private final Map<Integer, ModelInstance> brawlerInstances = new HashMap<>();
@@ -88,6 +88,16 @@ public class WorldRenderer3D implements GameView {
 
         arenaModel = ArenaModelFactory.create(arena);
         arenaInstance = new ModelInstance(arenaModel);
+        bushModel = ArenaModelFactory.createBush();
+        for (int row = 0; row < arena.getHeight(); row++) {
+            for (int col = 0; col < arena.getWidth(); col++) {
+                if (arena.getTile(col, row) == TileType.BUSH) {
+                    ModelInstance instance = new ModelInstance(bushModel);
+                    instance.transform.setToTranslation(col, 0f, -row);
+                    bushes.add(new Bush(col, row, instance));
+                }
+            }
+        }
 
         ModelBuilder builder = new ModelBuilder();
         brawlerModel = builder.createCapsule(MODEL_RADIUS, BRAWLER_MODEL_HEIGHT, 16,
@@ -105,7 +115,9 @@ public class WorldRenderer3D implements GameView {
 
     @Override
     public void render(WorldSnapshot snapshot, Arena arena, int playerId) {
-        followPlayer(snapshot, playerId, Gdx.graphics.getDeltaTime());
+        BrawlerState player = findPlayer(snapshot, playerId);
+        followPlayer(player, Gdx.graphics.getDeltaTime());
+        updateBushes(arena, player);
         updateBrawlers(snapshot, playerId);
         updateProjectiles(snapshot);
 
@@ -113,6 +125,9 @@ public class WorldRenderer3D implements GameView {
         ScreenUtils.clear(0.35f, 0.6f, 0.85f, 1f, true);
         modelBatch.begin(camera);
         modelBatch.render(arenaInstance, environment);
+        for (Bush bush : bushes) {
+            modelBatch.render(bush.instance(), environment);
+        }
         modelBatch.render(brawlerInstances.values(), environment);
         for (int i = 0; i < snapshot.projectiles().size(); i++) {
             modelBatch.render(projectileInstances.get(i), environment);
@@ -138,19 +153,39 @@ public class WorldRenderer3D implements GameView {
         hud.draw(shapes, batch, anchors);
     }
 
-    private void followPlayer(WorldSnapshot snapshot, int playerId, float delta) {
+    private static BrawlerState findPlayer(WorldSnapshot snapshot, int playerId) {
         for (BrawlerState brawler : snapshot.brawlers()) {
             if (brawler.id() == playerId) {
-                playerPosition.set(brawler.x(), 0f, -brawler.y());
-                clampToBounds(playerPosition);
-                if (followingPlayer) {
-                    cameraTarget.lerp(playerPosition, MathUtils.clamp(CAMERA_FOLLOW_SPEED * delta, 0f, 1f));
+                return brawler;
+            }
+        }
+        return null;
+    }
+
+    private void followPlayer(BrawlerState player, float delta) {
+        if (player == null) {
+            return;
+        }
+        playerPosition.set(player.x(), 0f, -player.y());
+        clampToBounds(playerPosition);
+        if (followingPlayer) {
+            cameraTarget.lerp(playerPosition, MathUtils.clamp(CAMERA_FOLLOW_SPEED * delta, 0f, 1f));
+        } else {
+            cameraTarget.set(playerPosition);
+            followingPlayer = true;
+        }
+        placeCamera();
+    }
+
+    private void updateBushes(Arena arena, BrawlerState player) {
+        for (Bush bush : bushes) {
+            boolean seeThrough = player != null && arena.canSeeIntoBush(bush.col(), bush.row(), player.x(), player.y());
+            for (Material material : bush.instance().materials) {
+                if (seeThrough) {
+                    material.set(SEE_THROUGH);
                 } else {
-                    cameraTarget.set(playerPosition);
-                    followingPlayer = true;
+                    material.remove(BlendingAttribute.Type);
                 }
-                placeCamera();
-                return;
             }
         }
     }
@@ -244,6 +279,7 @@ public class WorldRenderer3D implements GameView {
     public void dispose() {
         modelBatch.dispose();
         arenaModel.dispose();
+        bushModel.dispose();
         brawlerModel.dispose();
         projectileModel.dispose();
         shapes.dispose();

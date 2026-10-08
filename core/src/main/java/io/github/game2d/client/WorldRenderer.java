@@ -1,6 +1,8 @@
 package io.github.game2d.client;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
@@ -18,6 +20,7 @@ public class WorldRenderer implements GameView {
     private static final Color FLOOR_COLOR = new Color(0.30f, 0.30f, 0.36f, 1f);
     private static final Color WALL_COLOR = new Color(0.55f, 0.40f, 0.30f, 1f);
     private static final Color BUSH_COLOR = new Color(0.20f, 0.55f, 0.25f, 1f);
+    private static final Color SEE_THROUGH_BUSH_COLOR = new Color(0.20f, 0.55f, 0.25f, 0.4f);
     private static final Color WATER_COLOR = new Color(0.20f, 0.45f, 0.80f, 1f);
 
     private final ShapeRenderer shapes = new ShapeRenderer();
@@ -37,8 +40,10 @@ public class WorldRenderer implements GameView {
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
         viewport.apply();
         shapes.setProjectionMatrix(viewport.getCamera().combined);
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         shapes.begin(ShapeRenderer.ShapeType.Filled);
-        drawArena(arena);
+        drawArena(arena, findPlayer(snapshot, playerId));
         shapes.setColor(Color.WHITE);
         for (ProjectileState projectile : snapshot.projectiles()) {
             shapes.circle(projectile.x(), projectile.y(), projectile.radius(), 24);
@@ -47,6 +52,7 @@ public class WorldRenderer implements GameView {
             shapes.circle(brawler.x(), brawler.y(), brawler.radius(), 24);
         }
         shapes.end();
+        Gdx.gl.glDisable(GL20.GL_BLEND);
 
         List<HudAnchor> anchors = new ArrayList<>();
         for (BrawlerState brawler : snapshot.brawlers()) {
@@ -56,10 +62,25 @@ public class WorldRenderer implements GameView {
         hud.draw(shapes, batch, anchors);
     }
 
-    private void drawArena(Arena arena) {
+    private static BrawlerState findPlayer(WorldSnapshot snapshot, int playerId) {
+        for (BrawlerState brawler : snapshot.brawlers()) {
+            if (brawler.id() == playerId) {
+                return brawler;
+            }
+        }
+        return null;
+    }
+
+    private void drawArena(Arena arena, BrawlerState player) {
         for (int row = 0; row < arena.getHeight(); row++) {
             for (int col = 0; col < arena.getWidth(); col++) {
-                shapes.setColor(colorOf(arena.getTile(col, row)));
+                if (player != null && arena.canSeeIntoBush(col, row, player.x(), player.y())) {
+                    shapes.setColor(FLOOR_COLOR);
+                    shapes.rect(col, row, 1, 1);
+                    shapes.setColor(SEE_THROUGH_BUSH_COLOR);
+                } else {
+                    shapes.setColor(colorOf(arena.getTile(col, row)));
+                }
                 shapes.rect(col, row, 1, 1);
             }
         }
