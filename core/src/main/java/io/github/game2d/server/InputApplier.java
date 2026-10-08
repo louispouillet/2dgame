@@ -19,9 +19,20 @@ public class InputApplier {
         lastSequences.put(brawlerId, input.sequence());
         Brawler brawler = world.getPlayer(brawlerId);
         if (brawler != null) {
-            brawler.setDirection(input.moveX(), input.moveY());
+            if (Float.isFinite(input.moveX()) && Float.isFinite(input.moveY())) {
+                brawler.setDirection(input.moveX(), input.moveY());
+            } else {
+                brawler.setDirection(0, 0);
+            }
             if (input.shooting()) {
-                world.attack(brawler, input.aimX(), input.aimY());
+                if (!Float.isFinite(input.aimX()) || !Float.isFinite(input.aimY())) {
+                    return;
+                }
+                float length = (float) Math.sqrt(input.aimX() * input.aimX() + input.aimY() * input.aimY());
+                if (length == 0 || !Float.isFinite(length)) {
+                    return;
+                }
+                world.attack(brawler, input.aimX() / length, input.aimY() / length);
             }
         }
     }

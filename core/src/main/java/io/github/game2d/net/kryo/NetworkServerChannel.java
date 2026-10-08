@@ -17,7 +17,7 @@ public class NetworkServerChannel implements ServerChannel {
 
     @Override
     public void sendInput(PlayerInput input) {
-        client.sendTCP(input);
+        client.sendUDP(input);
     }
 
     @Override
@@ -30,7 +30,10 @@ public class NetworkServerChannel implements ServerChannel {
     }
 
     void receive(WorldSnapshot snapshot) {
-        this.snapshot.set(snapshot);
+        WorldSnapshot current = this.snapshot.get();
+        if (current == null || snapshot.tick() > current.tick()) {
+            this.snapshot.set(snapshot);
+        }
     }
 
     void accept(int brawlerId) {

@@ -12,8 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GameServer {
-    private static final int TICK_RATE = 30;
+    public static final int TICK_RATE = 30;
 
+    private int tick;
     private volatile boolean running;
     private Thread thread;
     private final GameWorld world;
@@ -55,8 +56,9 @@ public class GameServer {
             inputApplier.apply(entry.getKey(), entry.getValue().latestInput());
         }
         world.update(timestep.getStep());
+        tick++;
         for (Map.Entry<Integer, ClientChannel> entry : connections.entrySet()) {
-            WorldSnapshot snapshot = snapshotBuilder.build(timestep.getTicks(), inputApplier::lastProcessedSequence, entry.getKey());
+            WorldSnapshot snapshot = snapshotBuilder.build(tick, inputApplier::lastProcessedSequence, entry.getKey());
             entry.getValue().sendSnapshot(snapshot);
         }
     }

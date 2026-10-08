@@ -21,10 +21,12 @@ public class NetworkClientChannel implements ClientChannel {
 
     @Override
     public void sendSnapshot(WorldSnapshot snapshot) {
-        connection.sendTCP(snapshot);
+        connection.sendUDP(snapshot);
     }
 
     public void receive(PlayerInput input) {
-        this.input.set(input);
+        if (input.sequence() > this.input.get().sequence()) {
+            this.input.set(input);
+        }
     }
 }

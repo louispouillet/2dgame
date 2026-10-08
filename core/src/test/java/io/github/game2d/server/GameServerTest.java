@@ -113,6 +113,45 @@ class GameServerTest {
     }
 
     @Test
+    void snapshotTickIncreasesByOneAtEachTick() {
+        LocalChannel channel = new LocalChannel();
+        server.join(channel);
+
+        server.tick();
+        int first = channel.latestSnapshot().tick();
+        server.tick();
+        int second = channel.latestSnapshot().tick();
+
+        assertEquals(first + 1, second);
+    }
+
+    @Test
+    void snapshotAcknowledgesTheLastProcessedInput() {
+        LocalChannel channel = new LocalChannel();
+        int id = server.join(channel);
+
+        channel.sendInput(new PlayerInput(5, 1, 0, 1, 0, false));
+        server.tick();
+
+        assertEquals(5, brawlerOf(channel, id).lastProcessedInput());
+    }
+
+    @Test
+    void eachBrawlerIsAcknowledgedForItsOwnInputs() {
+        LocalChannel first = new LocalChannel();
+        LocalChannel second = new LocalChannel();
+        int firstId = server.join(first);
+        int secondId = server.join(second);
+
+        first.sendInput(new PlayerInput(3, 0, 0, 1, 0, false));
+        second.sendInput(new PlayerInput(8, 0, 0, 1, 0, false));
+        server.tick();
+
+        assertEquals(3, brawlerOf(first, firstId).lastProcessedInput());
+        assertEquals(8, brawlerOf(first, secondId).lastProcessedInput());
+    }
+
+    @Test
     void leavingPlayerDisappearsFromTheSnapshot() {
         LocalChannel stayer = new LocalChannel();
         LocalChannel leaver = new LocalChannel();

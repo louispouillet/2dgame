@@ -33,6 +33,7 @@ public class Main extends ApplicationAdapter {
     private ServerChannel connection;
     private NetworkClient remote;
     private SnapshotBuffer buffer;
+    private final ServerTimeEstimator estimator = new ServerTimeEstimator(GameServer.TICK_RATE);
     private WorldSnapshot lastReceived;
     private IntSupplier brawlerId;
     private final String host; // null = jeu local
@@ -99,7 +100,8 @@ public class Main extends ApplicationAdapter {
             return;
         }
         if (snapshot != lastReceived) {
-            buffer.add(snapshot, now);
+            estimator.observe(snapshot.tick(), now);
+            buffer.add(snapshot, estimator.timeOfTick(snapshot.tick()));
             lastReceived = snapshot;
         }
         BrawlerState mine = null;
@@ -110,7 +112,7 @@ public class Main extends ApplicationAdapter {
                 connection.sendInput(input);
             }
         }
-        WorldSnapshot interpolated = buffer.interpolate(now - DELAY);
+        WorldSnapshot interpolated = buffer.interpolate(estimator.estimateAt(now) - DELAY);
         view.render(withOwnBrawler(interpolated, mine), arena, myId);
     }
 
