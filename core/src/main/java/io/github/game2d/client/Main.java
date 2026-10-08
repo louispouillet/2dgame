@@ -48,7 +48,7 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void create() {
-        arena = ArenaLoader.parse(Gdx.files.internal("maps/arena2.txt").readString());
+        arena = ArenaLoader.loadResource(ArenaLoader.DEFAULT_MAP);
         renderer = new WorldRenderer(arena.getWidth(), arena.getHeight());
         renderer3d = new WorldRenderer3D(arena);
         view = renderer;

@@ -6,14 +6,10 @@ import io.github.game2d.net.kryo.NetworkRegistry;
 import io.github.game2d.net.kryo.NetworkServer;
 import io.github.game2d.server.GameServer;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class ServerLauncher {
-    private static final String ARENA_FILE = "assets/maps/arena2.txt";
-
     public static void main(String[] args) throws IOException, InterruptedException {
-        Arena arena = ArenaLoader.parse(Files.readString(Path.of(ARENA_FILE)));
+        Arena arena = ArenaLoader.loadResource(ArenaLoader.DEFAULT_MAP);
         GameServer gameServer = new GameServer(arena);
         NetworkServer networkServer = new NetworkServer(gameServer);
         networkServer.start(NetworkRegistry.DEFAULT_TCP_PORT, NetworkRegistry.DEFAULT_UDP_PORT);

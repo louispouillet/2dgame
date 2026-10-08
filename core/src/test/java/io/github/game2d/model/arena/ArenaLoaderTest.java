@@ -118,4 +118,17 @@ class ArenaLoaderTest {
         ArenaFormatException error = assertThrows(ArenaFormatException.class, () -> ArenaLoader.parse(map));
         assertEquals(expectedMessage, error.getMessage());
     }
+
+    @Test
+    void loadResourceReadsTheDefaultMap() {
+        Arena arena = ArenaLoader.loadResource(ArenaLoader.DEFAULT_MAP);
+
+        assertEquals(30, arena.getWidth());
+        assertEquals(20, arena.getHeight());
+    }
+
+    @Test
+    void loadResourceRejectsAMissingMap() {
+        assertThrows(IllegalArgumentException.class, () -> ArenaLoader.loadResource("maps/missing.txt"));
+    }
 }

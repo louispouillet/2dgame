@@ -1,13 +1,30 @@
 package io.github.game2d.model.arena;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class ArenaLoader {
+    public static final String DEFAULT_MAP = "maps/arena2.txt";
+
     private static final int MIN_PLAYERS = 2;
     private static final int MAX_PLAYERS = 4;
 
     private ArenaLoader() {
+    }
+
+    public static Arena loadResource(String path) {
+        try (InputStream input = ArenaLoader.class.getResourceAsStream("/" + path)) {
+            if (input == null) {
+                throw new IllegalArgumentException("Map not found: " + path);
+            }
+            return parse(new String(input.readAllBytes(), StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new UncheckedIOException("Cannot read map " + path, e);
+        }
     }
 
     public static Arena parse(String text) {

@@ -16,6 +16,8 @@ dependencies {
   testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
+sourceSets.test.resources.srcDirs += [ rootProject.file('assets').path ]
+
 test {
   useJUnitPlatform()
   systemProperty 'assets.dir', rootProject.file('assets').absolutePath
@@ -27,7 +29,7 @@ jar {
 
 // Lance le serveur de jeu seul (sans fenêtre) : ./gradlew core:runServer
 tasks.register('runServer', JavaExec) {
-  classpath = sourceSets.main.runtimeClasspath
+  classpath = sourceSets.main.runtimeClasspath + files(rootProject.file('assets'))
   mainClass = 'io.github.game2d.server.ServerLauncher'
   workingDir = rootProject.projectDir
 }

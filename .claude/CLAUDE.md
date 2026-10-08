@@ -61,13 +61,12 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 ## 7. Lancement (Makefile)
 - `make solo` : partie locale ; `make server` : serveur multijoueur (TCP 54555 / UDP 54777) ; `make client [HOST=ip]` : client ; `make duo` : serveur + 2 fenêtres sur la même machine.
 - `make test`, `make build`, `make clean`.
-- Map chargée : `assets/maps/arena2.txt` (30x20), dans `client/Main` et `server/ServerLauncher` (garder les deux synchronisées).
+- Map chargée : `ArenaLoader.DEFAULT_MAP` (`maps/arena2.txt`, 30x20), lue dans le classpath par `ArenaLoader.loadResource`, côté client comme côté serveur (fonctionne aussi depuis le jar seul).
 
 ## Reste à faire
 - Mode « dernier survivant » (gagnant, fin de partie)
 - Buissons : se révéler en tirant ou en étant touché
 - Caméra 3D : élargir la bande de décor pour que le joueur ne soit pas collé au coin au départ
-- Chemin de la map partagé entre client et serveur
 - `StartupHelper` ne transmet pas les arguments sur macOS (le Makefile passe `-XstartOnFirstThread`)
 - Soutenance : Javadoc, couverture JaCoCo, diagrammes UML, mise à jour du GDD (`docs/GDD.md`)
 - 3D : type et visée dans `BrawlerState`, puis gdx-gltf, personnages animés, ombres
