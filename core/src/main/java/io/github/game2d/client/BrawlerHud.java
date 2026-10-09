@@ -25,11 +25,14 @@ public class BrawlerHud {
     private static final int FONT_PIXEL_SIZE = 28;
     private static final float FONT_BORDER = 1.5f;
     private static final float FONT_SCALE = 0.006f;
+    private static final float NAME_GAP = 0.06f;
 
     private final BitmapFont font = createFont();
     private final GlyphLayout layout = new GlyphLayout();
+    private final PlayerNames names;
 
-    public BrawlerHud() {
+    public BrawlerHud(PlayerNames names) {
+        this.names = names;
         font.setUseIntegerPositions(false);
     }
 
@@ -64,6 +67,7 @@ public class BrawlerHud {
         batch.begin();
         for (HudAnchor anchor : anchors) {
             drawHealthText(batch, anchor);
+            drawName(batch, anchor);
         }
         batch.end();
     }
@@ -74,6 +78,20 @@ public class BrawlerHud {
         float centerY = healthBarBottom(anchor) + BAR_HEIGHT * anchor.unit();
         float x = anchor.centerX() - layout.width / 2;
         float y = centerY + layout.height / 2;
+        font.draw(batch, layout, x, y);
+    }
+
+    private void drawName(SpriteBatch batch, HudAnchor anchor) {
+        String name = names.of(anchor.brawler().id());
+        if (name.isEmpty()) {
+            return;
+        }
+        font.getData().setScale(FONT_SCALE * anchor.unit());
+        layout.setText(font, name);
+        float barTop = healthBarBottom(anchor) + BAR_HEIGHT * anchor.unit();
+        float healthTextTop = barTop + layout.height / 2;
+        float x = anchor.centerX() - layout.width / 2;
+        float y = healthTextTop + NAME_GAP * anchor.unit() + layout.height;
         font.draw(batch, layout, x, y);
     }
 

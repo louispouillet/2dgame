@@ -25,11 +25,12 @@ public class WorldRenderer implements GameView {
 
     private final ShapeRenderer shapes = new ShapeRenderer();
     private final SpriteBatch batch = new SpriteBatch();
-    private final BrawlerHud hud = new BrawlerHud();
+    private final BrawlerHud hud;
     private final FitViewport viewport;
 
-    public WorldRenderer(float worldWidth, float worldHeight) {
+    public WorldRenderer(float worldWidth, float worldHeight, PlayerNames names) {
         viewport = new FitViewport(worldWidth, worldHeight);
+        hud = new BrawlerHud(names);
     }
 
     public void resize(int width, int height) {

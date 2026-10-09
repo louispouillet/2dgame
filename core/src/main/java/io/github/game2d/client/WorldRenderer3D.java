@@ -64,7 +64,7 @@ public class WorldRenderer3D implements GameView {
     private final Vector3 sidePoint = new Vector3();
     private final ShapeRenderer shapes = new ShapeRenderer();
     private final SpriteBatch batch = new SpriteBatch();
-    private final BrawlerHud hud = new BrawlerHud();
+    private final BrawlerHud hud;
     private final Matrix4 screenProjection = new Matrix4();
     private boolean followingPlayer;
     private final float arenaWidth;
@@ -74,7 +74,8 @@ public class WorldRenderer3D implements GameView {
     private float minTargetZ;
     private float maxTargetZ;
 
-    public WorldRenderer3D(Arena arena) {
+    public WorldRenderer3D(Arena arena, PlayerNames names) {
+        hud = new BrawlerHud(names);
         camera = new PerspectiveCamera(FIELD_OF_VIEW, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 0.1f;
         camera.far = 100f;

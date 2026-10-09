@@ -18,8 +18,9 @@ public class GameScreen extends ScreenAdapter {
     public GameScreen(GameSession session, Arena arena) {
         this.session = session;
         this.arena = arena;
-        renderer = new WorldRenderer(arena.getWidth(), arena.getHeight());
-        renderer3d = new WorldRenderer3D(arena);
+        PlayerNames names = PlayerNames.from(session.channel().latestLobby());
+        renderer = new WorldRenderer(arena.getWidth(), arena.getHeight(), names);
+        renderer3d = new WorldRenderer3D(arena, names);
         view = renderer;
         inputReader = new InputReader(() -> view);
         game = new ClientGame(arena, session);
