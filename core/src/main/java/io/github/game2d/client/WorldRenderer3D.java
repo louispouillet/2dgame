@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class WorldRenderer3D implements GameView {
+public class WorldRenderer3D {
     private static final float FIELD_OF_VIEW = 28f;
     private static final float CAMERA_HEIGHT = 16.4f;
     private static final float CAMERA_BACK = 11.5f;
@@ -107,14 +107,12 @@ public class WorldRenderer3D implements GameView {
             new Material(ColorAttribute.createDiffuse(Color.WHITE)), ATTRIBUTES);
     }
 
-    @Override
     public void resize(int width, int height) {
         camera.viewportWidth = width;
         camera.viewportHeight = height;
         updateCameraBounds();
     }
 
-    @Override
     public void render(WorldSnapshot snapshot, Arena arena, int playerId) {
         BrawlerState player = snapshot.findBrawler(playerId);
         followPlayer(player, Gdx.graphics.getDeltaTime());
@@ -258,7 +256,6 @@ public class WorldRenderer3D implements GameView {
         }
     }
 
-    @Override
     public Vector2 screenToWorld(int screenX, int screenY) {
         Ray ray = camera.getPickRay(screenX, screenY, 0f, 0f, camera.viewportWidth, camera.viewportHeight);
         if (!Intersector.intersectRayPlane(ray, AIM_PLANE, aimPoint)) {
@@ -267,7 +264,6 @@ public class WorldRenderer3D implements GameView {
         return new Vector2(aimPoint.x, -aimPoint.z);
     }
 
-    @Override
     public void dispose() {
         modelBatch.dispose();
         arenaModel.dispose();

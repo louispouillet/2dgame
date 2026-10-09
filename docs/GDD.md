@@ -104,7 +104,7 @@ When loading, the game checks that every row has the same length, that the borde
 
 ## Technical overview
 
-- **Engine**: libGDX (desktop via LWJGL3). Top-down 2D rendering first; a Brawl Stars-style 3D view may come later as a bonus, without changing the game logic.
+- **Engine**: libGDX (desktop via LWJGL3). The game logic is a top-down 2D plane, rendered with a Brawl Stars-style 3D view (perspective camera following the player).
 - **Game model**: plain Java with no libGDX dependency, so the same code runs on the server, on the client and in tests.
 - **Authoritative server**: clients only send their inputs (movement, aim, shoot); the server simulates the match at a fixed 30 ticks per second and broadcasts the world state to every client.
 - **OOP**: a class hierarchy for game objects (`GameObject` → `Entity` → `Brawler` → `Shelly` / `Colt`), and design patterns such as Strategy for weapons. Detailed UML diagrams will be produced from this document.

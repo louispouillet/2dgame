@@ -1,7 +1,7 @@
 # Contexte du projet : POC « Brawl Stars » en Java
 
 ## Objectif
-POC d'un clone simplifié de Brawl Stars : Java, gameplay 2D (vue 2D ou 3D), multijoueur. Le projet doit respecter les concepts de la POO (contrainte imposée).
+POC d'un clone simplifié de Brawl Stars : Java, gameplay 2D (plan vu de dessus) affiché en 3D, multijoueur. Le projet doit respecter les concepts de la POO (contrainte imposée).
 
 Projet libGDX généré avec gdx-liftoff (modules `core` et `lwjgl3`, Gradle multi-modules).
 
@@ -14,13 +14,13 @@ Faisable en visant un périmètre réduit :
 ## 2. Architecture POO
 - Hiérarchie : `GameObject` (position, rayon) → `Brawler` → `Shelly` / `Colt` ; `GameObject` → `Projectile`.
 - `Weapon` (classe abstraite : munitions, cadence, rechargement) → `Shotgun`, `Revolver` : pattern Strategy, un `Brawler` possède une `Weapon`.
-- `GameView` (interface) implémentée par `WorldRenderer` (2D) et `WorldRenderer3D` (3D), interchangeables avec la touche `V`.
+- `GameSession` (interface) implémentée par `LocalSession` (solo, serveur en mémoire) et `RemoteSession` (réseau) ; `Screen` (libGDX) implémentée par `NameScreen`, `LobbyScreen`, `GameScreen`.
 - `ClientChannel` / `ServerChannel` : transport en mémoire (`LocalChannel`) ou réseau (`net.kryo`).
 
 Principes illustrés :
 - **Héritage** : `GameObject` → `Brawler` → `Shelly` / `Colt`
-- **Abstraction** : classes abstraites (`GameObject`, `Brawler`, `Weapon`) et interfaces (`GameView`, canaux), créées seulement quand il y a plusieurs implémentations
-- **Polymorphisme** : `GameWorld` appelle `update(dt, arena)` sur tous les `GameObject`, sans `instanceof` (chaque objet gère son déplacement et ses collisions avec le décor) ; vues et canaux interchangeables
+- **Abstraction** : classes abstraites (`GameObject`, `Brawler`, `Weapon`) et interfaces (`GameSession`, canaux), créées seulement quand il y a plusieurs implémentations
+- **Polymorphisme** : `GameWorld` appelle `update(dt, arena)` sur tous les `GameObject`, sans `instanceof` (chaque objet gère son déplacement et ses collisions avec le décor) ; sessions, canaux et écrans interchangeables
 - **Composition / Strategy** : `Brawler` a une `Weapon`
 - **Encapsulation** : attributs privés ou protégés, modifiés via méthodes (ex. position uniquement dans `Brawler.move`, privée, appelée par `update`)
 
@@ -47,7 +47,7 @@ Principes illustrés :
 - Un brawler dont le centre est sur un buisson (`~`) est caché aux adversaires à plus de 2 cases (`Arena.REVEAL_DISTANCE`). On se voit toujours soi-même ; les projectiles restent visibles.
 - `Arena.hidesBrawlerAt(x, y)` : la case sous le point cache-t-elle ? `GameWorld.isVisibleTo(target, viewer)` : la règle. `SnapshotBuilder` filtre selon cette règle.
 - Filtrage côté serveur : un client ne reçoit jamais la position d'un ennemi caché (anti-triche).
-- Côté client, les cases buisson dans ce même rayon autour du joueur sont dessinées transparentes (40 %), en 2D et en 3D (`Arena.canSeeIntoBush`). En 3D, chaque buisson est une `ModelInstance` séparée (`ArenaModelFactory.createBush`) pour avoir sa propre opacité.
+- Côté client, les cases buisson dans ce même rayon autour du joueur sont dessinées transparentes (40 %) (`Arena.canSeeIntoBush`). Chaque buisson est une `ModelInstance` séparée (`ArenaModelFactory.createBush`) pour avoir sa propre opacité.
 
 ## 6. Maps et équipes
 - Fichiers texte dans `assets/maps/` : `#` mur, `.` sol, `~` buisson, `W` eau, chiffres `1` à `6` = points d'apparition (sur du sol). La première ligne du fichier est le haut de la map.
@@ -79,7 +79,7 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 - `server/` : autorité de jeu (`GameServer`, `ServerLauncher`), lobby (`Lobby`, `LobbyPlayer`, `LobbyException`) et traduction protocole ↔ modèle (`InputApplier`, `SnapshotBuilder`)
 - `net/` : transport. Interfaces `ClientChannel` / `ServerChannel`, `LocalChannel` (en mémoire)
   - `net.kryo` : `NetworkEndpoint` (classe abstraite : thread d'update KryoNet, `stop`) → `NetworkServer`, `NetworkClient`, `NetworkClientChannel`, `NetworkServerChannel` (traducteurs de protocole), `NetworkRegistry`
-- `client/` : libGDX. `Main` (`Game` libGDX : ouvre la session, qu'il possède et ferme, puis affiche un écran), écrans `NameScreen`, `LobbyScreen`, `GameScreen` (vues 2D/3D, `InputReader`, `ClientGame` ; reçoit la session et la map), interface `UiSkin`, `LobbyView`, `RefusalMessages`, `PlayerNames`, `ClientGame` (réception, prédiction, envoi des inputs), `GameSession` → `LocalSession` / `RemoteSession`, `InputReader`, `PredictedPlayer`, `SnapshotBuffer`, `ClientClock` (seule horloge du client : temps local, estimation du temps serveur, cadence des inputs) ; vues `GameView`, `WorldRenderer` (2D), `WorldRenderer3D` + `ArenaModelFactory` (3D, textures dans `assets/textures/arena`) ; HUD `BrawlerHud`, `HudAnchor`
+- `client/` : libGDX. `Main` (`Game` libGDX : ouvre la session, qu'il possède et ferme, puis affiche un écran), écrans `NameScreen`, `LobbyScreen`, `GameScreen` (vue 3D, `InputReader`, `ClientGame` ; reçoit la session et la map), interface `UiSkin`, `LobbyView`, `RefusalMessages`, `PlayerNames`, `ClientGame` (réception, prédiction, envoi des inputs), `GameSession` → `LocalSession` / `RemoteSession`, `InputReader`, `PredictedPlayer`, `SnapshotBuffer`, `ClientClock` (seule horloge du client : temps local, estimation du temps serveur, cadence des inputs) ; vue `WorldRenderer3D` + `ArenaModelFactory` (3D, textures dans `assets/textures/arena`) ; HUD `BrawlerHud`, `HudAnchor`
 
 ## 9. Lancement (Makefile)
 - `make solo` : partie locale ; `make server` : serveur multijoueur (TCP 54555 / UDP 54777) ; `make client [HOST=ip]` : client ; `make duo` : serveur + 2 fenêtres sur la même machine. Chaque client démarre sur l'écran du pseudo.
