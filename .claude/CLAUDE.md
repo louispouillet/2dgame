@@ -51,7 +51,15 @@ Principes illustrés :
 - Toute map de `assets/maps/` doit avoir 3 points par équipe (vérifié par `ArenaLoaderTest.everyAvailableMapHasThreeSpawnPointsPerTeam`).
 - En attendant le lobby, `GameServer.join` place les joueurs dans l'ordre 1, 4, 2, 5, 3, 6 (un Bleu, un Rouge…) et refuse le 7e.
 
-## 7. Module `core` : packages
+## 7. Lobby
+- `server.Lobby` : salle d'attente avant la partie, Java pur, sans réseau (utilisée sous le verrou de `GameServer`, donc pas thread-safe).
+- Joueurs (`LobbyPlayer` : id, pseudo, équipe) dans l'ordre d'arrivée ; 6 au maximum, 3 par équipe. Un nouveau joueur va dans l'équipe la moins remplie (Bleus en cas d'égalité).
+- Pseudo : espaces autour retirés, 1 à 16 caractères parmi lettres (accents compris), chiffres, `_` et `-`, unique sans tenir compte des majuscules.
+- Chef = premier de la liste : s'il part, le suivant devient chef. Lui seul choisit la map, parmi la liste donnée au constructeur (`ArenaLoader.availableMaps()`).
+- `canStart()` : chaque équipe a entre 1 et 3 joueurs (1v1, 2v1, 3v3… mais pas d'équipe vide).
+- Refus : `LobbyException` avec une raison (`INVALID_NAME`, `NAME_TAKEN`, `LOBBY_FULL`, `TEAM_FULL`, `NOT_LEADER`, `UNKNOWN_MAP`), destinée à être envoyée au client.
+
+## 8. Module `core` : packages
 Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol` ne dépend de rien ; `time` ne dépend de rien ; `server` → `model`, `protocol`, `net`, `time` ; `net` → `protocol`, `server` ; `client` → tous. Seul `client` dépend de libGDX ; seul `net.kryo` dépend de KryoNet. Les tests suivent la même arborescence (`core/src/test`).
 
 - `model/` : règles du jeu, Java pur (`GameObject`, `Projectile`, `GameWorld`, `Team`)
@@ -61,18 +69,18 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
   - `model.collision` : `Collisions`
 - `protocol/` : messages échangés client/serveur (`PlayerInput`, `JoinAccepted`, `WorldSnapshot`, `BrawlerState`, `ProjectileState`)
 - `time/` : `TickClock` (tick fixe partagé : `TICK_RATE` = 30, `STEP`, numéro de tick, `timeOfTick`)
-- `server/` : autorité de jeu (`GameServer`, `ServerLauncher`) et traduction protocole ↔ modèle (`InputApplier`, `SnapshotBuilder`)
+- `server/` : autorité de jeu (`GameServer`, `ServerLauncher`), lobby (`Lobby`, `LobbyPlayer`, `LobbyException`) et traduction protocole ↔ modèle (`InputApplier`, `SnapshotBuilder`)
 - `net/` : transport. Interfaces `ClientChannel` / `ServerChannel`, `LocalChannel` (en mémoire)
   - `net.kryo` : `NetworkEndpoint` (classe abstraite : thread d'update KryoNet, `stop`) → `NetworkServer`, `NetworkClient`, `NetworkClientChannel`, `NetworkServerChannel` (traducteurs de protocole), `NetworkRegistry`
 - `client/` : libGDX. `Main` (glue libGDX), `ClientGame` (réception, prédiction, envoi des inputs), `GameSession` → `LocalSession` / `RemoteSession`, `InputReader`, `PredictedPlayer`, `SnapshotBuffer`, `ClientClock` (seule horloge du client : temps local, estimation du temps serveur, cadence des inputs) ; vues `GameView`, `WorldRenderer` (2D), `WorldRenderer3D` + `ArenaModelFactory` (3D, textures dans `assets/textures/arena`) ; HUD `BrawlerHud`, `HudAnchor`
 
-## 8. Lancement (Makefile)
+## 9. Lancement (Makefile)
 - `make solo` : partie locale ; `make server` : serveur multijoueur (TCP 54555 / UDP 54777) ; `make client [HOST=ip]` : client ; `make duo` : serveur + 2 fenêtres sur la même machine.
 - `make test`, `make build`, `make clean`.
 - Map chargée : `ArenaLoader.DEFAULT_MAP` (`maps/arena2.txt`, 30x20), lue dans le classpath par `ArenaLoader.loadResource`, côté client comme côté serveur (fonctionne aussi depuis le jar seul).
 
 ## Reste à faire
-- Lobby (dans l'ordre) : `Lobby` côté serveur (pseudos, équipes de 1 à 3, chef = premier connecté, map choisie) ; messages réseau du lobby et phases de `GameServer` ; `Main` en écrans (`Game` + `Screen`) ; écrans Scene2D (pseudo et adresse du serveur, lobby) ; pseudo au-dessus des brawlers
+- Lobby (dans l'ordre) : messages réseau du lobby et phases de `GameServer` ; `Main` en écrans (`Game` + `Screen`) ; écrans Scene2D (pseudo et adresse du serveur, lobby) ; pseudo au-dessus des brawlers
 - Règles d'équipe (pas de tir allié, alliés visibles dans les buissons) puis mode « Hors-jeu » (manches, score, fin de partie)
 - Dépendances : `BrawlerState` (`protocol`) utilise `BrawlerType` (`model`), contrairement à la règle « `protocol` ne dépend de rien » : à trancher
 - Buissons : se révéler en tirant ou en étant touché
@@ -82,7 +90,7 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 - 3D : type et visée dans `BrawlerState`, puis gdx-gltf, personnages animés, ombres
 
 ## Structure du projet généré
-- `core/` : logique de jeu, serveur et client libGDX (voir section 7)
+- `core/` : logique de jeu, serveur et client libGDX (voir section 8)
 - `lwjgl3/` : lanceur desktop (`Lwjgl3Launcher.java`, fenêtre 1280x720, vsync, `StartupHelper`)
 - `assets/` : ressources partagées entre plateformes (maps, textures, polices)
 
