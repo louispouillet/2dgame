@@ -4,10 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.ArenaLoader;
 import io.github.game2d.net.LocalChannel;
 import io.github.game2d.protocol.PlayerInput;
 import io.github.game2d.protocol.WorldSnapshot;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class GameServerThreadTest {
@@ -22,7 +24,15 @@ class GameServerThreadTest {
     private static final PlayerInput MOVE_RIGHT = new PlayerInput(1, 1, 0, 1, 0, false);
 
     private static GameServer newServer() {
-        return new GameServer(ArenaLoader.parse(MAP));
+        Arena arena = ArenaLoader.parse(MAP);
+        return new GameServer(List.of("test"), "test", map -> arena);
+    }
+
+    // Le joueur et un adversaire immobile rejoignent, puis la partie est lancée
+    private static void joinAndStart(GameServer server, LocalChannel channel) {
+        int id = server.join(channel, "Louis");
+        server.join(new LocalChannel(), "Opponent");
+        server.requestStart(id);
     }
 
     private static void waitForSnapshot(LocalChannel channel) throws InterruptedException {
@@ -43,7 +53,7 @@ class GameServerThreadTest {
     void startedServerSendsSnapshotsOnItsOwn() throws InterruptedException {
         GameServer server = newServer();
         LocalChannel channel = new LocalChannel();
-        server.join(channel);
+        joinAndStart(server, channel);
 
         server.start();
         try {
@@ -57,7 +67,7 @@ class GameServerThreadTest {
     void snapshotsStopChangingOnceTheServerIsStopped() throws InterruptedException {
         GameServer server = newServer();
         LocalChannel channel = new LocalChannel();
-        server.join(channel);
+        joinAndStart(server, channel);
         server.start();
         waitForSnapshot(channel);
 
@@ -73,7 +83,7 @@ class GameServerThreadTest {
         // un tick déplace le brawler d'une distance fixe : on s'en sert pour compter les ticks
         GameServer calibration = newServer();
         LocalChannel calibrationChannel = new LocalChannel();
-        calibration.join(calibrationChannel);
+        joinAndStart(calibration, calibrationChannel);
         calibration.tick();
         float startX = firstBrawlerX(calibrationChannel);
         calibrationChannel.sendInput(MOVE_RIGHT);
@@ -82,7 +92,7 @@ class GameServerThreadTest {
 
         GameServer server = newServer();
         LocalChannel channel = new LocalChannel();
-        server.join(channel);
+        joinAndStart(server, channel);
         channel.sendInput(MOVE_RIGHT);
 
         long begin = System.nanoTime();

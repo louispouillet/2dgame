@@ -1,6 +1,5 @@
 package io.github.game2d.server;
 
-import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.ArenaLoader;
 import io.github.game2d.net.kryo.NetworkRegistry;
 import io.github.game2d.net.kryo.NetworkServer;
@@ -9,8 +8,7 @@ import java.io.IOException;
 
 public class ServerLauncher {
     public static void main(String[] args) throws IOException, InterruptedException {
-        Arena arena = ArenaLoader.loadResource(ArenaLoader.DEFAULT_MAP);
-        GameServer gameServer = new GameServer(arena);
+        GameServer gameServer = new GameServer(ArenaLoader.availableMaps(), ArenaLoader.DEFAULT_MAP, ArenaLoader::loadResource);
         NetworkServer networkServer = new NetworkServer(gameServer);
         networkServer.start(NetworkRegistry.DEFAULT_TCP_PORT, NetworkRegistry.DEFAULT_UDP_PORT);
         gameServer.start();

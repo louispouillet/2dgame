@@ -1,8 +1,10 @@
 package io.github.game2d.client;
 
+import io.github.game2d.model.Team;
 import io.github.game2d.net.ServerChannel;
 import io.github.game2d.net.kryo.NetworkClient;
 import io.github.game2d.net.kryo.NetworkRegistry;
+import io.github.game2d.protocol.RefusalReason;
 import java.io.IOException;
 
 public class RemoteSession implements GameSession {
@@ -20,6 +22,31 @@ public class RemoteSession implements GameSession {
     @Override
     public int playerId() {
         return client.channel().getBrawlerId();
+    }
+
+    @Override
+    public void join(String name) {
+        client.channel().sendJoin(name);
+    }
+
+    @Override
+    public void chooseTeam(Team team) {
+        client.channel().sendChooseTeam(team);
+    }
+
+    @Override
+    public void chooseMap(String map) {
+        client.channel().sendChooseMap(map);
+    }
+
+    @Override
+    public void start() {
+        client.channel().sendStart();
+    }
+
+    @Override
+    public RefusalReason rejection() {
+        return client.channel().rejection();
     }
 
     @Override

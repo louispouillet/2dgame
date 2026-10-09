@@ -1,25 +1,18 @@
 package io.github.game2d.server;
 
+import io.github.game2d.protocol.RefusalReason;
+
 public class LobbyException extends IllegalArgumentException {
     private static final long serialVersionUID = 1L;
 
-    public enum Reason {
-        INVALID_NAME,
-        NAME_TAKEN,
-        LOBBY_FULL,
-        TEAM_FULL,
-        NOT_LEADER,
-        UNKNOWN_MAP
-    }
+    private final RefusalReason reason;
 
-    private final Reason reason;
-
-    public LobbyException(Reason reason) {
+    public LobbyException(RefusalReason reason) {
         super(reason.name());
         this.reason = reason;
     }
 
-    public Reason getReason() {
+    public RefusalReason getReason() {
         return reason;
     }
 }

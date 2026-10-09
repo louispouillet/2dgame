@@ -2,12 +2,17 @@ package io.github.game2d.net.kryo;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import io.github.game2d.model.Team;
+import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.ArenaLoader;
+import io.github.game2d.net.LocalChannel;
 import io.github.game2d.protocol.BrawlerState;
 import io.github.game2d.protocol.PlayerInput;
+import io.github.game2d.protocol.RefusalReason;
 import io.github.game2d.protocol.WorldSnapshot;
 import io.github.game2d.server.GameServer;
 import java.io.IOException;
@@ -39,7 +44,8 @@ class NetworkClientTest {
 
     @BeforeEach
     void startServer() throws IOException {
-        gameServer = new GameServer(ArenaLoader.parse(MAP));
+        Arena arena = ArenaLoader.parse(MAP);
+        gameServer = new GameServer(List.of("test"), "test", map -> arena);
         networkServer = new NetworkServer(gameServer);
         networkServer.start(TCP_PORT, UDP_PORT);
     }
@@ -57,6 +63,19 @@ class NetworkClientTest {
         remotes.add(remote);
         remote.connect(HOST, TCP_PORT, UDP_PORT);
         return remote;
+    }
+
+    private NetworkServerChannel joinedChannel(String name) throws Exception {
+        NetworkServerChannel channel = connectedRemote().channel();
+        channel.sendJoin(name);
+        awaitTrue("brawler id of " + name, () -> channel.getBrawlerId() != -1);
+        return channel;
+    }
+
+    // Ajoute un adversaire immobile (sans réseau) puis lance la partie
+    private void startAgainstAnOpponent(NetworkServerChannel leader) {
+        gameServer.join(new LocalChannel(), "Opponent");
+        gameServer.requestStart(leader.getBrawlerId());
     }
 
     private static void awaitTrue(String description, BooleanSupplier condition) throws InterruptedException {
@@ -84,11 +103,19 @@ class NetworkClientTest {
     }
 
     @Test
-    void remoteLearnsItsBrawlerId() throws Exception {
-        NetworkClient remote = connectedRemote();
-        NetworkServerChannel channel = remote.channel();
+    void connectingWithoutJoiningGivesNoId() throws Exception {
+        NetworkServerChannel channel = connectedRemote().channel();
 
-        awaitTrue("brawler id", () -> channel.getBrawlerId() != -1);
+        Thread.sleep(200);
+
+        assertEquals(-1, channel.getBrawlerId());
+        assertNull(channel.latestLobby());
+    }
+
+    @Test
+    void remoteLearnsItsBrawlerId() throws Exception {
+        NetworkServerChannel channel = joinedChannel("Louis");
+        startAgainstAnOpponent(channel);
 
         awaitTrue("snapshot with its own brawler", () -> {
             gameServer.tick();
@@ -98,9 +125,43 @@ class NetworkClientTest {
     }
 
     @Test
+    void remoteReceivesTheLobby() throws Exception {
+        NetworkServerChannel channel = joinedChannel("Louis");
+
+        awaitTrue("lobby", () -> channel.latestLobby() != null);
+        assertEquals("Louis", channel.latestLobby().players().get(0).name());
+    }
+
+    @Test
+    void remoteIsToldWhyItWasRejected() throws Exception {
+        joinedChannel("Louis");
+        NetworkServerChannel second = connectedRemote().channel();
+
+        second.sendJoin("Louis");
+
+        awaitTrue("rejection", () -> second.rejection() != null);
+        assertEquals(RefusalReason.NAME_TAKEN, second.rejection());
+    }
+
+    @Test
+    void remoteChoosesItsTeamAndStartsTheGame() throws Exception {
+        NetworkServerChannel first = joinedChannel("Louis");
+        NetworkServerChannel second = joinedChannel("Lilian");
+
+        first.sendChooseTeam(Team.RED);
+        second.sendChooseTeam(Team.BLUE);
+        awaitTrue("teams swapped", () -> first.latestLobby() != null
+            && first.latestLobby().players().get(0).team() == Team.RED
+            && first.latestLobby().players().get(1).team() == Team.BLUE);
+        first.sendStart();
+
+        awaitTrue("game started", () -> second.latestLobby().started());
+    }
+
+    @Test
     void inputSentWithSendInputMovesTheBrawler() throws Exception {
-        NetworkServerChannel channel = connectedRemote().channel();
-        awaitTrue("brawler id", () -> channel.getBrawlerId() != -1);
+        NetworkServerChannel channel = joinedChannel("Louis");
+        startAgainstAnOpponent(channel);
 
         channel.sendInput(new PlayerInput(1, 1, 0, 1, 0, false));
 
@@ -113,11 +174,10 @@ class NetworkClientTest {
 
     @Test
     void twoRemotesControlTheirOwnBrawler() throws Exception {
-        NetworkServerChannel first = connectedRemote().channel();
-        awaitTrue("first id", () -> first.getBrawlerId() != -1);
-        NetworkServerChannel second = connectedRemote().channel();
-        awaitTrue("second id", () -> second.getBrawlerId() != -1);
+        NetworkServerChannel first = joinedChannel("Louis");
+        NetworkServerChannel second = joinedChannel("Lilian");
         assertNotEquals(first.getBrawlerId(), second.getBrawlerId());
+        gameServer.requestStart(first.getBrawlerId());
 
         first.sendInput(new PlayerInput(1, 0, 1, 0, 1, false));
 

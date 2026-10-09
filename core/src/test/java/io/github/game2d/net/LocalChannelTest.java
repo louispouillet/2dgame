@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+import io.github.game2d.protocol.LobbyState;
 import io.github.game2d.protocol.PlayerInput;
 import io.github.game2d.protocol.WorldSnapshot;
 import java.util.List;
@@ -64,5 +65,20 @@ class LocalChannelTest {
         channel.sendSnapshot(second);
 
         assertSame(second, channel.latestSnapshot());
+    }
+
+    @Test
+    void noLobbyBeforeTheServerSendsOne() {
+        assertNull(new LocalChannel().latestLobby());
+    }
+
+    @Test
+    void sentLobbyIsReadBackByTheClient() {
+        LocalChannel channel = new LocalChannel();
+        LobbyState lobby = new LobbyState(List.of(), 1, "maps/arena2.txt", List.of("maps/arena2.txt"), false, false);
+
+        channel.sendLobby(lobby);
+
+        assertSame(lobby, channel.latestLobby());
     }
 }

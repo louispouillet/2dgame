@@ -10,6 +10,8 @@ import io.github.game2d.protocol.WorldSnapshot;
 import java.io.IOException;
 
 public class Main extends ApplicationAdapter {
+    private static final String SOLO_NAME = "Joueur";
+
     private final String host;
     private Arena arena;
     private WorldRenderer renderer;
@@ -40,7 +42,10 @@ public class Main extends ApplicationAdapter {
 
     private GameSession openSession() {
         if (host == null) {
-            return new LocalSession(arena);
+            LocalSession solo = new LocalSession(arena);
+            solo.join(SOLO_NAME);
+            solo.start();
+            return solo;
         }
         try {
             return new RemoteSession(host);

@@ -4,6 +4,8 @@ import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import io.github.game2d.protocol.JoinAccepted;
+import io.github.game2d.protocol.JoinRejected;
+import io.github.game2d.protocol.LobbyState;
 import io.github.game2d.protocol.WorldSnapshot;
 import java.io.IOException;
 
@@ -18,6 +20,10 @@ public class NetworkClient extends NetworkEndpoint<Client> {
             public void received(Connection connection, Object object) {
                 if (object instanceof JoinAccepted accepted) {
                     channel.accept(accepted.brawlerId());
+                } else if (object instanceof JoinRejected rejected) {
+                    channel.reject(rejected.reason());
+                } else if (object instanceof LobbyState lobby) {
+                    channel.receive(lobby);
                 } else if (object instanceof WorldSnapshot received) {
                     channel.receive(received);
                 }

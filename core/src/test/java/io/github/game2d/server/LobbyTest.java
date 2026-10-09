@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.game2d.model.Team;
+import io.github.game2d.protocol.RefusalReason;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +15,7 @@ class LobbyTest {
 
     private final Lobby lobby = new Lobby(MAPS, "maps/a.txt");
 
-    private static void assertRefused(LobbyException.Reason reason, Runnable action) {
+    private static void assertRefused(RefusalReason reason, Runnable action) {
         LobbyException error = assertThrows(LobbyException.class, action::run);
         assertEquals(reason, error.getReason());
     }
@@ -48,27 +49,27 @@ class LobbyTest {
 
     @Test
     void rejectsEmptyName() {
-        assertRefused(LobbyException.Reason.INVALID_NAME, () -> lobby.join(1, "   "));
-        assertRefused(LobbyException.Reason.INVALID_NAME, () -> lobby.join(1, null));
+        assertRefused(RefusalReason.INVALID_NAME, () -> lobby.join(1, "   "));
+        assertRefused(RefusalReason.INVALID_NAME, () -> lobby.join(1, null));
     }
 
     @Test
     void rejectsNameLongerThanSixteenCharacters() {
         assertEquals("a".repeat(16), lobby.join(1, "a".repeat(16)).name());
-        assertRefused(LobbyException.Reason.INVALID_NAME, () -> lobby.join(2, "b".repeat(17)));
+        assertRefused(RefusalReason.INVALID_NAME, () -> lobby.join(2, "b".repeat(17)));
     }
 
     @Test
     void rejectsSpacesAndSymbolsInsideTheName() {
-        assertRefused(LobbyException.Reason.INVALID_NAME, () -> lobby.join(1, "Louis P"));
-        assertRefused(LobbyException.Reason.INVALID_NAME, () -> lobby.join(1, "Louis!"));
+        assertRefused(RefusalReason.INVALID_NAME, () -> lobby.join(1, "Louis P"));
+        assertRefused(RefusalReason.INVALID_NAME, () -> lobby.join(1, "Louis!"));
     }
 
     @Test
     void rejectsNameAlreadyTakenWhateverTheCase() {
         lobby.join(1, "Louis");
 
-        assertRefused(LobbyException.Reason.NAME_TAKEN, () -> lobby.join(2, "LOUIS"));
+        assertRefused(RefusalReason.NAME_TAKEN, () -> lobby.join(2, "LOUIS"));
     }
 
     @Test
@@ -77,7 +78,7 @@ class LobbyTest {
             lobby.join(id, "Player" + id);
         }
 
-        assertRefused(LobbyException.Reason.LOBBY_FULL, () -> lobby.join(7, "Player7"));
+        assertRefused(RefusalReason.LOBBY_FULL, () -> lobby.join(7, "Player7"));
     }
 
     @Test
@@ -137,7 +138,7 @@ class LobbyTest {
         }
         lobby.chooseTeam(2, Team.BLUE);
 
-        assertRefused(LobbyException.Reason.TEAM_FULL, () -> lobby.chooseTeam(4, Team.BLUE));
+        assertRefused(RefusalReason.TEAM_FULL, () -> lobby.chooseTeam(4, Team.BLUE));
     }
 
     @Test
@@ -181,7 +182,7 @@ class LobbyTest {
         lobby.join(1, "Louis");
         lobby.join(2, "Lilian");
 
-        assertRefused(LobbyException.Reason.NOT_LEADER, () -> lobby.chooseMap(2, "maps/b.txt"));
+        assertRefused(RefusalReason.NOT_LEADER, () -> lobby.chooseMap(2, "maps/b.txt"));
         assertEquals("maps/a.txt", lobby.map());
     }
 
@@ -189,7 +190,7 @@ class LobbyTest {
     void rejectsAnUnknownMap() {
         lobby.join(1, "Louis");
 
-        assertRefused(LobbyException.Reason.UNKNOWN_MAP, () -> lobby.chooseMap(1, "maps/missing.txt"));
+        assertRefused(RefusalReason.UNKNOWN_MAP, () -> lobby.chooseMap(1, "maps/missing.txt"));
     }
 
     @Test

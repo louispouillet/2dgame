@@ -6,11 +6,20 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import io.github.game2d.model.Team;
 import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.protocol.BrawlerState;
+import io.github.game2d.protocol.ChooseMap;
+import io.github.game2d.protocol.ChooseTeam;
 import io.github.game2d.protocol.JoinAccepted;
+import io.github.game2d.protocol.JoinRejected;
+import io.github.game2d.protocol.JoinRequest;
+import io.github.game2d.protocol.LobbyPlayerState;
+import io.github.game2d.protocol.LobbyState;
 import io.github.game2d.protocol.PlayerInput;
 import io.github.game2d.protocol.ProjectileState;
+import io.github.game2d.protocol.RefusalReason;
+import io.github.game2d.protocol.StartRequest;
 import io.github.game2d.protocol.WorldSnapshot;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +71,36 @@ class NetworkRegistryTest {
         WorldSnapshot snapshot = new WorldSnapshot(0, new ArrayList<>(), new ArrayList<>());
 
         assertEquals(snapshot, roundTrip(snapshot));
+    }
+
+    @Test
+    void lobbyRequestsSurviveTheNetwork() {
+        assertEquals(new JoinRequest("Louis"), roundTrip(new JoinRequest("Louis")));
+        assertEquals(new ChooseTeam(Team.RED), roundTrip(new ChooseTeam(Team.RED)));
+        assertEquals(new ChooseMap("maps/arena1.txt"), roundTrip(new ChooseMap("maps/arena1.txt")));
+        assertEquals(new StartRequest(), roundTrip(new StartRequest()));
+    }
+
+    @Test
+    void joinRejectedSurvivesTheNetwork() {
+        JoinRejected rejected = new JoinRejected(RefusalReason.NAME_TAKEN);
+
+        assertEquals(rejected, roundTrip(rejected));
+    }
+
+    @Test
+    void lobbyStateSurvivesTheNetwork() {
+        LobbyState lobby = new LobbyState(
+            new ArrayList<>(List.of(
+                new LobbyPlayerState(1, "Louis", Team.BLUE),
+                new LobbyPlayerState(2, "Élodie", Team.RED))),
+            1,
+            "maps/arena2.txt",
+            new ArrayList<>(List.of("maps/arena1.txt", "maps/arena2.txt")),
+            true,
+            false);
+
+        assertEquals(lobby, roundTrip(lobby));
     }
 
     @Test

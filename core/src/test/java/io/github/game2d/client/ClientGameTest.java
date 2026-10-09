@@ -3,6 +3,7 @@ package io.github.game2d.client;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import io.github.game2d.model.Team;
 import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.TestArenas;
 import io.github.game2d.model.brawler.BrawlerType;
@@ -10,6 +11,7 @@ import io.github.game2d.net.LocalChannel;
 import io.github.game2d.net.ServerChannel;
 import io.github.game2d.protocol.BrawlerState;
 import io.github.game2d.protocol.PlayerInput;
+import io.github.game2d.protocol.RefusalReason;
 import io.github.game2d.protocol.WorldSnapshot;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,27 @@ class ClientGameTest {
     private final ClientGame game = new ClientGame(arena, new FakeSession(channel, MY_ID));
 
     private record FakeSession(ServerChannel channel, int playerId) implements GameSession {
+        @Override
+        public void join(String name) {
+        }
+
+        @Override
+        public void chooseTeam(Team team) {
+        }
+
+        @Override
+        public void chooseMap(String map) {
+        }
+
+        @Override
+        public void start() {
+        }
+
+        @Override
+        public RefusalReason rejection() {
+            return null;
+        }
+
         @Override
         public void close() {
         }

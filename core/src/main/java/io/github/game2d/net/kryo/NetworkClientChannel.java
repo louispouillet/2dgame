@@ -2,6 +2,7 @@ package io.github.game2d.net.kryo;
 
 import com.esotericsoftware.kryonet.Connection;
 import io.github.game2d.net.ClientChannel;
+import io.github.game2d.protocol.LobbyState;
 import io.github.game2d.protocol.PlayerInput;
 import io.github.game2d.protocol.WorldSnapshot;
 import java.util.concurrent.atomic.AtomicReference;
@@ -22,6 +23,11 @@ public class NetworkClientChannel implements ClientChannel {
     @Override
     public void sendSnapshot(WorldSnapshot snapshot) {
         connection.sendUDP(snapshot);
+    }
+
+    @Override
+    public void sendLobby(LobbyState lobby) {
+        connection.sendTCP(lobby);
     }
 
     public void receive(PlayerInput input) {

@@ -1,6 +1,7 @@
 package io.github.game2d.server;
 
 import io.github.game2d.model.Team;
+import io.github.game2d.protocol.RefusalReason;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -27,14 +28,14 @@ public final class Lobby {
 
     public LobbyPlayer join(int id, String name) {
         if (players.size() >= MAX_PLAYERS) {
-            throw new LobbyException(LobbyException.Reason.LOBBY_FULL);
+            throw new LobbyException(RefusalReason.LOBBY_FULL);
         }
         String cleanName = name == null ? "" : name.strip();
         if (!VALID_NAME.matcher(cleanName).matches()) {
-            throw new LobbyException(LobbyException.Reason.INVALID_NAME);
+            throw new LobbyException(RefusalReason.INVALID_NAME);
         }
         if (players.stream().anyMatch(player -> player.name().equalsIgnoreCase(cleanName))) {
-            throw new LobbyException(LobbyException.Reason.NAME_TAKEN);
+            throw new LobbyException(RefusalReason.NAME_TAKEN);
         }
         LobbyPlayer player = new LobbyPlayer(id, cleanName, smallestTeam());
         players.add(player);
@@ -52,17 +53,17 @@ public final class Lobby {
             return;
         }
         if (teamSize(team) >= MAX_TEAM_SIZE) {
-            throw new LobbyException(LobbyException.Reason.TEAM_FULL);
+            throw new LobbyException(RefusalReason.TEAM_FULL);
         }
         players.set(index, new LobbyPlayer(id, player.name(), team));
     }
 
     public void chooseMap(int requesterId, String map) {
         if (!isLeader(requesterId)) {
-            throw new LobbyException(LobbyException.Reason.NOT_LEADER);
+            throw new LobbyException(RefusalReason.NOT_LEADER);
         }
         if (!maps.contains(map)) {
-            throw new LobbyException(LobbyException.Reason.UNKNOWN_MAP);
+            throw new LobbyException(RefusalReason.UNKNOWN_MAP);
         }
         this.map = map;
     }

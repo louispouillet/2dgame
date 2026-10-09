@@ -31,6 +31,7 @@ public class GameWorld {
             throw new IllegalArgumentException("Brawler already registered: " + brawler.getId());
         }
         players.put(brawler.getId(), brawler);
+        nextId = Math.max(nextId, brawler.getId() + 1);
         gameObjects.add(brawler);
     }
 
