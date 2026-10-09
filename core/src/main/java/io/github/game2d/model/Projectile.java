@@ -1,5 +1,7 @@
 package io.github.game2d.model;
 
+import io.github.game2d.model.arena.Arena;
+
 public class Projectile extends GameObject {
     private final int ownerId;
     private final int damage;
@@ -45,13 +47,16 @@ public class Projectile extends GameObject {
     }
 
     @Override
-    public void update(float dt) {
+    public void update(float dt, Arena arena) {
         previousX = x;
         previousY = y;
-        float step = speed * dt;
-        x += dirX * step;
-        y += dirY * step;
-        distanceTravelled += step;
+        float distance = speed * dt;
+        x += dirX * distance;
+        y += dirY * distance;
+        distanceTravelled += distance;
+        if (arena.blocksShots(x, y, radius)) {
+            hit = true;
+        }
     }
 
     @Override

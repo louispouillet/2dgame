@@ -1,6 +1,7 @@
 package io.github.game2d.net.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.protocol.BrawlerState;
 import io.github.game2d.protocol.JoinAccepted;
 import io.github.game2d.protocol.PlayerInput;
@@ -19,5 +20,6 @@ public class NetworkRegistry {
         kryo.register(ProjectileState.class);
         kryo.register(JoinAccepted.class);
         kryo.register(ArrayList.class);
+        kryo.register(BrawlerType.class);
     }
 }

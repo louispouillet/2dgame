@@ -1,5 +1,7 @@
 package io.github.game2d.model;
 
+import io.github.game2d.model.arena.Arena;
+
 public abstract class GameObject {
     private final int id;
 
@@ -14,7 +16,7 @@ public abstract class GameObject {
         this.radius = radius;
     }
 
-    public abstract void update(float dt);
+    public abstract void update(float dt, Arena arena);
 
     public boolean isExpired() {
         return false;

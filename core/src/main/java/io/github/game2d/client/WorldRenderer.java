@@ -43,7 +43,7 @@ public class WorldRenderer implements GameView {
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         shapes.begin(ShapeRenderer.ShapeType.Filled);
-        drawArena(arena, findPlayer(snapshot, playerId));
+        drawArena(arena, snapshot.findBrawler(playerId));
         shapes.setColor(Color.WHITE);
         for (ProjectileState projectile : snapshot.projectiles()) {
             shapes.circle(projectile.x(), projectile.y(), projectile.radius(), 24);
@@ -60,15 +60,6 @@ public class WorldRenderer implements GameView {
         }
         batch.setProjectionMatrix(viewport.getCamera().combined);
         hud.draw(shapes, batch, anchors);
-    }
-
-    private static BrawlerState findPlayer(WorldSnapshot snapshot, int playerId) {
-        for (BrawlerState brawler : snapshot.brawlers()) {
-            if (brawler.id() == playerId) {
-                return brawler;
-            }
-        }
-        return null;
     }
 
     private void drawArena(Arena arena, BrawlerState player) {

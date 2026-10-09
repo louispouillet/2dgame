@@ -4,13 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.game2d.model.Projectile;
+import io.github.game2d.model.arena.TestArenas;
 import io.github.game2d.model.brawler.Colt;
 import org.junit.jupiter.api.Test;
 
 class CollisionsTest {
     private static Projectile shotFromOriginToTheRight() {
         Projectile projectile = new Projectile(1, 99, 0f, 0f, 0.05f, 1f, 0f, 12f, 20f, 10);
-        projectile.update(1f);
+        projectile.update(1f, TestArenas.open(30, 20));
         return projectile;
     }
 

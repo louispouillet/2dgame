@@ -46,6 +46,7 @@ public class SnapshotBuilder {
                         brawler.getAmmo(),
                         brawler.getMaxAmmo(),
                         brawler.getReloadProgress(),
+                        brawler.getType(),
                         lastProcessedSequence
                     )
                 );

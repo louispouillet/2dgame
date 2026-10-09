@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.protocol.BrawlerState;
 import io.github.game2d.protocol.ProjectileState;
 import io.github.game2d.protocol.WorldSnapshot;
@@ -14,7 +15,7 @@ class SnapshotBufferTest {
     private static final float DELTA = 1e-4f;
 
     private static BrawlerState brawler(int id, float x, float y, int health) {
-        return new BrawlerState(id, x, y, 0.4f, health, 100, 3, 3, 0f, 0);
+        return new BrawlerState(id, x, y, 0.4f, health, 100, 3, 3, 0f, BrawlerType.SHELLY, 0);
     }
 
     private static WorldSnapshot world(BrawlerState... brawlers) {

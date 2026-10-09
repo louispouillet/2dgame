@@ -115,7 +115,7 @@ public class WorldRenderer3D implements GameView {
 
     @Override
     public void render(WorldSnapshot snapshot, Arena arena, int playerId) {
-        BrawlerState player = findPlayer(snapshot, playerId);
+        BrawlerState player = snapshot.findBrawler(playerId);
         followPlayer(player, Gdx.graphics.getDeltaTime());
         updateBushes(arena, player);
         updateBrawlers(snapshot, playerId);
@@ -153,23 +153,14 @@ public class WorldRenderer3D implements GameView {
         hud.draw(shapes, batch, anchors);
     }
 
-    private static BrawlerState findPlayer(WorldSnapshot snapshot, int playerId) {
-        for (BrawlerState brawler : snapshot.brawlers()) {
-            if (brawler.id() == playerId) {
-                return brawler;
-            }
-        }
-        return null;
-    }
-
-    private void followPlayer(BrawlerState player, float delta) {
+    private void followPlayer(BrawlerState player, float frameTime) {
         if (player == null) {
             return;
         }
         playerPosition.set(player.x(), 0f, -player.y());
         clampToBounds(playerPosition);
         if (followingPlayer) {
-            cameraTarget.lerp(playerPosition, MathUtils.clamp(CAMERA_FOLLOW_SPEED * delta, 0f, 1f));
+            cameraTarget.lerp(playerPosition, MathUtils.clamp(CAMERA_FOLLOW_SPEED * frameTime, 0f, 1f));
         } else {
             cameraTarget.set(playerPosition);
             followingPlayer = true;

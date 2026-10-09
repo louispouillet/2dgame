@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.game2d.model.Projectile;
+import io.github.game2d.model.arena.TestArenas;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
@@ -107,7 +108,7 @@ class WeaponTest {
     @Test
     void shotgunPelletsSpreadSymmetricallyAroundTheAim() {
         List<Projectile> shots = fire(new Shotgun());
-        shots.forEach(p -> p.update(0.1f));
+        shots.forEach(p -> p.update(0.1f, TestArenas.open(30, 20)));
 
         assertEquals(0, shots.get(2).getY(), 1e-5);
         assertEquals(shots.get(0).getY(), -shots.get(4).getY(), 1e-5);

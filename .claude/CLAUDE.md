@@ -20,9 +20,9 @@ Faisable en visant un périmètre réduit :
 Principes illustrés :
 - **Héritage** : `GameObject` → `Brawler` → `Shelly` / `Colt`
 - **Abstraction** : classes abstraites (`GameObject`, `Brawler`, `Weapon`) et interfaces (`GameView`, canaux), créées seulement quand il y a plusieurs implémentations
-- **Polymorphisme** : `GameWorld` appelle `update(dt)` sur tous les `GameObject` ; vues et canaux interchangeables
+- **Polymorphisme** : `GameWorld` appelle `update(dt, arena)` sur tous les `GameObject`, sans `instanceof` (chaque objet gère son déplacement et ses collisions avec le décor) ; vues et canaux interchangeables
 - **Composition / Strategy** : `Brawler` a une `Weapon`
-- **Encapsulation** : attributs privés ou protégés, modifiés via méthodes (ex. position uniquement dans `Brawler.move`)
+- **Encapsulation** : attributs privés ou protégés, modifiés via méthodes (ex. position uniquement dans `Brawler.move`, privée, appelée par `update`)
 
 ## 3. Source de vérité et rendu
 - Le **serveur** (`GameServer`) est la source de vérité : il possède le vrai `GameWorld` (positions, PV, collisions).
@@ -34,8 +34,8 @@ Principes illustrés :
 - Toutes les collisions sont calculées côté serveur, dans `model`.
 - Chaque objet a un rayon (`GameObject.getRadius()`).
 - **Décor** : `Arena` (grille de cases) : `blocksMovement` / `blocksShots` testent un cercle contre les cases voisines (`Collisions.circleTouchesBox`). Mur : bloque tout ; eau : bloque la marche ; buisson : rien ; hors map = mur.
-- **Brawlers** : `Brawler.move(dt, arena)` avance en x puis en y (glissement le long des murs), en réduisant le pas jusqu'à 5 fois pour finir collé au mur.
-- **Tirs** : `GameWorld` arrête un projectile dans un mur ; `Collisions.sweptOverlaps` détecte un brawler touché le long du trajet du tir.
+- **Brawlers** : `Brawler.update(dt, arena)` appelle `move`, qui avance en x puis en y (glissement le long des murs), en réduisant le pas jusqu'à 5 fois pour finir collé au mur.
+- **Tirs** : `Projectile.update` s'arrête de lui-même dans un mur ; `GameWorld.resolveProjectileHits` gère les tirs sur les brawlers et `Collisions.sweptOverlaps` détecte un brawler touché le long du trajet du tir.
 - Les tests utilisent une vraie arène (`TestArenas.open`, dans `src/test`).
 
 ## 5. Buissons
@@ -45,7 +45,7 @@ Principes illustrés :
 - Côté client, les cases buisson dans ce même rayon autour du joueur sont dessinées transparentes (40 %), en 2D et en 3D (`Arena.canSeeIntoBush`). En 3D, chaque buisson est une `ModelInstance` séparée (`ArenaModelFactory.createBush`) pour avoir sa propre opacité.
 
 ## 6. Module `core` : packages
-Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol` ne dépend de rien ; `server` → `model`, `protocol`, `net` ; `net` → `protocol`, `server` ; `client` → tous. Seul `client` dépend de libGDX ; seul `net.kryo` dépend de KryoNet. Les tests suivent la même arborescence (`core/src/test`).
+Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol` ne dépend de rien ; `time` ne dépend de rien ; `server` → `model`, `protocol`, `net`, `time` ; `net` → `protocol`, `server` ; `client` → tous. Seul `client` dépend de libGDX ; seul `net.kryo` dépend de KryoNet. Les tests suivent la même arborescence (`core/src/test`).
 
 - `model/` : règles du jeu, Java pur (`GameObject`, `Projectile`, `GameWorld`)
   - `model.arena` : `Arena`, `ArenaLoader`, `TileType`, `SpawnPoint`, `ArenaFormatException`
@@ -53,10 +53,11 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
   - `model.weapon` : `Weapon`, `Shotgun`, `Revolver`
   - `model.collision` : `Collisions`
 - `protocol/` : messages échangés client/serveur (`PlayerInput`, `JoinAccepted`, `WorldSnapshot`, `BrawlerState`, `ProjectileState`)
-- `server/` : autorité de jeu (`GameServer`, `FixedTimestep`, `ServerLauncher`) et traduction protocole ↔ modèle (`InputApplier`, `SnapshotBuilder`)
+- `time/` : `TickClock` (tick fixe partagé : `TICK_RATE` = 30, `STEP`, numéro de tick, `timeOfTick`)
+- `server/` : autorité de jeu (`GameServer`, `ServerLauncher`) et traduction protocole ↔ modèle (`InputApplier`, `SnapshotBuilder`)
 - `net/` : transport. Interfaces `ClientChannel` / `ServerChannel`, `LocalChannel` (en mémoire)
-  - `net.kryo` : `NetworkServer`, `NetworkClient` (cycle de vie KryoNet), `NetworkClientChannel`, `NetworkServerChannel` (traducteurs de protocole), `NetworkRegistry`
-- `client/` : libGDX. `Main`, `InputReader`, `SnapshotBuffer` ; vues `GameView`, `WorldRenderer` (2D), `WorldRenderer3D` + `ArenaModelFactory` (3D, textures dans `assets/textures/arena`) ; HUD `BrawlerHud`, `HudAnchor`
+  - `net.kryo` : `NetworkEndpoint` (classe abstraite : thread d'update KryoNet, `stop`) → `NetworkServer`, `NetworkClient`, `NetworkClientChannel`, `NetworkServerChannel` (traducteurs de protocole), `NetworkRegistry`
+- `client/` : libGDX. `Main` (glue libGDX), `ClientGame` (réception, prédiction, envoi des inputs), `GameSession` → `LocalSession` / `RemoteSession`, `InputReader`, `PredictedPlayer`, `SnapshotBuffer`, `ClientClock` (seule horloge du client : temps local, estimation du temps serveur, cadence des inputs) ; vues `GameView`, `WorldRenderer` (2D), `WorldRenderer3D` + `ArenaModelFactory` (3D, textures dans `assets/textures/arena`) ; HUD `BrawlerHud`, `HudAnchor`
 
 ## 7. Lancement (Makefile)
 - `make solo` : partie locale ; `make server` : serveur multijoueur (TCP 54555 / UDP 54777) ; `make client [HOST=ip]` : client ; `make duo` : serveur + 2 fenêtres sur la même machine.

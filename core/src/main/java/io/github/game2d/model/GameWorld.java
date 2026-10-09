@@ -1,7 +1,5 @@
 package io.github.game2d.model;
 
-import io.github.game2d.model.GameObject;
-import io.github.game2d.model.Projectile;
 import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.brawler.Brawler;
 import io.github.game2d.model.collision.Collisions;
@@ -65,23 +63,10 @@ public class GameWorld {
 
     public void update(float dt) {
         for (GameObject object : gameObjects) {
-            if (object instanceof Brawler brawler) {
-                brawler.move(dt, arena);
-            }
-            object.update(dt);
+            object.update(dt, arena);
         }
-        stopProjectilesOnObstacles();
         resolveProjectileHits();
         gameObjects.removeIf(GameObject::isExpired);
-    }
-
-    private void stopProjectilesOnObstacles() {
-        for (GameObject object : gameObjects) {
-            if (object instanceof Projectile projectile
-                    && arena.blocksShots(projectile.getX(), projectile.getY(), projectile.getRadius())) {
-                projectile.markHit();
-            }
-        }
     }
 
     private void resolveProjectileHits() {

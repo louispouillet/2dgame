@@ -8,6 +8,7 @@ import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.protocol.BrawlerState;
 import io.github.game2d.protocol.PlayerInput;
 import io.github.game2d.protocol.ProjectileState;
@@ -40,6 +41,7 @@ class KryoNetSpikeTest {
         kryo.register(WorldSnapshot.class);
         kryo.register(BrawlerState.class);
         kryo.register(ProjectileState.class);
+        kryo.register(BrawlerType.class);
         kryo.register(ArrayList.class);
     }
 
@@ -152,8 +154,8 @@ class KryoNetSpikeTest {
     private static WorldSnapshot sampleSnapshot() {
         // des ArrayList, comme celles que construit SnapshotBuilder.build()
         List<BrawlerState> brawlers = new ArrayList<>(List.of(
-            new BrawlerState(1, 1.5f, 2.5f, 0.25f, 120, 120, 3, 3, 0f, 7),
-            new BrawlerState(2, 4.5f, 2.5f, 0.25f, 80, 100, 1, 3, 0.4f, 5)));
+            new BrawlerState(1, 1.5f, 2.5f, 0.25f, 120, 120, 3, 3, 0f, BrawlerType.SHELLY, 7),
+            new BrawlerState(2, 4.5f, 2.5f, 0.25f, 80, 100, 1, 3, 0.4f, BrawlerType.COLT, 5)));
         List<ProjectileState> projectiles = new ArrayList<>(List.of(
             new ProjectileState(3, 2f, 2.5f, 0.05f),
             new ProjectileState(4, 2.1f, 2.6f, 0.05f)));

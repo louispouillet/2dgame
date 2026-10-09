@@ -12,15 +12,14 @@ public abstract class Brawler extends GameObject {
     private static final float REGEN_RATE = 0.2f;
     private static final int MOVE_ATTEMPTS = 5;
 
-    private final float speed;
-    private final int maxHealth;
-    private final Weapon weapon;
-
     private float dirX;
     private float dirY;
+    private final float speed;
+    private final int maxHealth;
     private int health;
     private float timeSinceCombat;
     private float regenBuffer;
+    private final Weapon weapon;
 
     protected Brawler(int id, float x, float y, float radius, float speed, int maxHealth, Weapon weapon) {
         super(id, x, y, radius);
@@ -50,24 +49,24 @@ public abstract class Brawler extends GameObject {
         return health > 0;
     }
 
+    public abstract BrawlerType getType();
+
     @Override
     public boolean isExpired() {
         return !isAlive();
     }
 
     @Override
-    public void update(float dt) {
+    public void update(float dt, Arena arena) {
         if (!isAlive()) {
             return;
         }
+        move(dt, arena);
         weapon.update(dt);
         regenerate(dt);
     }
 
-    public void move(float dt, Arena arena) {
-        if (!isAlive()) {
-            return;
-        }
+    private void move(float dt, Arena arena) {
         float stepX = dirX * speed * dt;
         for (int i = 0; i < MOVE_ATTEMPTS && stepX != 0; i++, stepX /= 2) {
             if (!arena.blocksMovement(x + stepX, y, radius)) {
@@ -82,6 +81,14 @@ public abstract class Brawler extends GameObject {
                 break;
             }
         }
+    }
+
+    public void correctPositionTo(float x, float y, Arena arena){
+        if (arena.blocksMovement(x, y, radius)) {
+            throw new IllegalArgumentException("Position blocked by the arena");
+        }
+        this.x = x;
+        this.y = y;
     }
 
     private void regenerate(float dt) {

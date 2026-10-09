@@ -4,17 +4,16 @@ import io.github.game2d.model.GameWorld;
 import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.SpawnPoint;
 import io.github.game2d.model.brawler.Brawler;
-import io.github.game2d.model.brawler.Colt;
-import io.github.game2d.model.brawler.Shelly;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.net.ClientChannel;
 import io.github.game2d.protocol.WorldSnapshot;
+import io.github.game2d.time.TickClock;
 import java.util.HashMap;
 import java.util.Map;
 
 public class GameServer {
-    public static final int TICK_RATE = 30;
+    private static final BrawlerType[] BRAWLER_ROTATION = BrawlerType.values();
 
-    private int tick;
     private volatile boolean running;
     private Thread thread;
     private final GameWorld world;
@@ -22,7 +21,7 @@ public class GameServer {
     private final InputApplier inputApplier;
     private final SnapshotBuilder snapshotBuilder;
     private final Map<Integer, ClientChannel> connections = new HashMap<>();
-    private final FixedTimestep timestep = new FixedTimestep(1f / TICK_RATE);
+    private final TickClock clock = new TickClock();
 
     public GameServer(Arena arena) {
         this.arena = arena;
@@ -33,12 +32,8 @@ public class GameServer {
 
     public synchronized int join(ClientChannel connection) {
         SpawnPoint spawn = arena.getSpawnPoint(connections.size() + 1);
-        Brawler brawler;
-        if (connections.isEmpty()) {
-            brawler = new Shelly(world.nextId(), spawn.x(), spawn.y());
-        } else {
-            brawler = new Colt(world.nextId(), spawn.x(), spawn.y());
-        }
+        BrawlerType type = BRAWLER_ROTATION[connections.size() % BRAWLER_ROTATION.length];
+        Brawler brawler = type.create(world.nextId(), spawn.x(), spawn.y());
         world.addPlayer(brawler);
         connections.put(brawler.getId(), connection);
         return brawler.getId();
@@ -52,11 +47,14 @@ public class GameServer {
     }
 
     public synchronized void tick() {
+        clock.step(this::simulate);
+    }
+
+    private synchronized void simulate(int tick) {
         for (Map.Entry<Integer, ClientChannel> entry : connections.entrySet()) {
             inputApplier.apply(entry.getKey(), entry.getValue().latestInput());
         }
-        world.update(timestep.getStep());
-        tick++;
+        world.update(clock.getStep());
         for (Map.Entry<Integer, ClientChannel> entry : connections.entrySet()) {
             WorldSnapshot snapshot = snapshotBuilder.build(tick, inputApplier::lastProcessedSequence, entry.getKey());
             entry.getValue().sendSnapshot(snapshot);
@@ -91,7 +89,7 @@ public class GameServer {
             long now = System.nanoTime();
             float frameTime = (now - last) / 1_000_000_000f;
             last = now;
-            timestep.advance(frameTime, this::tick);
+            clock.advance(frameTime, this::simulate);
             try {
                 Thread.sleep(1);
             } catch (InterruptedException e) {

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.protocol.BrawlerState;
 import io.github.game2d.protocol.JoinAccepted;
 import io.github.game2d.protocol.PlayerInput;
@@ -48,8 +49,8 @@ class NetworkRegistryTest {
         WorldSnapshot snapshot = new WorldSnapshot(
             42,
             new ArrayList<>(List.of(
-                new BrawlerState(1, 1.5f, 2.5f, 0.25f, 120, 120, 3, 3, 0f, 7),
-                new BrawlerState(2, 4.5f, 2.5f, 0.25f, 80, 100, 1, 3, 0.4f, 5))),
+                new BrawlerState(1, 1.5f, 2.5f, 0.25f, 120, 120, 3, 3, 0f, BrawlerType.SHELLY, 7),
+                new BrawlerState(2, 4.5f, 2.5f, 0.25f, 80, 100, 1, 3, 0.4f, BrawlerType.COLT, 5))),
             new ArrayList<>(List.of(
                 new ProjectileState(3, 2f, 2.5f, 0.05f))));
 

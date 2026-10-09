@@ -34,7 +34,7 @@ class BrawlerTest {
         Colt colt = new Colt(1, X0, Y0);
 
         colt.setDirection(1, 0);
-        colt.move(1f, ARENA);
+        colt.update(1f, ARENA);
 
         assertEquals(X0 + 5f, colt.getX(), 1e-5);
         assertEquals(Y0, colt.getY(), 1e-5);
@@ -45,7 +45,7 @@ class BrawlerTest {
         Colt colt = new Colt(1, X0, Y0);
 
         colt.setDirection(1, 1);
-        colt.move(1f, ARENA);
+        colt.update(1f, ARENA);
 
         assertEquals(5f, (float) Math.hypot(colt.getX() - X0, colt.getY() - Y0), 1e-4);
     }
@@ -56,7 +56,7 @@ class BrawlerTest {
         colt.setDirection(1, 0);
 
         colt.setDirection(0, 0);
-        colt.move(1f, ARENA);
+        colt.update(1f, ARENA);
 
         assertEquals(X0, colt.getX(), 1e-6);
     }
@@ -95,7 +95,7 @@ class BrawlerTest {
         colt.setDirection(1, 0);
         colt.takeDamage(100);
 
-        colt.move(1f, ARENA);
+        colt.update(1f, ARENA);
 
         assertEquals(X0, colt.getX(), 1e-6);
     }
@@ -124,7 +124,7 @@ class BrawlerTest {
         Colt colt = new Colt(1, 0, 0);
         colt.takeDamage(50);
 
-        colt.update(2.9f);
+        colt.update(2.9f, ARENA);
 
         assertEquals(50, colt.getHealth());
     }
@@ -134,8 +134,8 @@ class BrawlerTest {
         Colt colt = new Colt(1, 0, 0);
         colt.takeDamage(50);
 
-        colt.update(3f);
-        colt.update(1f);
+        colt.update(3f, ARENA);
+        colt.update(1f, ARENA);
 
         assertTrue(colt.getHealth() > 50);
     }
@@ -146,7 +146,7 @@ class BrawlerTest {
         colt.takeDamage(1);
 
         for (int i = 0; i < 600; i++) {
-            colt.update(0.1f);
+            colt.update(0.1f, ARENA);
         }
 
         assertEquals(colt.getMaxHealth(), colt.getHealth());
@@ -156,11 +156,11 @@ class BrawlerTest {
     void attackingInterruptsRegeneration() {
         Colt colt = new Colt(1, 0, 0);
         colt.takeDamage(50);
-        colt.update(3f);
+        colt.update(3f, ARENA);
 
         colt.attack(ids::incrementAndGet, 1, 0);
         int before = colt.getHealth();
-        colt.update(1f);
+        colt.update(1f, ARENA);
 
         assertEquals(before, colt.getHealth());
     }
