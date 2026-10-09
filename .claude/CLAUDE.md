@@ -30,6 +30,7 @@ Principes illustrés :
 - Le serveur envoie **un snapshot par joueur** (`SnapshotBuilder.build(tick, lastProcessed, viewerId)`) : chacun ne reçoit que ce qu'il a le droit de voir.
 - Le **client** dessine une copie de l'état reçu (`WorldSnapshot`), interpolée par `SnapshotBuffer`.
 - Cycle 30 Hz : inputs envoyés → simulation serveur → snapshot diffusé → mise à jour locale → rendu à 60 FPS.
+- Écrans du client : `Main extends Game` affiche un `Screen` à la fois (`setScreen`). La session (`GameSession`) appartient à `Main` et survit aux changements d'écran. `Game` ne libère jamais ses écrans : `Main.dispose` libère l'écran courant, et un changement d'écran doit libérer l'ancien.
 
 ## 4. Collisions
 - Toutes les collisions sont calculées côté serveur, dans `model`.
@@ -75,7 +76,7 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 - `server/` : autorité de jeu (`GameServer`, `ServerLauncher`), lobby (`Lobby`, `LobbyPlayer`, `LobbyException`) et traduction protocole ↔ modèle (`InputApplier`, `SnapshotBuilder`)
 - `net/` : transport. Interfaces `ClientChannel` / `ServerChannel`, `LocalChannel` (en mémoire)
   - `net.kryo` : `NetworkEndpoint` (classe abstraite : thread d'update KryoNet, `stop`) → `NetworkServer`, `NetworkClient`, `NetworkClientChannel`, `NetworkServerChannel` (traducteurs de protocole), `NetworkRegistry`
-- `client/` : libGDX. `Main` (glue libGDX), `ClientGame` (réception, prédiction, envoi des inputs), `GameSession` → `LocalSession` / `RemoteSession`, `InputReader`, `PredictedPlayer`, `SnapshotBuffer`, `ClientClock` (seule horloge du client : temps local, estimation du temps serveur, cadence des inputs) ; vues `GameView`, `WorldRenderer` (2D), `WorldRenderer3D` + `ArenaModelFactory` (3D, textures dans `assets/textures/arena`) ; HUD `BrawlerHud`, `HudAnchor`
+- `client/` : libGDX. `Main` (`Game` libGDX : ouvre la session, qu'il possède et ferme, puis affiche un écran), écrans `GameScreen` (vues 2D/3D, `InputReader`, `ClientGame` ; reçoit la session et la map), `ClientGame` (réception, prédiction, envoi des inputs), `GameSession` → `LocalSession` / `RemoteSession`, `InputReader`, `PredictedPlayer`, `SnapshotBuffer`, `ClientClock` (seule horloge du client : temps local, estimation du temps serveur, cadence des inputs) ; vues `GameView`, `WorldRenderer` (2D), `WorldRenderer3D` + `ArenaModelFactory` (3D, textures dans `assets/textures/arena`) ; HUD `BrawlerHud`, `HudAnchor`
 
 ## 9. Lancement (Makefile)
 - `make solo` : partie locale ; `make server` : serveur multijoueur (TCP 54555 / UDP 54777) ; `make client [HOST=ip]` : client ; `make duo` : serveur + 2 fenêtres sur la même machine. En attendant les écrans du lobby, seul `make solo` lance une partie (les clients réseau se connectent mais n'envoient pas encore de pseudo).
@@ -83,7 +84,7 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 - Maps lues dans le classpath par `ArenaLoader.loadResource` (fonctionne aussi depuis le jar seul). Le serveur propose `ArenaLoader.availableMaps()` (par défaut `DEFAULT_MAP`, `maps/arena2.txt`) et charge celle choisie dans le lobby ; le client charge encore `DEFAULT_MAP` (il utilisera `LobbyState.map` avec les écrans).
 
 ## Reste à faire
-- Lobby (dans l'ordre) : `Main` en écrans (`Game` + `Screen`) ; écrans Scene2D (pseudo et adresse du serveur, lobby) ; pseudo au-dessus des brawlers
+- Lobby (dans l'ordre) : écrans Scene2D (pseudo et adresse du serveur, lobby) ; pseudo au-dessus des brawlers
 - Règles d'équipe (pas de tir allié, alliés visibles dans les buissons) puis mode « Hors-jeu » (manches, score, fin de partie)
 - Buissons : se révéler en tirant ou en étant touché
 - Caméra 3D : élargir la bande de décor pour que le joueur ne soit pas collé au coin au départ
