@@ -1,6 +1,8 @@
 package io.github.game2d.model.arena;
 
+import io.github.game2d.model.Team;
 import io.github.game2d.model.collision.Collisions;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -72,6 +74,13 @@ public final class Arena {
 
     public List<SpawnPoint> getSpawnPoints() {
         return spawnPoints;
+    }
+
+    public List<SpawnPoint> getSpawnPoints(Team team) {
+        return spawnPoints.stream()
+            .filter(spawn -> spawn.team() == team)
+            .sorted(Comparator.comparingInt(SpawnPoint::player))
+            .toList();
     }
 
     public SpawnPoint getSpawnPoint(int player) {

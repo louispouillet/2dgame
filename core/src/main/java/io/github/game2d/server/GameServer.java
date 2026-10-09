@@ -13,6 +13,7 @@ import java.util.Map;
 
 public class GameServer {
     private static final BrawlerType[] BRAWLER_ROTATION = BrawlerType.values();
+    private static final int[] SPAWN_ORDER = {1, 4, 2, 5, 3, 6};
 
     private volatile boolean running;
     private Thread thread;
@@ -31,7 +32,10 @@ public class GameServer {
     }
 
     public synchronized int join(ClientChannel connection) {
-        SpawnPoint spawn = arena.getSpawnPoint(connections.size() + 1);
+        if (connections.size() >= SPAWN_ORDER.length) {
+            throw new IllegalStateException("The server is full");
+        }
+        SpawnPoint spawn = arena.getSpawnPoint(SPAWN_ORDER[connections.size()]);
         BrawlerType type = BRAWLER_ROTATION[connections.size() % BRAWLER_ROTATION.length];
         Brawler brawler = type.create(world.nextId(), spawn.x(), spawn.y());
         world.addPlayer(brawler);

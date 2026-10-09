@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.github.game2d.model.Team;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -149,6 +150,15 @@ class ArenaTest {
     @Test
     void cannotSeeIntoTileThatIsNotABush() {
         assertFalse(arena.canSeeIntoBush(2, 2, 2.5f, 2.5f));
+    }
+
+    @Test
+    void getSpawnPointsOfATeamSortsThemByNumber() {
+        Arena teams = new Arena(grid, List.of(
+            new SpawnPoint(4, 2.5f, 2.5f), new SpawnPoint(2, 1.5f, 2.5f), new SpawnPoint(1, 1.5f, 1.5f)));
+
+        assertEquals(List.of(new SpawnPoint(1, 1.5f, 1.5f), new SpawnPoint(2, 1.5f, 2.5f)), teams.getSpawnPoints(Team.BLUE));
+        assertEquals(List.of(new SpawnPoint(4, 2.5f, 2.5f)), teams.getSpawnPoints(Team.RED));
     }
 
     @Test

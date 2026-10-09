@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.game2d.model.arena.Arena;
@@ -18,7 +19,7 @@ import org.junit.jupiter.api.Test;
 class GameServerTest {
     private static final String MAP = """
         ######
-        #1..2#
+        #1..4#
         #....#
         ######
         """;
@@ -198,5 +199,37 @@ class GameServerTest {
         server.join(channel);
 
         assertNull(channel.latestSnapshot());
+    }
+
+    @Test
+    void playersAlternateBetweenBlueAndRedSpawns() {
+        GameServer teams = new GameServer(ArenaLoader.parse("""
+            ########
+            #1.2.4.#
+            #3.5.6.#
+            ########
+            """));
+        LocalChannel first = new LocalChannel();
+        LocalChannel second = new LocalChannel();
+        LocalChannel third = new LocalChannel();
+
+        int firstId = teams.join(first);
+        int secondId = teams.join(second);
+        int thirdId = teams.join(third);
+        teams.tick();
+
+        assertEquals(1.5f, brawlerOf(first, firstId).x());
+        assertEquals(5.5f, brawlerOf(first, secondId).x());
+        assertEquals(3.5f, brawlerOf(first, thirdId).x());
+    }
+
+    @Test
+    void seventhPlayerIsRefused() {
+        GameServer full = new GameServer(ArenaLoader.loadResource(ArenaLoader.DEFAULT_MAP));
+        for (int i = 0; i < 6; i++) {
+            full.join(new LocalChannel());
+        }
+
+        assertThrows(IllegalStateException.class, () -> full.join(new LocalChannel()));
     }
 }

@@ -2,10 +2,10 @@ package io.github.game2d.model.arena;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import io.github.game2d.model.Team;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class ArenaLoaderTest {
@@ -87,8 +87,15 @@ class ArenaLoaderTest {
     }
 
     @Test
-    void rejectsPlayerNumberAboveFour() {
-        assertRejected("######\n#1..5#\n######", "Line 2, column 5: unknown symbol '5'");
+    void acceptsSpawnPointsUpToSix() {
+        Arena arena = ArenaLoader.parse("########\n#123456#\n########");
+
+        assertEquals(6, arena.getSpawnPoints().size());
+    }
+
+    @Test
+    void rejectsPlayerNumberAboveSix() {
+        assertRejected("######\n#1..7#\n######", "Line 2, column 5: unknown symbol '7'");
     }
 
     @Test
@@ -97,21 +104,39 @@ class ArenaLoaderTest {
     }
 
     @Test
-    void shippedArenaIsValid() throws IOException {
-        Arena arena = ArenaLoader.parse(Files.readString(Path.of(System.getProperty("assets.dir"), "maps", "arena1.txt")));
+    void shippedArenaIsValid() {
+        Arena arena = ArenaLoader.loadResource("maps/arena1.txt");
 
         assertEquals(16, arena.getWidth());
         assertEquals(9, arena.getHeight());
-        assertEquals(4, arena.getSpawnPoints().size());
     }
 
     @Test
-    void shippedLargeArenaIsValid() throws IOException {
-        Arena arena = ArenaLoader.parse(Files.readString(Path.of(System.getProperty("assets.dir"), "maps", "arena2.txt")));
+    void shippedLargeArenaIsValid() {
+        Arena arena = ArenaLoader.loadResource("maps/arena2.txt");
 
         assertEquals(30, arena.getWidth());
         assertEquals(20, arena.getHeight());
-        assertEquals(4, arena.getSpawnPoints().size());
+    }
+
+    @Test
+    void availableMapsListsTheMapsFolder() {
+        List<String> maps = ArenaLoader.availableMaps();
+
+        assertTrue(maps.contains("maps/arena1.txt"));
+        assertTrue(maps.contains("maps/arena2.txt"));
+        assertTrue(maps.contains(ArenaLoader.DEFAULT_MAP));
+        assertTrue(maps.stream().allMatch(map -> map.startsWith("maps/") && map.endsWith(".txt")));
+    }
+
+    @Test
+    void everyAvailableMapHasThreeSpawnPointsPerTeam() {
+        for (String map : ArenaLoader.availableMaps()) {
+            Arena arena = ArenaLoader.loadResource(map);
+
+            assertEquals(3, arena.getSpawnPoints(Team.BLUE).size(), map);
+            assertEquals(3, arena.getSpawnPoints(Team.RED).size(), map);
+        }
     }
 
     private static void assertRejected(String map, String expectedMessage) {

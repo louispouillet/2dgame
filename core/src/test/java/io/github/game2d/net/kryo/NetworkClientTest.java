@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 class NetworkClientTest {
     private static final String MAP = """
         ######
-        #1..2#
+        #1..4#
         #....#
         ######
         """;

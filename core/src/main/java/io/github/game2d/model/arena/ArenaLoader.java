@@ -9,21 +9,35 @@ import java.util.List;
 
 public final class ArenaLoader {
     public static final String DEFAULT_MAP = "maps/arena2.txt";
+    private static final String ASSET_LIST = "assets.txt";
+    private static final String MAP_FOLDER = "maps/";
+    private static final String MAP_EXTENSION = ".txt";
 
     private static final int MIN_PLAYERS = 2;
-    private static final int MAX_PLAYERS = 4;
+    private static final int MAX_PLAYERS = 6;
 
     private ArenaLoader() {
     }
 
     public static Arena loadResource(String path) {
+        return parse(readResource(path));
+    }
+
+    public static List<String> availableMaps() {
+        return readResource(ASSET_LIST).lines()
+            .filter(path -> path.startsWith(MAP_FOLDER) && path.endsWith(MAP_EXTENSION))
+            .sorted()
+            .toList();
+    }
+
+    private static String readResource(String path) {
         try (InputStream input = ArenaLoader.class.getResourceAsStream("/" + path)) {
             if (input == null) {
-                throw new IllegalArgumentException("Map not found: " + path);
+                throw new IllegalArgumentException("Resource not found: " + path);
             }
-            return parse(new String(input.readAllBytes(), StandardCharsets.UTF_8));
+            return new String(input.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new UncheckedIOException("Cannot read map " + path, e);
+            throw new UncheckedIOException("Cannot read " + path, e);
         }
     }
 

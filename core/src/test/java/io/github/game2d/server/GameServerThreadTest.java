@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 class GameServerThreadTest {
     private static final String MAP = """
         ######
-        #1..2#
+        #1..4#
         #....#
         ######
         """;
