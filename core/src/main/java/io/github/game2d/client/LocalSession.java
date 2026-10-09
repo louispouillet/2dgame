@@ -40,7 +40,7 @@ public class LocalSession implements GameSession {
             playerId = server.join(channel, name);
             rejection = null;
             // Adversaire immobile, pour avoir une cible en solo
-            server.join(new LocalChannel(), TARGET_NAME);
+            server.join(new LocalChannel(), TARGET_NAME.equalsIgnoreCase(name.strip()) ? TARGET_NAME + "2" : TARGET_NAME);
         } catch (LobbyException e) {
             rejection = e.getReason();
         }

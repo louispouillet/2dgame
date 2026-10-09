@@ -91,4 +91,12 @@ class LocalSessionTest {
 
         assertFalse(session.channel().latestLobby().started());
     }
+
+    @Test
+    void playerCanBeNamedLikeTheTarget() {
+        session.join("cible");
+
+        assertEquals(2, session.channel().latestLobby().players().size());
+        assertNull(session.rejection());
+    }
 }
