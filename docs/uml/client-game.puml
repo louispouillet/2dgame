@@ -1,0 +1,64 @@
+@startuml client-game
+!include style.iuml
+title Client 2/2: during the match (package client)
+
+class GameScreen {
+    .. the match screen: every frame,\nupdate the game then draw it ..
+}
+
+package "Game loop: what to show" #FFF6E8 {
+    class ClientGame {
+        .. receives snapshots, sends inputs ..
+        + update(now, inputs) : WorldSnapshot
+    }
+    class PredictedPlayer {
+        .. moves my brawler at once,\nthen matches the server ..
+    }
+    class SnapshotBuffer {
+        .. smooths the other players ..
+    }
+    class ClientClock {
+        .. estimates the server time ..
+    }
+}
+
+class InputReader {
+    .. keyboard + mouse → PlayerInput ..
+}
+
+package "3D rendering: how to draw it" #F6EEFB {
+    class WorldRenderer3D {
+        .. draws map, brawlers, shots ..
+        + render(snapshot, ...)
+        + screenToWorld(x, y)
+    }
+    class BrawlerHud {
+        .. health, ammo, nicknames ..
+    }
+    class PlayerNames <<final>> {
+        .. id → nickname ..
+    }
+    class ArenaModelFactory <<utility>> {
+        .. builds the 3D map ..
+    }
+}
+
+interface GameSession <<external>>
+
+GameScreen *-down- ClientGame : owns
+GameScreen *-down- InputReader : owns
+GameScreen *-down- WorldRenderer3D : owns
+
+ClientGame -left-> GameSession : reads snapshots,\nsends inputs
+ClientGame *-down- PredictedPlayer : owns
+ClientGame *-down- SnapshotBuffer : owns
+ClientGame *-down- ClientClock : owns
+
+InputReader -right-> WorldRenderer3D : where does\nthe mouse aim?
+
+WorldRenderer3D *-down- BrawlerHud : owns
+WorldRenderer3D .down.> ArenaModelFactory : uses
+BrawlerHud -down-> PlayerNames : reads
+
+$legend("<b>Every frame</b>: ClientGame gives the world to show,", "WorldRenderer3D draws it, InputReader reads what the player does.")
+@enduml

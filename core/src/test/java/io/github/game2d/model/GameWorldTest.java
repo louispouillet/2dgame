@@ -8,6 +8,8 @@ import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.TestArenas;
 import io.github.game2d.model.brawler.Colt;
 import io.github.game2d.model.brawler.Shelly;
+import java.util.HashSet;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class GameWorldTest {
@@ -24,12 +26,49 @@ class GameWorldTest {
         world.addPlayer(target);
 
         world.attack(shooter, 1, 0);
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 180; i++) {
             world.update(1 / 60f);
         }
 
-        assertEquals(120 - 30, target.getHealth());
+        assertTrue(target.getHealth() < target.getMaxHealth());
         assertTrue(world.getGameObjects().stream().noneMatch(o -> o instanceof Projectile));
+    }
+
+    @Test
+    void burstBulletsJoinTheWorldOverTime() {
+        GameWorld world = new GameWorld(ARENA);
+        Colt shooter = new Colt(world.nextId(), X0, Y0);
+        world.addPlayer(shooter);
+
+        world.attack(shooter, 1, 0);
+        assertEquals(1, countProjectiles(world));
+        Set<Integer> seen = new HashSet<>();
+        for (int i = 0; i < 120; i++) {
+            world.update(1 / 60f);
+            world.getGameObjects().stream().filter(o -> o instanceof Projectile).forEach(o -> seen.add(o.getId()));
+        }
+
+        // one attack, but more bullets appeared after the first one
+        assertTrue(seen.size() > 1);
+    }
+
+    @Test
+    void deadBrawlerStopsItsBurst() {
+        GameWorld world = new GameWorld(ARENA);
+        Colt shooter = new Colt(world.nextId(), X0, Y0);
+        world.addPlayer(shooter);
+
+        world.attack(shooter, 1, 0);
+        shooter.takeDamage(shooter.getHealth());
+        for (int i = 0; i < 120; i++) {
+            world.update(1 / 60f);
+        }
+
+        assertTrue(countProjectiles(world) <= 1);
+    }
+
+    private static long countProjectiles(GameWorld world) {
+        return world.getGameObjects().stream().filter(o -> o instanceof Projectile).count();
     }
 
     @Test

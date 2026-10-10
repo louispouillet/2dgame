@@ -133,6 +133,14 @@ public abstract class Brawler extends GameObject {
         return projectiles;
     }
 
+    /** Les balles de l'attaque en cours qui partent maintenant, depuis la position actuelle. */
+    public List<Projectile> releaseShots(IntSupplier ids) {
+        if (!isAlive()) {
+            return List.of();
+        }
+        return weapon.releaseShots(getId(), ids, x, y);
+    }
+
     public float getReloadProgress() {
         return weapon.getReloadProgress();
     }

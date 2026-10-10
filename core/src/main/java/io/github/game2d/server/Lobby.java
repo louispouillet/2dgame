@@ -77,7 +77,7 @@ public final class Lobby {
     }
 
     public int leaderId() {
-        return players.isEmpty() ? NO_LEADER : players.get(0).id();
+        return players.isEmpty() ? NO_LEADER : players.getFirst().id();
     }
 
     public boolean isLeader(int id) {

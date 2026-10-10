@@ -1,0 +1,65 @@
+@startuml server
+!include style.iuml
+title Server (packages server and time)
+
+package "1. Authority: the source of truth" #FDECEA {
+    class ServerLauncher {
+        .. entry point of make server ..
+        + {static} main(args)
+    }
+    class GameServer {
+        .. LOBBY phase, then PLAYING phase.\nEvery tick: apply inputs, move the world,\nsend one snapshot per player ..
+        + join(channel, name)
+        + chooseTeam / chooseMap
+        + requestStart(playerId)
+        + tick()
+    }
+    class TickClock {
+        .. fixed 30 Hz tick ..
+    }
+}
+
+package "2. Lobby: the waiting room" #EEF4FF {
+    class Lobby <<final>> {
+        .. nicknames, teams, leader, map ..
+        + join(id, name)
+        + canStart()
+    }
+    class LobbyPlayer <<record>> {
+        .. id, name, team ..
+    }
+    class LobbyException {
+        .. a refusal with its reason ..
+    }
+}
+
+package "3. Translation: protocol ↔ model" #EEFBEF {
+    class InputApplier {
+        .. PlayerInput → move / attack ..
+        + apply(playerId, input)
+    }
+    class SnapshotBuilder {
+        .. world → WorldSnapshot,\nhides enemies in bushes ..
+        + build(tick, ..., viewerId)
+    }
+}
+
+class GameWorld <<external>>
+interface ClientChannel <<external>>
+class NetworkServer <<external>>
+
+ServerLauncher ..> GameServer : creates
+ServerLauncher ..> NetworkServer : creates
+GameServer *-- TickClock : owns
+GameServer *-- "1" Lobby : owns
+GameServer *-- "0..1" GameWorld : owns\n(created at start,\non the chosen map)
+GameServer *-- "0..1" InputApplier : owns
+GameServer *-- "0..1" SnapshotBuilder : owns
+GameServer --> "*" ClientChannel : sends to
+Lobby *-- "0..6" LobbyPlayer : owns
+Lobby ..> LobbyException : throws
+InputApplier --> GameWorld : changes
+SnapshotBuilder --> GameWorld : reads
+
+$legend("<b>Source of truth</b>: only the server owns the real GameWorld.", "Clients only send inputs and draw what they receive.")
+@enduml

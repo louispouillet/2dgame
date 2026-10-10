@@ -1,0 +1,43 @@
+@startuml overview
+!include style.iuml
+title Architecture: the packages of core and who uses whom
+
+rectangle "<b>client</b>\nscreens, sessions,\nprediction, 3D rendering" as client #EEF4FF
+rectangle "libGDX" as gdx <<external>> #E2E2E2
+
+rectangle "<b>server</b>\nthe authority:\nlobby, tick loop" as server #FDECEA
+rectangle "<b>net.kryo</b>\nthe real network\n(KryoNet, TCP + UDP)" as kryo #FFF6E8
+rectangle "KryoNet" as kryonet <<external>> #E2E2E2
+
+rectangle "<b>net</b>\nthe channel contracts\n(local or network)" as net #FFF6E8
+
+package "Shared foundation: used by every package above" #F7F7F7 {
+    rectangle "<b>protocol</b>\nmessages (records)" as protocol #EEFBEF
+    rectangle "<b>model</b>\ngame rules, plain Java" as model #EEFBEF
+    rectangle "<b>time</b>\nTickClock (30 Hz)" as time #F6EEFB
+}
+
+client -right-> gdx : draws with
+client -down-> server : solo:\nruns it in memory
+client -down-> kryo : network:\nconnects through
+kryo -right-> kryonet : built on
+
+server -down-> net : talks through
+kryo -down-> net : implements
+net -down-> protocol : carries
+
+kryo <-[#D93025,bold]left-> server : <color:#D93025>starts it /</color>\n<color:#D93025>forwards requests</color>
+protocol -[#D93025,bold]right-> model : <color:#D93025>uses Team,\n<color:#D93025>BrawlerType</color>
+
+legend right
+  <b>Arrows</b>
+  | <b>──></b> | <b>uses</b> : imports classes from |
+  | <color:#D93025><b>──></b></color> | accepted exception to the rule |
+  | <color:#D93025><b><──></b></color> | both use each other |
+  <b>The rule</b>: arrows only go down, towards the foundation.
+  | <b>model</b> | uses nothing: no network, no libGDX |
+  | <b>libGDX</b> | used only by client |
+  | <b>KryoNet</b> | used only by net.kryo |
+  Arrows to the foundation are not drawn: every package uses it.
+endlegend
+@enduml

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.github.game2d.model.GameWorld;
+import io.github.game2d.model.Projectile;
 import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.ArenaLoader;
 import io.github.game2d.model.arena.TestArenas;
@@ -12,6 +13,7 @@ import io.github.game2d.model.brawler.Shelly;
 import io.github.game2d.protocol.BrawlerState;
 import io.github.game2d.protocol.PlayerInput;
 import io.github.game2d.protocol.WorldSnapshot;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class SnapshotBuilderTest {
@@ -89,8 +91,12 @@ class SnapshotBuilderTest {
         world.attack(shooter, 1, 0);
         WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, 1);
 
-        assertEquals(5, snapshot.projectiles().size());
-        assertEquals(0.05f, snapshot.projectiles().get(0).radius());
+        List<Projectile> projectiles = world.getGameObjects().stream()
+            .filter(o -> o instanceof Projectile)
+            .map(o -> (Projectile) o)
+            .toList();
+        assertEquals(projectiles.size(), snapshot.projectiles().size());
+        assertEquals(projectiles.getFirst().getRadius(), snapshot.projectiles().getFirst().radius());
     }
 
     @Test

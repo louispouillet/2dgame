@@ -1,0 +1,73 @@
+@startuml protocol
+!include style.iuml
+title Protocol: messages between client and server (package protocol)
+
+package "Client → server" #EEF4FF {
+    class PlayerInput <<record>> {
+        sequence
+        moveX, moveY
+        aimX, aimY
+        shooting
+    }
+    class JoinRequest <<record>> {
+        name
+    }
+    class ChooseTeam <<record>> {
+        team
+    }
+    class ChooseMap <<record>> {
+        map
+    }
+    class StartRequest <<record>>
+}
+
+package "Server → client: the match (UDP, 30 per second)" #FFF6E8 {
+    class WorldSnapshot <<record>> {
+        tick
+        brawlers
+        projectiles
+    }
+    class BrawlerState <<record>> {
+        id, x, y, radius
+        health, ammo, type
+        lastProcessedInput
+    }
+    class ProjectileState <<record>> {
+        id, x, y, radius
+    }
+}
+
+package "Server → client: the lobby (TCP)" #EEFBEF {
+    class LobbyState <<record>> {
+        players, leaderId
+        map, maps
+        canStart, started
+    }
+    class LobbyPlayerState <<record>> {
+        id, name, team
+    }
+    class JoinAccepted <<record>> {
+        brawlerId
+    }
+    class JoinRejected <<record>> {
+        reason
+    }
+    enum RefusalReason {
+        NAME_TAKEN, LOBBY_FULL,
+        TEAM_FULL, GAME_IN_PROGRESS…
+    }
+}
+
+enum Team <<external>>
+enum BrawlerType <<external>>
+
+WorldSnapshot *-- "*" BrawlerState : contains
+WorldSnapshot *-- "*" ProjectileState : contains
+LobbyState *-- "*" LobbyPlayerState : contains
+JoinRejected --> RefusalReason : says why
+BrawlerState --> BrawlerType
+LobbyPlayerState --> Team
+ChooseTeam --> Team
+
+$legend("<b>Records</b>: immutable messages, serialized by Kryo (NetworkRegistry).", "One snapshot per player per tick: hidden enemies are left out.")
+@enduml

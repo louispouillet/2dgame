@@ -1,0 +1,52 @@
+@startuml client-screens
+!include style.iuml
+title Client 1/2: screens and connection (package client)
+
+class Main {
+    .. the application: shows one screen at a time,\nowns the connection ..
+    + showScreen(next)
+    + connect(address) / startSolo(name)
+}
+
+package "Screens, in order" #EEF4FF {
+    class NameScreen {
+        .. 1. nickname + server address ..
+    }
+    class LobbyScreen {
+        .. 2. teams, map, start ..
+    }
+    class GameScreen {
+        .. 3. the match (see diagram 2/2) ..
+    }
+}
+
+class LobbyView <<final>> {
+    .. decides what the lobby shows\n(plain Java, tested) ..
+}
+
+package "Connection: solo or network" #EEFBEF {
+    interface GameSession {
+        .. "a match I take part in" ..
+        + join(name) / chooseTeam(team)
+        + chooseMap(map) / start()
+    }
+    class LocalSession {
+        .. solo: server in the same program ..
+    }
+    class RemoteSession {
+        .. network: KryoNet connection ..
+    }
+}
+
+Main -down-> NameScreen : shows first
+NameScreen -[#1E64C8,bold]right-> LobbyScreen : <color:#1E64C8>join accepted</color>
+LobbyScreen -[#1E64C8,bold]right-> GameScreen : <color:#1E64C8>leader starts</color>
+LobbyScreen -down-> LobbyView : asks what to show
+
+Main *-right- "0..1" GameSession : owns
+LobbyScreen -down-> GameSession : join, team, map, start
+GameSession <|.down. LocalSession : implements
+GameSession <|.down. RemoteSession : implements
+
+$legend("<b>Inheritance</b>: Main extends libGDX Game; every screen extends ScreenAdapter.", "<b>Polymorphism</b>: screens use a GameSession without knowing if it is solo or network.", "<color:#1E64C8><b>Blue arrows</b></color>: the order of the screens.")
+@enduml

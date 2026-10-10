@@ -39,7 +39,8 @@ class GameWorldCollisionTest {
         world.addPlayer(target);
 
         world.attack(shooter, 1, 0);
-        run(world, 0.2f);
+        // assez longtemps pour que toute la rafale soit partie et ait atteint le mur
+        run(world, 3f);
 
         assertFalse(hasProjectiles(world));
         assertEquals(120, target.getHealth());

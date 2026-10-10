@@ -1,0 +1,51 @@
+' Shared look for every diagram: !include style.iuml
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam nodesep 40
+skinparam ranksep 50
+skinparam defaultFontSize 13
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #333333
+skinparam ArrowColor #444444
+skinparam LegendFontSize 11
+skinparam LegendBackgroundColor #F7F7F7
+skinparam LegendBorderColor #BBBBBB
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+}
+skinparam class<<external>> {
+    BackgroundColor #E2E2E2
+    BorderColor #999999
+    FontColor #555555
+}
+hide empty members
+hide <<external>> stereotype
+set separator none
+
+!procedure $legend($note1="", $note2="", $note3="")
+legend right
+  <b>Arrows</b>
+  | <b>──▷</b> | <b>extends</b> : is a kind of |
+  | <b>┄┄▷</b> | <b>implements</b> : follows the contract |
+  | <b>◆──</b> | <b>owns</b> : creates it, it dies with the owner |
+  | <b>──></b> | <b>uses</b> : keeps a reference |
+  | <b>┄┄></b> | <b>uses briefly</b> : creates or calls it |
+  <b>Boxes</b>
+  | <b>(C) (A) (I) (E)</b> | class, abstract class, interface, enum |
+  | <b>grey box</b> | comes from another package or library |
+  | <b>0..1  *</b> | how many : zero or one, any number |
+  | <b>+  {static}</b> | public, belongs to the class |
+!if ($note1 != "")
+  $note1
+!endif
+!if ($note2 != "")
+  $note2
+!endif
+!if ($note3 != "")
+  $note3
+!endif
+endlegend
+!endprocedure

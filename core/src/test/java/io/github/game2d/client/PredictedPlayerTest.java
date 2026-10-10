@@ -15,9 +15,16 @@ class PredictedPlayerTest {
     private static final float DELTA = 1e-4f;
     private static final float START_X = 5f;
     private static final float START_Y = 5f;
-    private static final float SHELLY_SPEED = 4f;
-
     private final Arena arena = TestArenas.open(20, 12);
+    // Distance parcourue par Shelly en un tick : mesurée, pour ne pas dépendre de sa vitesse
+    private final float step = measureStep();
+
+    private float measureStep() {
+        Shelly shelly = new Shelly(1, START_X, START_Y);
+        shelly.setDirection(1, 0);
+        shelly.update(DT, arena);
+        return shelly.getX() - START_X;
+    }
 
     private static PlayerInput move(int sequence, float moveX, float moveY) {
         return new PlayerInput(sequence, moveX, moveY, 0, 0, false);
@@ -29,7 +36,7 @@ class PredictedPlayerTest {
 
         player.apply(move(1, 1, 0));
 
-        assertEquals(START_X + SHELLY_SPEED * DT, player.getX(), DELTA);
+        assertEquals(START_X + step, player.getX(), DELTA);
         assertEquals(START_Y, player.getY(), DELTA);
     }
 
@@ -51,11 +58,11 @@ class PredictedPlayerTest {
         player.apply(move(1, 1, 0));
         player.apply(move(2, 1, 0));
         player.apply(move(3, 1, 0));
-        float serverX = START_X + SHELLY_SPEED * DT;
+        float serverX = START_X + step;
 
         player.reconcile(serverState(serverX, START_Y, 1));
 
-        assertEquals(START_X + 3 * SHELLY_SPEED * DT, player.getX(), DELTA);
+        assertEquals(START_X + 3 * step, player.getX(), DELTA);
     }
 
     @Test
@@ -78,11 +85,11 @@ class PredictedPlayerTest {
         player.apply(move(1, 1, 0));
         player.apply(move(2, 1, 0));
         player.apply(move(3, 1, 0));
-        player.reconcile(serverState(START_X + 2 * SHELLY_SPEED * DT, START_Y, 2));
+        player.reconcile(serverState(START_X + 2 * step, START_Y, 2));
 
-        player.reconcile(serverState(START_X + SHELLY_SPEED * DT, START_Y, 1));
+        player.reconcile(serverState(START_X + step, START_Y, 1));
 
-        assertEquals(START_X + 3 * SHELLY_SPEED * DT, player.getX(), DELTA);
+        assertEquals(START_X + 3 * step, player.getX(), DELTA);
     }
 
     private static BrawlerState serverState(float x, float y, int lastProcessedInput) {

@@ -66,6 +66,9 @@ public class GameWorld {
         for (GameObject object : gameObjects) {
             object.update(dt, arena);
         }
+        for (Brawler player : players.values()) {
+            gameObjects.addAll(player.releaseShots(this::nextId));
+        }
         resolveProjectileHits();
         gameObjects.removeIf(GameObject::isExpired);
     }

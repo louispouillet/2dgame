@@ -66,8 +66,9 @@ class InputApplierTest {
     void aimIsAppliedOnBothAxes() {
         Projectile shot = shootOnce(0, 1);
 
-        assertEquals(X0, shot.getX(), DELTA);
-        assertTrue(shot.getY() > Y0);
+        // the shot travels straight up (it may start beside the shooter, from the gun)
+        assertEquals(shot.getPreviousX(), shot.getX(), DELTA);
+        assertTrue(shot.getY() > shot.getPreviousY());
     }
 
     @Test

@@ -1,0 +1,75 @@
+@startuml net
+!include style.iuml
+title Network (packages net and net.kryo)
+
+package "Contracts (net)" #EEF4FF {
+    interface ClientChannel {
+        .. how the server talks to ONE client ..
+        + sendSnapshot(snapshot)
+        + sendLobby(lobby)
+        + latestInput()
+    }
+    interface ServerChannel {
+        .. how a client talks to THE server ..
+        + sendInput(input)
+        + latestSnapshot()
+        + latestLobby()
+    }
+}
+
+package "Server side (net.kryo)" #FDECEA {
+    class NetworkServer {
+        .. accepts connections,\nforwards lobby requests ..
+        + start(tcpPort, udpPort)
+    }
+    class NetworkClientChannel {
+        .. the server's line to one client ..
+    }
+}
+
+package "Client side (net.kryo)" #EEFBEF {
+    class NetworkClient {
+        .. connects to a server ..
+        + connect(host, tcpPort, udpPort)
+    }
+    class NetworkServerChannel {
+        .. the client's line to the server:\njoin, team, map, start ..
+    }
+}
+
+package "Solo (net)" #F6EEFB {
+    class LocalChannel {
+        .. both roles at once, in memory ..
+    }
+}
+
+package "Shared (net.kryo)" #FFF6E8 {
+    abstract class NetworkEndpoint {
+        .. KryoNet update thread ..
+        + stop()
+    }
+    class NetworkRegistry <<utility>> {
+        .. message classes for Kryo ..
+    }
+}
+
+class GameServer <<external>>
+class KryoNet <<external>>
+
+ClientChannel <|.. NetworkClientChannel : implements
+NetworkServer *-- "*" NetworkClientChannel : owns one\nper connection
+NetworkServer --> GameServer : forwards requests
+
+ServerChannel <|.. NetworkServerChannel : implements
+NetworkClient *-- "1" NetworkServerChannel : owns
+
+ClientChannel <|.. LocalChannel : implements
+ServerChannel <|.. LocalChannel : implements
+
+NetworkEndpoint <|-- NetworkServer : extends
+NetworkEndpoint <|-- NetworkClient : extends
+NetworkEndpoint --> KryoNet : built on
+NetworkEndpoint ..> NetworkRegistry : registers messages
+
+$legend("<b>Naming</b>: a NetworkClientChannel lives on the server (it talks to a client),", "a NetworkServerChannel lives on the client (it talks to the server).", "<b>Polymorphism</b>: GameServer only knows ClientChannel: in memory or network.")
+@enduml

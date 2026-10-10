@@ -7,6 +7,7 @@ import io.github.game2d.model.Team;
 import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.TestArenas;
 import io.github.game2d.model.brawler.BrawlerType;
+import io.github.game2d.model.brawler.Shelly;
 import io.github.game2d.net.LocalChannel;
 import io.github.game2d.net.ServerChannel;
 import io.github.game2d.protocol.BrawlerState;
@@ -23,9 +24,16 @@ class ClientGameTest {
     private static final int ENEMY_ID = 2;
     private static final float START_X = 5f;
     private static final float START_Y = 5f;
-    private static final float SHELLY_SPEED = 4f;
-
     private final Arena arena = TestArenas.open(20, 12);
+    // Distance parcourue par Shelly en un tick : mesurée, pour ne pas dépendre de sa vitesse
+    private final float step = measureStep();
+
+    private float measureStep() {
+        Shelly shelly = new Shelly(MY_ID, START_X, START_Y);
+        shelly.setDirection(1, 0);
+        shelly.update(TICK, arena);
+        return shelly.getX() - START_X;
+    }
     private final LocalChannel channel = new LocalChannel();
     private final ClientGame game = new ClientGame(arena, new FakeSession(channel, MY_ID));
 
@@ -108,7 +116,7 @@ class ClientGameTest {
 
         WorldSnapshot drawn = playOneTick();
 
-        assertEquals(START_X + SHELLY_SPEED * TICK, find(drawn, MY_ID).x(), DELTA);
+        assertEquals(START_X + step, find(drawn, MY_ID).x(), DELTA);
     }
 
     @Test

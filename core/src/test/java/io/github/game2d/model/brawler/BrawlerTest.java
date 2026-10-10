@@ -30,24 +30,33 @@ class BrawlerTest {
     }
 
     @Test
-    void movesAtItsSpeedInTheGivenDirection() {
-        Colt colt = new Colt(1, X0, Y0);
+    void movesAtAConstantSpeedInTheGivenDirection() {
+        Colt oneSecond = new Colt(1, X0, Y0);
+        Colt twoSeconds = new Colt(2, X0, Y0);
+        oneSecond.setDirection(1, 0);
+        twoSeconds.setDirection(1, 0);
 
-        colt.setDirection(1, 0);
-        colt.update(1f, ARENA);
+        oneSecond.update(1f, ARENA);
+        twoSeconds.update(2f, ARENA);
 
-        assertEquals(X0 + 5f, colt.getX(), 1e-5);
-        assertEquals(Y0, colt.getY(), 1e-5);
+        assertTrue(oneSecond.getX() > X0);
+        assertEquals(Y0, oneSecond.getY(), 1e-5);
+        assertEquals(2 * (oneSecond.getX() - X0), twoSeconds.getX() - X0, 1e-4);
     }
 
     @Test
     void diagonalMovementIsNormalized() {
-        Colt colt = new Colt(1, X0, Y0);
+        Colt straight = new Colt(1, X0, Y0);
+        Colt diagonal = new Colt(2, X0, Y0);
+        straight.setDirection(1, 0);
+        diagonal.setDirection(1, 1);
 
-        colt.setDirection(1, 1);
-        colt.update(1f, ARENA);
+        straight.update(1f, ARENA);
+        diagonal.update(1f, ARENA);
 
-        assertEquals(5f, (float) Math.hypot(colt.getX() - X0, colt.getY() - Y0), 1e-4);
+        float straightDistance = straight.getX() - X0;
+        float diagonalDistance = (float) Math.hypot(diagonal.getX() - X0, diagonal.getY() - Y0);
+        assertEquals(straightDistance, diagonalDistance, 1e-4);
     }
 
     @Test
@@ -164,4 +173,5 @@ class BrawlerTest {
 
         assertEquals(before, colt.getHealth());
     }
+
 }

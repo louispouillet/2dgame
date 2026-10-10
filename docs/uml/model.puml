@@ -1,0 +1,109 @@
+@startuml model
+!include style.iuml
+title Game model (package model, plain Java)
+
+package "World: what exists in a match" #EEF4FF {
+    class GameWorld {
+        .. owns every object, applies the rules ..
+        + addPlayer(brawler)
+        + update(dt)
+        + isVisibleTo(target, viewer)
+    }
+    abstract class GameObject {
+        .. position + radius ..
+        + {abstract} update(dt, arena)
+    }
+    class Projectile {
+        .. flies straight, stops on walls ..
+    }
+    enum Team {
+        BLUE
+        RED
+    }
+}
+
+package "Brawlers: the characters" #EEFBEF {
+    abstract class Brawler {
+        .. moves, takes damage, regenerates ..
+        + takeDamage(damage)
+        + attack(aimX, aimY)
+    }
+    class Shelly
+    class Colt
+    enum BrawlerType {
+        SHELLY
+        COLT
+        + create(id, x, y)
+    }
+}
+
+package "Weapons: how they shoot" #FFF6E8 {
+    abstract class Weapon {
+        .. ammo, cooldown, reload ..
+        + fire(...) : List<Projectile>
+    }
+    class Shotgun
+    class Revolver
+    interface AttackPattern {
+        .. shape of an attack ..
+    }
+    class SpreadPattern {
+        .. fan, all at once (Shelly) ..
+    }
+    class BurstPattern {
+        .. burst, one after another (Colt) ..
+    }
+}
+
+package "Arena: the map" #F6EEFB {
+    class Arena <<final>> {
+        .. the grid of tiles ..
+        + blocksMovement(x, y, radius)
+        + hidesBrawlerAt(x, y)
+        + getSpawnPoints(team)
+    }
+    enum TileType {
+        FLOOR
+        WALL
+        BUSH
+        WATER
+    }
+    class SpawnPoint <<record>> {
+        .. number, x, y ..
+        + team()
+    }
+    class ArenaLoader <<utility>> {
+        .. reads a map file ..
+        + {static} loadResource(path)
+        + {static} availableMaps()
+    }
+}
+
+class Collisions <<utility>> {
+    .. circle and swept-shot maths ..
+}
+
+GameWorld *-- "*" GameObject : owns
+GameWorld --> Arena : plays on
+GameWorld ..> Collisions : uses
+GameObject <|-- Brawler : extends
+GameObject <|-- Projectile : extends
+Brawler <|-- Shelly : extends
+Brawler <|-- Colt : extends
+BrawlerType ..> Brawler : creates
+
+Brawler *-- "1" Weapon : owns
+Weapon <|-- Shotgun : extends
+Weapon <|-- Revolver : extends
+Weapon *-- "1" AttackPattern : owns
+AttackPattern <|.. SpreadPattern : implements
+AttackPattern <|.. BurstPattern : implements
+Weapon ..> Projectile : creates
+
+Arena *-- "*" TileType : grid of
+Arena *-- "*" SpawnPoint : owns
+ArenaLoader ..> Arena : creates
+SpawnPoint ..> Team : gives
+
+$legend("<b>Polymorphism</b>: GameWorld calls update(dt, arena) on every GameObject.", "<b>Strategy</b>: a Brawler owns a Weapon, a Weapon owns an AttackPattern.")
+@enduml

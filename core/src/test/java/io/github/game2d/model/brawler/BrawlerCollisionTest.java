@@ -51,7 +51,8 @@ class BrawlerCollisionTest {
         Colt colt = new Colt(1, 1.5f, 1.5f);
         colt.setDirection(-1, 1);
 
-        moveFor(colt, 0.5f);
+        // assez longtemps pour longer le mur jusqu'en haut, quelle que soit la vitesse
+        moveFor(colt, 2f);
 
         assertTrue(colt.getX() < 1 + RADIUS + 0.02f);
         assertTrue(colt.getY() > 2.9f);
@@ -73,9 +74,10 @@ class BrawlerCollisionTest {
         Colt colt = new Colt(1, 3.5f, 1.5f);
         colt.setDirection(1, 0);
 
-        moveFor(colt, 0.4f);
+        // assez longtemps pour traverser le buisson et atteindre le mur de droite
+        moveFor(colt, 2f);
 
-        assertEquals(5.5f, colt.getX(), 0.2f);
+        assertEquals(6 - RADIUS, colt.getX(), 0.02f);
     }
 
     @Test

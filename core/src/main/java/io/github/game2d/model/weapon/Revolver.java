@@ -1,25 +1,27 @@
 package io.github.game2d.model.weapon;
 
 import io.github.game2d.model.Projectile;
-import java.util.List;
-import java.util.function.IntSupplier;
 
 public class Revolver extends Weapon {
     private static final int MAX_AMMO = 3;
-    private static final float COOLDOWN = 0.3f;
-    private static final float RELOAD_TIME = 1.5f;
+    // Doit durer au moins toute la rafale ((BULLETS_PER_BURST - 1) * BULLET_INTERVAL) :
+    // un nouveau tir pendant la rafale couperait les balles restantes.
+    private static final float COOLDOWN = 1f;
+    private static final float RELOAD_TIME = 2f;
     private static final float MAX_RANGE = 8f;
-    private static final float PROJECTILE_RADIUS = 0.05f;
-    private static final float PROJECTILE_SPEED = 12f;
-    private static final int DAMAGE = 30;
+    private static final float PROJECTILE_RADIUS = 0.1f;
+    private static final float PROJECTILE_SPEED = 10f;
+    private static final int DAMAGE = 10;
+    private static final int BULLETS_PER_BURST = 6;
+    private static final float BULLET_INTERVAL = 0.1f;
+    private static final float GUN_OFFSET = 0.15f;
 
     public Revolver() {
-        super(MAX_AMMO, COOLDOWN, RELOAD_TIME);
+        super(MAX_AMMO, COOLDOWN, RELOAD_TIME, new BurstPattern(BULLETS_PER_BURST, BULLET_INTERVAL, GUN_OFFSET));
     }
 
     @Override
-    protected List<Projectile> createProjectiles(int ownerId, IntSupplier ids, float x, float y, float dirX, float dirY) {
-        Projectile projectile = new Projectile(ids.getAsInt(), ownerId, x, y, PROJECTILE_RADIUS, dirX, dirY, PROJECTILE_SPEED, MAX_RANGE, DAMAGE);
-        return List.of(projectile);
+    protected Projectile createProjectile(int id, int ownerId, float x, float y, float dirX, float dirY) {
+        return new Projectile(id, ownerId, x, y, PROJECTILE_RADIUS, dirX, dirY, PROJECTILE_SPEED, MAX_RANGE, DAMAGE);
     }
 }
