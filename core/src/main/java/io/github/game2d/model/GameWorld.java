@@ -13,12 +13,14 @@ import java.util.Objects;
 public class GameWorld {
     private final List<GameObject> gameObjects;
     private final Map<Integer, Brawler> players;
+    private final Map<Integer, Team> teams;
     private final Arena arena;
     private int nextId = 1;
 
     public GameWorld(Arena arena) {
         this.gameObjects = new ArrayList<>();
         this.players = new HashMap<>();
+        this.teams = new HashMap<>();
         this.arena = Objects.requireNonNull(arena);
     }
 
@@ -26,17 +28,19 @@ public class GameWorld {
         return nextId++;
     }
 
-    public void addPlayer(Brawler brawler) {
+    public void addPlayer(Brawler brawler, Team team) {
         if (players.containsKey(brawler.getId())) {
             throw new IllegalArgumentException("Brawler already registered: " + brawler.getId());
         }
         players.put(brawler.getId(), brawler);
+        teams.put(brawler.getId(), Objects.requireNonNull(team));
         nextId = Math.max(nextId, brawler.getId() + 1);
         gameObjects.add(brawler);
     }
 
     public void removePlayer(int brawlerId) {
         Brawler brawler = players.remove(brawlerId);
+        teams.remove(brawlerId);
         if (brawler != null) {
             gameObjects.remove(brawler);
         }
@@ -46,16 +50,24 @@ public class GameWorld {
         return players.get(brawlerId);
     }
 
+    public boolean areAllies(int firstId, int secondId) {
+        Team first = teams.get(firstId);
+        return first != null && first == teams.get(secondId);
+    }
+
     public List<GameObject> getGameObjects() {
         return Collections.unmodifiableList(gameObjects);
     }
 
     public boolean isVisibleTo(Brawler target, Brawler viewer) {
-        if (target == viewer || !arena.hidesBrawlerAt(target.getX(), target.getY())) {
+        if (!arena.hidesBrawlerAt(target.getX(), target.getY())) {
             return true;
         }
         if (viewer == null) {
             return false;
+        }
+        if (target == viewer || areAllies(target.getId(), viewer.getId())) {
+            return true;
         }
         float dx = target.getX() - viewer.getX();
         float dy = target.getY() - viewer.getY();
@@ -81,7 +93,7 @@ public class GameWorld {
             for (GameObject other : gameObjects) {
                 if (other instanceof Brawler target
                         && target.isAlive()
-                        && target.getId() != projectile.getOwnerId()
+                        && !areAllies(target.getId(), projectile.getOwnerId())
                         && Collisions.sweptOverlaps(projectile, target)) {
                     target.takeDamage(projectile.getDamage());
                     projectile.markHit();

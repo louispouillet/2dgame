@@ -36,7 +36,7 @@ public class WorldRenderer3D {
     private static final float MODEL_RADIUS = 0.5f;
     private static final float BRAWLER_MODEL_HEIGHT = 2f;
     private static final float PROJECTILE_HEIGHT = 0.5f;
-    private static final Color PLAYER_COLOR = new Color(0.20f, 0.50f, 1f, 1f);
+    private static final Color ALLY_COLOR = new Color(0.20f, 0.50f, 1f, 1f);
     private static final Color ENEMY_COLOR = new Color(0.90f, 0.25f, 0.25f, 1f);
     private static final long ATTRIBUTES = Usage.Position | Usage.Normal;
     private static final Plane GROUND = new Plane(Vector3.Y, 0f);
@@ -65,6 +65,7 @@ public class WorldRenderer3D {
     private final ShapeRenderer shapes = new ShapeRenderer();
     private final SpriteBatch batch = new SpriteBatch();
     private final BrawlerHud hud;
+    private final PlayerRoster roster;
     private final Matrix4 screenProjection = new Matrix4();
     private boolean followingPlayer;
     private final float arenaWidth;
@@ -74,8 +75,9 @@ public class WorldRenderer3D {
     private float minTargetZ;
     private float maxTargetZ;
 
-    public WorldRenderer3D(Arena arena, PlayerNames names) {
-        hud = new BrawlerHud(names);
+    public WorldRenderer3D(Arena arena, PlayerRoster roster) {
+        this.roster = roster;
+        hud = new BrawlerHud(roster);
         camera = new PerspectiveCamera(FIELD_OF_VIEW, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 0.1f;
         camera.far = 100f;
@@ -117,7 +119,7 @@ public class WorldRenderer3D {
         BrawlerState player = snapshot.findBrawler(playerId);
         followPlayer(player, Gdx.graphics.getDeltaTime());
         updateBushes(arena, player);
-        updateBrawlers(snapshot, playerId);
+        updateBrawlers(snapshot);
         updateProjectiles(snapshot);
 
         HdpiUtils.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -231,10 +233,10 @@ public class WorldRenderer3D {
         camera.update();
     }
 
-    private void updateBrawlers(WorldSnapshot snapshot, int playerId) {
+    private void updateBrawlers(WorldSnapshot snapshot) {
         for (BrawlerState brawler : snapshot.brawlers()) {
             ModelInstance instance = brawlerInstances.computeIfAbsent(brawler.id(), id -> new ModelInstance(brawlerModel));
-            Color color = brawler.id() == playerId ? PLAYER_COLOR : ENEMY_COLOR;
+            Color color = roster.isAlly(brawler.id()) ? ALLY_COLOR : ENEMY_COLOR;
             instance.materials.get(0).set(ColorAttribute.createDiffuse(color));
             float scale = brawler.radius() / MODEL_RADIUS;
             instance.transform.setToTranslation(brawler.x(), BRAWLER_MODEL_HEIGHT * scale / 2, -brawler.y())

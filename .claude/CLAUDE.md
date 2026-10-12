@@ -32,7 +32,7 @@ Principes illustrés :
 - Cycle 30 Hz : inputs envoyés → simulation serveur → snapshot diffusé → mise à jour locale → rendu à 60 FPS.
 - Écrans du client : `Main extends Game` affiche un `Screen` à la fois. `Main.showScreen` libère l'ancien écran (`Game` ne le fait jamais). La session (`GameSession`) et le skin appartiennent à `Main` (`connect`, `startSolo`, `play(map)`) et survivent aux changements d'écran.
 - Parcours : `NameScreen` (pseudo, adresse du serveur pré-remplie avec l'argument ou `localhost`, boutons « Rejoindre » et « Solo ») → `LobbyScreen` (équipes, map pour le chef, « Lancer ») → `GameScreen` sur la map de `LobbyState`. « Solo » va directement au jeu, contre une cible immobile.
-- Pseudos en jeu : `PlayerNames` (id → pseudo) est construit par `GameScreen` à partir du dernier `LobbyState` (l'id du joueur est l'id du brawler) ; `BrawlerHud` dessine le pseudo au-dessus de la barre de vie. Les pseudos ne passent jamais dans les snapshots.
+- Pseudos et équipes en jeu : `PlayerRoster` (id → pseudo et équipe, et mon id) est construit par `GameScreen` à partir du dernier `LobbyState` (l'id du joueur est l'id du brawler). Couleurs relatives : moi et mes alliés en bleu, les ennemis en rouge (brawlers 3D et pseudos dessinés par `BrawlerHud` au-dessus de la barre de vie). Pseudos et équipes ne passent jamais dans les snapshots.
 - Interface Scene2D avec `UiSkin` (skin construit dans le code : police FreeType, fonds unis teintés). Les décisions d'affichage du lobby sont dans `LobbyView` (Java pur, testé) ; `RefusalMessages` traduit les refus.
 
 ## 4. Collisions
@@ -40,11 +40,12 @@ Principes illustrés :
 - Chaque objet a un rayon (`GameObject.getRadius()`).
 - **Décor** : `Arena` (grille de cases) : `blocksMovement` / `blocksShots` testent un cercle contre les cases voisines (`Collisions.circleTouchesBox`). Mur : bloque tout ; eau : bloque la marche ; buisson : rien ; hors map = mur.
 - **Brawlers** : `Brawler.update(dt, arena)` appelle `move`, qui avance en x puis en y (glissement le long des murs), en réduisant le pas jusqu'à 5 fois pour finir collé au mur.
-- **Tirs** : `Projectile.update` s'arrête de lui-même dans un mur ; `GameWorld.resolveProjectileHits` gère les tirs sur les brawlers et `Collisions.sweptOverlaps` détecte un brawler touché le long du trajet du tir.
+- **Tirs** : `Projectile.update` s'arrête de lui-même dans un mur ; `GameWorld.resolveProjectileHits` gère les tirs sur les brawlers (pas de tir allié : un projectile traverse les alliés de son tireur) et `Collisions.sweptOverlaps` détecte un brawler touché le long du trajet du tir.
+- **Équipes** : `GameWorld.addPlayer(brawler, team)` enregistre l'équipe de chaque joueur (donnée de la partie, pas du brawler) ; `areAllies(a, b)` (un joueur est son propre allié, un joueur inconnu n'a pas d'allié).
 - Les tests utilisent une vraie arène (`TestArenas.open`, dans `src/test`).
 
 ## 5. Buissons
-- Un brawler dont le centre est sur un buisson (`~`) est caché aux adversaires à plus de 2 cases (`Arena.REVEAL_DISTANCE`). On se voit toujours soi-même ; les projectiles restent visibles.
+- Un brawler dont le centre est sur un buisson (`~`) est caché aux adversaires à plus de 2 cases (`Arena.REVEAL_DISTANCE`). On se voit toujours soi-même, ses alliés restent visibles ; les projectiles restent visibles.
 - `Arena.hidesBrawlerAt(x, y)` : la case sous le point cache-t-elle ? `GameWorld.isVisibleTo(target, viewer)` : la règle. `SnapshotBuilder` filtre selon cette règle.
 - Filtrage côté serveur : un client ne reçoit jamais la position d'un ennemi caché (anti-triche).
 - Côté client, les cases buisson dans ce même rayon autour du joueur sont dessinées transparentes (40 %) (`Arena.canSeeIntoBush`). Chaque buisson est une `ModelInstance` séparée (`ArenaModelFactory.createBush`) pour avoir sa propre opacité.
@@ -79,7 +80,7 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 - `server/` : autorité de jeu (`GameServer`, `ServerLauncher`), lobby (`Lobby`, `LobbyPlayer`, `LobbyException`) et traduction protocole ↔ modèle (`InputApplier`, `SnapshotBuilder`)
 - `net/` : transport. Interfaces `ClientChannel` / `ServerChannel`, `LocalChannel` (en mémoire)
   - `net.kryo` : `NetworkEndpoint` (classe abstraite : thread d'update KryoNet, `stop`) → `NetworkServer`, `NetworkClient`, `NetworkClientChannel`, `NetworkServerChannel` (traducteurs de protocole), `NetworkRegistry`
-- `client/` : libGDX. `Main` (`Game` libGDX : ouvre la session, qu'il possède et ferme, puis affiche un écran), écrans `NameScreen`, `LobbyScreen`, `GameScreen` (vue 3D, `InputReader`, `ClientGame` ; reçoit la session et la map), interface `UiSkin`, `LobbyView`, `RefusalMessages`, `PlayerNames`, `ClientGame` (réception, prédiction, envoi des inputs), `GameSession` → `LocalSession` / `RemoteSession`, `InputReader`, `PredictedPlayer`, `SnapshotBuffer`, `ClientClock` (seule horloge du client : temps local, estimation du temps serveur, cadence des inputs) ; vue `WorldRenderer3D` + `ArenaModelFactory` (3D, textures dans `assets/textures/arena`) ; HUD `BrawlerHud`, `HudAnchor`
+- `client/` : libGDX. `Main` (`Game` libGDX : ouvre la session, qu'il possède et ferme, puis affiche un écran), écrans `NameScreen`, `LobbyScreen`, `GameScreen` (vue 3D, `InputReader`, `ClientGame` ; reçoit la session et la map), interface `UiSkin`, `LobbyView`, `RefusalMessages`, `PlayerRoster`, `ClientGame` (réception, prédiction, envoi des inputs), `GameSession` → `LocalSession` / `RemoteSession`, `InputReader`, `PredictedPlayer`, `SnapshotBuffer`, `ClientClock` (seule horloge du client : temps local, estimation du temps serveur, cadence des inputs) ; vue `WorldRenderer3D` + `ArenaModelFactory` (3D, textures dans `assets/textures/arena`) ; HUD `BrawlerHud`, `HudAnchor`
 
 ## 9. Lancement (Makefile)
 - `make solo` : partie locale ; `make server` : serveur multijoueur (TCP 54555 / UDP 54777) ; `make client [HOST=ip]` : client ; `make duo` : serveur + 2 fenêtres sur la même machine. Chaque client démarre sur l'écran du pseudo.
@@ -88,7 +89,7 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 
 ## Reste à faire
 - Lobby : retour au lobby en fin de partie ; gérer la perte de connexion au serveur ; connexion sans bloquer l'écran (jusqu'à 5 s aujourd'hui)
-- Règles d'équipe (pas de tir allié, alliés visibles dans les buissons) puis mode « Hors-jeu » (manches, score, fin de partie)
+- Mode « Hors-jeu » (manches, score, fin de partie, retour au lobby)
 - Buissons : se révéler en tirant ou en étant touché
 - Caméra 3D : élargir la bande de décor pour que le joueur ne soit pas collé au coin au départ
 - `StartupHelper` ne transmet pas les arguments sur macOS (le Makefile passe `-XstartOnFirstThread`)

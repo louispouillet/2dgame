@@ -57,4 +57,24 @@ class GameWorldVisibilityTest {
 
         assertFalse(world.isVisibleTo(hidden, null));
     }
+
+    @Test
+    void allyInBushStaysVisibleWhenFar() {
+        Colt viewer = new Colt(1, 1.5f, 1.5f);
+        Colt ally = new Colt(2, 4.5f, 2.5f);
+        world.addPlayer(viewer, Team.BLUE);
+        world.addPlayer(ally, Team.BLUE);
+
+        assertTrue(world.isVisibleTo(ally, viewer));
+    }
+
+    @Test
+    void registeredEnemyInBushIsStillHiddenWhenFar() {
+        Colt viewer = new Colt(1, 1.5f, 1.5f);
+        Colt enemy = new Colt(2, 4.5f, 2.5f);
+        world.addPlayer(viewer, Team.BLUE);
+        world.addPlayer(enemy, Team.RED);
+
+        assertFalse(world.isVisibleTo(enemy, viewer));
+    }
 }

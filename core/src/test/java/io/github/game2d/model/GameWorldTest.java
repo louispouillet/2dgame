@@ -22,8 +22,8 @@ class GameWorldTest {
         GameWorld world = new GameWorld(ARENA);
         Colt shooter = new Colt(world.nextId(), X0, Y0);
         Shelly target = new Shelly(world.nextId(), X0 + 2, Y0);
-        world.addPlayer(shooter);
-        world.addPlayer(target);
+        world.addPlayer(shooter, Team.BLUE);
+        world.addPlayer(target, Team.RED);
 
         world.attack(shooter, 1, 0);
         for (int i = 0; i < 180; i++) {
@@ -38,7 +38,7 @@ class GameWorldTest {
     void burstBulletsJoinTheWorldOverTime() {
         GameWorld world = new GameWorld(ARENA);
         Colt shooter = new Colt(world.nextId(), X0, Y0);
-        world.addPlayer(shooter);
+        world.addPlayer(shooter, Team.BLUE);
 
         world.attack(shooter, 1, 0);
         assertEquals(1, countProjectiles(world));
@@ -56,7 +56,7 @@ class GameWorldTest {
     void deadBrawlerStopsItsBurst() {
         GameWorld world = new GameWorld(ARENA);
         Colt shooter = new Colt(world.nextId(), X0, Y0);
-        world.addPlayer(shooter);
+        world.addPlayer(shooter, Team.BLUE);
 
         world.attack(shooter, 1, 0);
         shooter.takeDamage(shooter.getHealth());
@@ -75,7 +75,7 @@ class GameWorldTest {
     void projectileDoesNotHitItsOwner() {
         GameWorld world = new GameWorld(ARENA);
         Colt shooter = new Colt(world.nextId(), X0, Y0);
-        world.addPlayer(shooter);
+        world.addPlayer(shooter, Team.BLUE);
 
         world.attack(shooter, 1, 0);
         world.update(1 / 60f);
@@ -87,7 +87,7 @@ class GameWorldTest {
     void deadBrawlerIsRemovedFromWorld() {
         GameWorld world = new GameWorld(ARENA);
         Colt target = new Colt(world.nextId(), X0, Y0);
-        world.addPlayer(target);
+        world.addPlayer(target, Team.BLUE);
 
         target.takeDamage(100);
         world.update(1 / 60f);
@@ -100,8 +100,8 @@ class GameWorldTest {
         GameWorld world = new GameWorld(ARENA);
         Colt shooter = new Colt(world.nextId(), X0, Y0);
         Shelly target = new Shelly(world.nextId(), X0 + 2, Y0 + 3);
-        world.addPlayer(shooter);
-        world.addPlayer(target);
+        world.addPlayer(shooter, Team.BLUE);
+        world.addPlayer(target, Team.RED);
 
         world.attack(shooter, 1, 0);
         for (int i = 0; i < 30; i++) {
@@ -125,7 +125,7 @@ class GameWorldTest {
     void shotgunPelletsGetUniqueIds() {
         GameWorld world = new GameWorld(ARENA);
         Shelly shooter = new Shelly(world.nextId(), X0, Y0);
-        world.addPlayer(shooter);
+        world.addPlayer(shooter, Team.BLUE);
 
         world.attack(shooter, 1, 0);
 
@@ -137,7 +137,7 @@ class GameWorldTest {
     void deadPlayerStaysRegisteredAfterRemovalFromWorld() {
         GameWorld world = new GameWorld(ARENA);
         Colt p1 = new Colt(world.nextId(), X0, Y0);
-        world.addPlayer(p1);
+        world.addPlayer(p1, Team.BLUE);
 
         p1.takeDamage(100);
         world.update(1 / 60f);
@@ -150,9 +150,52 @@ class GameWorldTest {
     void registeringTheSameBrawlerTwiceFails() {
         GameWorld world = new GameWorld(ARENA);
         Colt brawler = new Colt(world.nextId(), X0, Y0);
-        world.addPlayer(brawler);
+        world.addPlayer(brawler, Team.BLUE);
 
-        assertThrows(IllegalArgumentException.class, () -> world.addPlayer(brawler));
+        assertThrows(IllegalArgumentException.class, () -> world.addPlayer(brawler, Team.RED));
     }
 
+
+    @Test
+    void projectilePassesThroughAnAllyAndHitsTheEnemyBehind() {
+        GameWorld world = new GameWorld(ARENA);
+        Colt shooter = new Colt(world.nextId(), X0, Y0);
+        Shelly ally = new Shelly(world.nextId(), X0 + 2, Y0);
+        Shelly enemy = new Shelly(world.nextId(), X0 + 4, Y0);
+        world.addPlayer(shooter, Team.BLUE);
+        world.addPlayer(ally, Team.BLUE);
+        world.addPlayer(enemy, Team.RED);
+
+        world.attack(shooter, 1, 0);
+        for (int i = 0; i < 180; i++) {
+            world.update(1 / 60f);
+        }
+
+        assertEquals(ally.getMaxHealth(), ally.getHealth());
+        assertTrue(enemy.getHealth() < enemy.getMaxHealth());
+    }
+
+    @Test
+    void playersOfTheSameTeamAreAllies() {
+        GameWorld world = new GameWorld(ARENA);
+        world.addPlayer(new Colt(1, X0, Y0), Team.BLUE);
+        world.addPlayer(new Colt(2, X0 + 1, Y0), Team.BLUE);
+        world.addPlayer(new Colt(3, X0 + 2, Y0), Team.RED);
+
+        assertTrue(world.areAllies(1, 2));
+        assertTrue(world.areAllies(1, 1));
+        assertFalse(world.areAllies(1, 3));
+    }
+
+    @Test
+    void unknownOrRemovedPlayerHasNoAlly() {
+        GameWorld world = new GameWorld(ARENA);
+        world.addPlayer(new Colt(1, X0, Y0), Team.BLUE);
+        world.addPlayer(new Colt(2, X0 + 1, Y0), Team.BLUE);
+
+        world.removePlayer(2);
+
+        assertFalse(world.areAllies(1, 2));
+        assertFalse(world.areAllies(9, 9));
+    }
 }

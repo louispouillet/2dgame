@@ -35,8 +35,8 @@ class GameWorldCollisionTest {
         GameWorld world = new GameWorld(ARENA);
         Colt shooter = new Colt(world.nextId(), 2.5f, 3.5f);
         Shelly target = new Shelly(world.nextId(), 6.5f, 3.5f);
-        world.addPlayer(shooter);
-        world.addPlayer(target);
+        world.addPlayer(shooter, Team.BLUE);
+        world.addPlayer(target, Team.RED);
 
         world.attack(shooter, 1, 0);
         // assez longtemps pour que toute la rafale soit partie et ait atteint le mur
@@ -51,8 +51,8 @@ class GameWorldCollisionTest {
         GameWorld world = new GameWorld(ARENA);
         Colt shooter = new Colt(world.nextId(), 1.5f, 2.5f);
         Shelly target = new Shelly(world.nextId(), 5.5f, 2.5f);
-        world.addPlayer(shooter);
-        world.addPlayer(target);
+        world.addPlayer(shooter, Team.BLUE);
+        world.addPlayer(target, Team.RED);
 
         world.attack(shooter, 1, 0);
         run(world, 1f);
@@ -65,8 +65,8 @@ class GameWorldCollisionTest {
         GameWorld world = new GameWorld(ARENA);
         Colt shooter = new Colt(world.nextId(), 1.5f, 1.5f);
         Shelly target = new Shelly(world.nextId(), 5.5f, 1.5f);
-        world.addPlayer(shooter);
-        world.addPlayer(target);
+        world.addPlayer(shooter, Team.BLUE);
+        world.addPlayer(target, Team.RED);
 
         world.attack(shooter, 1, 0);
         run(world, 1f);

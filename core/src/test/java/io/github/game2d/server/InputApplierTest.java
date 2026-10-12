@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.github.game2d.model.GameWorld;
 import io.github.game2d.model.Projectile;
+import io.github.game2d.model.Team;
 import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.TestArenas;
 import io.github.game2d.model.brawler.Colt;
@@ -23,8 +24,8 @@ class InputApplierTest {
         InputApplier applier = new InputApplier(world);
         Colt p1 = new Colt(world.nextId(), X0, Y0);
         Colt p2 = new Colt(world.nextId(), X0 + 5, Y0);
-        world.addPlayer(p1);
-        world.addPlayer(p2);
+        world.addPlayer(p1, Team.BLUE);
+        world.addPlayer(p2, Team.RED);
 
         applier.apply(p2.getId(), new PlayerInput(1, 1, 0, 1, 0, false));
         world.update(1f);
@@ -54,7 +55,7 @@ class InputApplierTest {
         GameWorld world = new GameWorld(ARENA);
         InputApplier applier = new InputApplier(world);
         Colt shooter = new Colt(world.nextId(), X0, Y0);
-        world.addPlayer(shooter);
+        world.addPlayer(shooter, Team.BLUE);
 
         applier.apply(shooter.getId(), new PlayerInput(1, 0, 0, aimX, aimY, true));
         world.update(0.1f);
@@ -85,7 +86,7 @@ class InputApplierTest {
         GameWorld world = new GameWorld(ARENA);
         InputApplier applier = new InputApplier(world);
         Colt shooter = new Colt(world.nextId(), X0, Y0);
-        world.addPlayer(shooter);
+        world.addPlayer(shooter, Team.BLUE);
 
         applier.apply(shooter.getId(), new PlayerInput(1, 0, 0, Float.NaN, 1, true));
 
@@ -97,7 +98,7 @@ class InputApplierTest {
         GameWorld world = new GameWorld(ARENA);
         InputApplier applier = new InputApplier(world);
         Colt shooter = new Colt(world.nextId(), X0, Y0);
-        world.addPlayer(shooter);
+        world.addPlayer(shooter, Team.BLUE);
 
         applier.apply(shooter.getId(), new PlayerInput(1, 0, 0, 0, 0, true));
 
@@ -109,7 +110,7 @@ class InputApplierTest {
         GameWorld world = new GameWorld(ARENA);
         InputApplier applier = new InputApplier(world);
         Colt player = new Colt(world.nextId(), X0, Y0);
-        world.addPlayer(player);
+        world.addPlayer(player, Team.BLUE);
 
         applier.apply(player.getId(), new PlayerInput(1, Float.NaN, Float.POSITIVE_INFINITY, 1, 0, false));
         world.update(1f);
@@ -122,13 +123,13 @@ class InputApplierTest {
     void hugeMovementIsNotFasterThanNormalMovement() {
         GameWorld normalWorld = new GameWorld(ARENA);
         Colt normal = new Colt(normalWorld.nextId(), X0, Y0);
-        normalWorld.addPlayer(normal);
+        normalWorld.addPlayer(normal, Team.BLUE);
         new InputApplier(normalWorld).apply(normal.getId(), new PlayerInput(1, 1, 0, 1, 0, false));
         normalWorld.update(0.1f);
 
         GameWorld hugeWorld = new GameWorld(ARENA);
         Colt huge = new Colt(hugeWorld.nextId(), X0, Y0);
-        hugeWorld.addPlayer(huge);
+        hugeWorld.addPlayer(huge, Team.RED);
         new InputApplier(hugeWorld).apply(huge.getId(), new PlayerInput(1, 1000, 0, 1, 0, false));
         hugeWorld.update(0.1f);
 

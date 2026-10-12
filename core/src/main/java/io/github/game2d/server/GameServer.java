@@ -111,7 +111,7 @@ public class GameServer {
             int place = placedPerTeam.merge(player.team(), 1, Integer::sum) - 1;
             SpawnPoint spawn = arena.getSpawnPoints(player.team()).get(place);
             BrawlerType type = BRAWLER_ROTATION[index % BRAWLER_ROTATION.length];
-            world.addPlayer(type.create(player.id(), spawn.x(), spawn.y()));
+            world.addPlayer(type.create(player.id(), spawn.x(), spawn.y()), player.team());
         }
         phase = Phase.PLAYING;
     }

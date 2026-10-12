@@ -20,6 +20,8 @@ public class BrawlerHud {
     private static final Color AMMO_FILL = new Color(1f, 0.55f, 0.1f, 1f);
     private static final Color AMMO_RELOAD_FILL = new Color(0.6f, 0.38f, 0.1f, 1f);
     private static final Color BAR_OUTLINE = new Color(0f, 0f, 0f, 1f);
+    private static final Color ALLY_NAME = new Color(0.55f, 0.75f, 1f, 1f);
+    private static final Color ENEMY_NAME = new Color(1f, 0.55f, 0.55f, 1f);
 
     private static final String FONT_FILE = "fonts/LiberationSans-Bold.ttf";
     private static final int FONT_PIXEL_SIZE = 28;
@@ -29,10 +31,10 @@ public class BrawlerHud {
 
     private final BitmapFont font = createFont();
     private final GlyphLayout layout = new GlyphLayout();
-    private final PlayerNames names;
+    private final PlayerRoster roster;
 
-    public BrawlerHud(PlayerNames names) {
-        this.names = names;
+    public BrawlerHud(PlayerRoster roster) {
+        this.roster = roster;
         font.setUseIntegerPositions(false);
     }
 
@@ -74,6 +76,7 @@ public class BrawlerHud {
 
     private void drawHealthText(SpriteBatch batch, HudAnchor anchor) {
         font.getData().setScale(FONT_SCALE * anchor.unit());
+        font.setColor(Color.WHITE);
         layout.setText(font, String.valueOf(anchor.brawler().health()));
         float centerY = healthBarBottom(anchor) + BAR_HEIGHT * anchor.unit();
         float x = anchor.centerX() - layout.width / 2;
@@ -82,11 +85,13 @@ public class BrawlerHud {
     }
 
     private void drawName(SpriteBatch batch, HudAnchor anchor) {
-        String name = names.of(anchor.brawler().id());
+        int id = anchor.brawler().id();
+        String name = roster.nameOf(id);
         if (name.isEmpty()) {
             return;
         }
         font.getData().setScale(FONT_SCALE * anchor.unit());
+        font.setColor(roster.isAlly(id) ? ALLY_NAME : ENEMY_NAME);
         layout.setText(font, name);
         float barTop = healthBarBottom(anchor) + BAR_HEIGHT * anchor.unit();
         float healthTextTop = barTop + layout.height / 2;
