@@ -51,7 +51,7 @@ class BrawlerCollisionTest {
         Colt colt = new Colt(1, 1.5f, 1.5f);
         colt.setDirection(-1, 1);
 
-        // assez longtemps pour longer le mur jusqu'en haut, quelle que soit la vitesse
+        // long enough to slide along the wall to the top, whatever the speed
         moveFor(colt, 2f);
 
         assertTrue(colt.getX() < 1 + RADIUS + 0.02f);
@@ -74,7 +74,7 @@ class BrawlerCollisionTest {
         Colt colt = new Colt(1, 3.5f, 1.5f);
         colt.setDirection(1, 0);
 
-        // assez longtemps pour traverser le buisson et atteindre le mur de droite
+        // long enough to cross the bush and reach the right wall
         moveFor(colt, 2f);
 
         assertEquals(6 - RADIUS, colt.getX(), 0.02f);
@@ -108,7 +108,7 @@ class BrawlerCollisionTest {
     void cannotResyncWithTheCircleTouchingAWall() {
         Colt colt = new Colt(1, 1.5f, 1.5f);
 
-        // Le centre est dans une case libre, mais le cercle déborde de RADIUS / 2 sur le mur.
+        // The center is on a free tile, but the circle overlaps the wall by RADIUS / 2.
         assertThrows(IllegalArgumentException.class, () -> colt.correctPositionTo(1 + RADIUS / 2, 1.5f, ARENA));
     }
 

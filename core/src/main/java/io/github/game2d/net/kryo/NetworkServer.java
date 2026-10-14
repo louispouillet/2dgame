@@ -89,7 +89,7 @@ public class NetworkServer extends NetworkEndpoint<Server> {
         try {
             request.run();
         } catch (LobbyException e) {
-            // L'interface empêche ces demandes : une demande refusée ici vient d'un client désynchronisé
+            // The UI prevents these requests: a refusal here comes from an out-of-sync client
         }
     }
 

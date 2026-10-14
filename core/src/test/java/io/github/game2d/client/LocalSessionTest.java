@@ -44,7 +44,7 @@ class LocalSessionTest {
         assertNotEquals(-1, session.playerId());
         assertEquals(session.playerId(), lobby.leaderId());
         assertEquals(2, lobby.players().size());
-        assertNotEquals(player("Louis").team(), player("Cible").team());
+        assertNotEquals(player("Louis").team(), player("Target").team());
     }
 
     @Test

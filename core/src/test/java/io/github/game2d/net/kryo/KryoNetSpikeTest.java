@@ -23,9 +23,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
 
-// Test jetable : vérifie que KryoNet transporte nos records (PlayerInput, WorldSnapshot).
-// On n'appelle ni start() ni stop() : nos propres threads appellent update(), et la
-// connexion est fermée une fois ces threads terminés, pour éviter le blocage de Client.stop().
+// Throwaway test: checks that KryoNet carries our records (PlayerInput, WorldSnapshot).
+// Neither start() nor stop() is called: our own threads call update(), and the
+// connection is closed once these threads end, to avoid Client.stop() blocking.
 class KryoNetSpikeTest {
     private static final int TCP_PORT = 54655;
     private static final int UDP_PORT = 54656;
@@ -156,7 +156,7 @@ class KryoNetSpikeTest {
     }
 
     private static WorldSnapshot sampleSnapshot() {
-        // des ArrayList, comme celles que construit SnapshotBuilder.build()
+        // ArrayLists, like the ones SnapshotBuilder.build() creates
         List<BrawlerState> brawlers = new ArrayList<>(List.of(
             new BrawlerState(1, 1.5f, 2.5f, 0.25f, 120, 120, 3, 3, 0f, BrawlerType.SHELLY, 7),
             new BrawlerState(2, 4.5f, 2.5f, 0.25f, 80, 100, 1, 3, 0.4f, BrawlerType.COLT, 5)));

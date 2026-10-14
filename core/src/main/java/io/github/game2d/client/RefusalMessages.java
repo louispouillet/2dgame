@@ -8,14 +8,14 @@ public final class RefusalMessages {
 
     public static String describe(RefusalReason reason) {
         return switch (reason) {
-            case INVALID_NAME -> "Pseudo invalide : 1 à 16 lettres, chiffres, _ ou -";
-            case NAME_TAKEN -> "Ce pseudo est déjà pris";
-            case LOBBY_FULL -> "Le lobby est plein";
-            case TEAM_FULL -> "Cette équipe est pleine";
-            case NOT_LEADER -> "Seul le chef peut faire ça";
-            case UNKNOWN_MAP -> "Map inconnue";
-            case TEAMS_NOT_READY -> "Il faut au moins un joueur dans chaque équipe";
-            case GAME_IN_PROGRESS -> "Une partie est en cours";
+            case INVALID_NAME -> "Invalid nickname: 1 to 16 letters, digits, _ or -";
+            case NAME_TAKEN -> "This nickname is already taken";
+            case LOBBY_FULL -> "The lobby is full";
+            case TEAM_FULL -> "This team is full";
+            case NOT_LEADER -> "Only the leader can do that";
+            case UNKNOWN_MAP -> "Unknown map";
+            case TEAMS_NOT_READY -> "Each team needs at least one player";
+            case GAME_IN_PROGRESS -> "A game is in progress";
         };
     }
 }

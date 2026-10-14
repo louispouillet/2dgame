@@ -21,7 +21,7 @@ public class ServerLauncher {
 
         System.out.println("Server listening on TCP " + NetworkRegistry.DEFAULT_TCP_PORT
             + " / UDP " + NetworkRegistry.DEFAULT_UDP_PORT + " (Ctrl+C to stop)");
-        // Les threads du serveur sont des daemons : on bloque ici pour garder le programme en vie
+        // The server threads are daemons: block here to keep the program alive
         Thread.currentThread().join();
     }
 }

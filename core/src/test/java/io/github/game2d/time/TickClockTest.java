@@ -8,7 +8,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class TickClockTest {
-    // 0.125 et 0.0625 sont exacts en binaire : pas d'erreur d'arrondi dans les tests
+    // 0.125 and 0.0625 are exact in binary: no rounding error in the tests
     private static final float STEP = 0.125f;
 
     private static List<Integer> advance(TickClock clock, float frameTime) {

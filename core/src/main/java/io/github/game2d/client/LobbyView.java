@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class LobbyView {
-    private static final String LEADER_MARK = "chef";
-    private static final String MY_MARK = "toi";
+    private static final String LEADER_MARK = "leader";
+    private static final String MY_MARK = "you";
 
     private final LobbyState state;
     private final int myId;
@@ -52,9 +52,9 @@ public final class LobbyView {
 
     public String status() {
         if (!state.canStart()) {
-            return "Il faut au moins un joueur dans chaque équipe";
+            return "Each team needs at least one player";
         }
-        return isLeader() ? "Tu peux lancer la partie" : "En attente du chef…";
+        return isLeader() ? "You can start the game" : "Waiting for the leader…";
     }
 
     private String label(LobbyPlayerState player) {

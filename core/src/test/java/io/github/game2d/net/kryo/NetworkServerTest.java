@@ -133,7 +133,7 @@ class NetworkServerTest {
         return client;
     }
 
-    // Ajoute un adversaire immobile (sans réseau) puis lance la partie
+    // Adds a still opponent (without network) then starts the game
     private void startAgainstAnOpponent(TestClient leader) {
         gameServer.join(new LocalChannel(), "Opponent");
         gameServer.requestStart(leader.id());

@@ -28,7 +28,7 @@ class GameServerThreadTest {
         return new GameServer(List.of("test"), "test", map -> arena);
     }
 
-    // Le joueur et un adversaire immobile rejoignent, puis la partie est lancée
+    // The player and a still opponent join, then the game starts
     private static void joinAndStart(GameServer server, LocalChannel channel) {
         int id = server.join(channel, "Louis");
         server.join(new LocalChannel(), "Opponent");

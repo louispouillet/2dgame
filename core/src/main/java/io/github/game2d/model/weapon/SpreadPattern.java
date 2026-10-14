@@ -3,7 +3,7 @@ package io.github.game2d.model.weapon;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Toutes les balles partent en même temps, en éventail autour de la visée. */
+/** All bullets leave at once, in a fan around the aim. */
 public class SpreadPattern implements AttackPattern {
     private final List<Shot> shots;
 

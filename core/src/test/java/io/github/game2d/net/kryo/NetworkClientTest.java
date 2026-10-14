@@ -23,8 +23,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-// Test de bout en bout : notre NetworkClient parle à notre NetworkServer.
-// Le GameServer n'est pas démarré en thread : le test appelle tick() lui-même.
+// End-to-end test: our NetworkClient talks to our NetworkServer.
+// The GameServer is not started as a thread: the test calls tick() itself.
 class NetworkClientTest {
     private static final String MAP = """
         ######
@@ -72,7 +72,7 @@ class NetworkClientTest {
         return channel;
     }
 
-    // Ajoute un adversaire immobile (sans réseau) puis lance la partie
+    // Adds a still opponent (without network) then starts the game
     private void startAgainstAnOpponent(NetworkServerChannel leader) {
         gameServer.join(new LocalChannel(), "Opponent");
         gameServer.requestStart(leader.getBrawlerId());

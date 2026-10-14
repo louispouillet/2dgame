@@ -35,7 +35,7 @@ class LobbyViewTest {
     void labelsMarkTheLeaderAndThePlayerThemself() {
         LobbyView view = new LobbyView(lobby(1, true, blue(1, "Louis"), red(2, "Lilian"), blue(3, "Tom")), 3);
 
-        assertEquals(List.of("Louis (chef)", "Tom (toi)"), view.playerLabels(Team.BLUE));
+        assertEquals(List.of("Louis (leader)", "Tom (you)"), view.playerLabels(Team.BLUE));
         assertEquals(List.of("Lilian"), view.playerLabels(Team.RED));
         assertEquals(2, view.count(Team.BLUE));
     }
@@ -44,7 +44,7 @@ class LobbyViewTest {
     void leaderSeesBothMarksOnTheirName() {
         LobbyView view = new LobbyView(lobby(1, true, blue(1, "Louis")), 1);
 
-        assertEquals(List.of("Louis (chef, toi)"), view.playerLabels(Team.BLUE));
+        assertEquals(List.of("Louis (leader, you)"), view.playerLabels(Team.BLUE));
     }
 
     @Test
@@ -85,14 +85,14 @@ class LobbyViewTest {
         LobbyView view = new LobbyView(lobby(1, false, blue(1, "Louis")), 1);
 
         assertFalse(view.canStart());
-        assertEquals("Il faut au moins un joueur dans chaque équipe", view.status());
+        assertEquals("Each team needs at least one player", view.status());
     }
 
     @Test
     void statusTellsWhoCanStart() {
         LobbyState state = lobby(1, true, blue(1, "Louis"), red(2, "Lilian"));
 
-        assertEquals("Tu peux lancer la partie", new LobbyView(state, 1).status());
-        assertEquals("En attente du chef…", new LobbyView(state, 2).status());
+        assertEquals("You can start the game", new LobbyView(state, 1).status());
+        assertEquals("Waiting for the leader…", new LobbyView(state, 2).status());
     }
 }

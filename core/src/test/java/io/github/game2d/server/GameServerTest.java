@@ -70,7 +70,7 @@ class GameServerTest {
         return server.join(channel, "Player" + joined);
     }
 
-    // Ajoute un adversaire immobile puis lance la partie
+    // Adds a still opponent then starts the game
     private void startWith(int leaderId) {
         server.join(new LocalChannel(), "Opponent");
         server.requestStart(leaderId);
@@ -98,7 +98,7 @@ class GameServerTest {
         return channel.latestSnapshot().match();
     }
 
-    // Le premier joueur (Shelly, à gauche) tire vers la droite jusqu'à la fin de la manche
+    // The first player (Shelly, on the left) shoots to the right until the round ends
     private void shootUntilTheRoundEnds(LocalChannel shooter) {
         shooter.sendInput(new PlayerInput(1, 0, 0, 1, 0, true));
         for (int i = 0; i < ticksFor(30f) && matchOf(shooter).phase() == MatchPhase.PLAYING; i++) {

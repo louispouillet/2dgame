@@ -46,10 +46,10 @@ public class LobbyScreen extends ScreenAdapter {
         this.session = session;
         blueTitle = new Label("", skin);
         redTitle = new Label("", skin);
-        joinBlue = new TextButton("Rejoindre les Bleus", skin, UiSkin.BLUE);
-        joinRed = new TextButton("Rejoindre les Rouges", skin, UiSkin.RED);
+        joinBlue = new TextButton("Join Blue", skin, UiSkin.BLUE);
+        joinRed = new TextButton("Join Red", skin, UiSkin.RED);
         mapBox = new SelectBox<>(skin);
-        startButton = new TextButton("Lancer", skin);
+        startButton = new TextButton("Start", skin);
         status = new Label("", skin);
 
         joinBlue.addListener(onClick(() -> session.chooseTeam(Team.BLUE)));
@@ -101,8 +101,8 @@ public class LobbyScreen extends ScreenAdapter {
 
     private void refresh(LobbyState state) {
         LobbyView view = new LobbyView(state, session.playerId());
-        blueTitle.setText("BLEUS " + view.count(Team.BLUE) + "/" + Lobby.MAX_TEAM_SIZE);
-        redTitle.setText("ROUGES " + view.count(Team.RED) + "/" + Lobby.MAX_TEAM_SIZE);
+        blueTitle.setText("BLUE " + view.count(Team.BLUE) + "/" + Lobby.MAX_TEAM_SIZE);
+        redTitle.setText("RED " + view.count(Team.RED) + "/" + Lobby.MAX_TEAM_SIZE);
         fill(bluePlayers, view.playerLabels(Team.BLUE));
         fill(redPlayers, view.playerLabels(Team.RED));
         joinBlue.setDisabled(!view.canJoin(Team.BLUE));

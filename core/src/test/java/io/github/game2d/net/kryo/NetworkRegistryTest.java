@@ -28,7 +28,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class NetworkRegistryTest {
-    // Joue le rôle du réseau : un Kryo écrit (le serveur), un autre relit (le client)
+    // Plays the network: one Kryo writes (the server), another reads back (the client)
     private static Object roundTrip(Object message) {
         Kryo sender = new Kryo();
         Kryo receiver = new Kryo();

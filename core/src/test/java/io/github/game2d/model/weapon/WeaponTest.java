@@ -11,12 +11,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 /**
- * La mécanique de {@link Weapon} est testée avec une arme de test aux valeurs fixées ici :
- * changer l'équilibrage de {@link Revolver} ou {@link Shotgun} ne casse pas ces tests.
+ * The mechanics of {@link Weapon} are tested with a test weapon whose values are set here:
+ * rebalancing {@link Revolver} or {@link Shotgun} does not break these tests.
  */
 class WeaponTest {
     private static final int MAX_AMMO = 3;
-    // MAX_AMMO tirs espacés du cooldown doivent tenir dans un temps de recharge
+    // MAX_AMMO shots spaced by the cooldown must fit in one reload time
     private static final float COOLDOWN = 0.5f;
     private static final float RELOAD_TIME = 2f;
     private static final int BURST_SIZE = 4;
@@ -133,7 +133,7 @@ class WeaponTest {
         assertEquals(MAX_AMMO, weapon.getAmmo());
     }
 
-    // --- Déroulement d'une attaque ---
+    // --- How an attack unfolds ---
 
     @Test
     void onlyTheFirstShotOfABurstLeavesImmediately() {
@@ -203,7 +203,7 @@ class WeaponTest {
         assertTrue(release(new TestWeapon()).isEmpty());
     }
 
-    // --- Armes réelles : leur forme d'attaque, sans dépendre de leurs valeurs ---
+    // --- Real weapons: their attack shape, without depending on their values ---
 
     @Test
     void revolverFiresAnAlternatingBurst() {

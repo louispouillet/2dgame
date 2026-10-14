@@ -12,7 +12,7 @@ class ClientClockTest {
 
     private final ClientClock clock = new ClientClock();
 
-    // Horloge locale = temps serveur + 10 s (latence fixe comprise).
+    // Local clock = server time + 10 s (fixed latency included).
     private static double localTimeOf(int tick) {
         return 10.0 + TickClock.timeOfTick(tick);
     }
@@ -41,7 +41,7 @@ class ClientClockTest {
 
         clock.update(11.5);
 
-        // tick 30 = 1,0 s côté serveur, vu à 11,0 s côté client : l'écart est de 10 s
+        // tick 30 = 1.0 s on the server, seen at 11.0 s on the client: the gap is 10 s
         assertEquals(1.5, clock.serverTime(), DELTA);
     }
 
@@ -81,7 +81,7 @@ class ClientClockTest {
         }
         clock.update(20.0);
 
-        // le serveur est désormais vu 50 ms plus tard : l'estimation a rattrapé cet écart
+        // the server is now seen 50 ms later: the estimate has caught up with that gap
         assertEquals(20.0 - 10.05, clock.serverTime(), 0.001);
     }
 

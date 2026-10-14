@@ -43,7 +43,7 @@ public abstract class Weapon {
 
     protected abstract Projectile createProjectile(int id, int ownerId, float x, float y, float dirX, float dirY);
 
-    /** Consomme une munition et tire les balles immédiates de l'attaque ; les autres partent via {@link #releaseShots}. */
+    /** Uses one ammo and fires the immediate bullets of the attack; the others leave through {@link #releaseShots}. */
     public List<Projectile> fire(int ownerId, IntSupplier ids, float x, float y, float dirX, float dirY) {
         if (cooldownTimer > 0 || ammo == 0) {
             return List.of();
@@ -58,7 +58,7 @@ public abstract class Weapon {
         return releaseShots(ownerId, ids, x, y);
     }
 
-    /** Tire, depuis la position actuelle du tireur, les balles de l'attaque en cours dont le délai est écoulé. */
+    /** Fires, from the shooter's current position, the bullets of the current attack whose delay has passed. */
     public List<Projectile> releaseShots(int ownerId, IntSupplier ids, float x, float y) {
         List<Projectile> released = new ArrayList<>();
         Iterator<Shot> iterator = pendingShots.iterator();
@@ -68,7 +68,7 @@ public abstract class Weapon {
                 continue;
             }
             iterator.remove();
-            // la droite de la visée (aimX, aimY) est (aimY, -aimX)
+            // the right of the aim (aimX, aimY) is (aimY, -aimX)
             float startX = x + aimY * shot.sideOffset();
             float startY = y - aimX * shot.sideOffset();
             float angle = (float) Math.toRadians(shot.angle());

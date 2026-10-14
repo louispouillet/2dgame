@@ -35,7 +35,7 @@ public class NameScreen extends ScreenAdapter {
         this.main = main;
         this.skin = skin;
         nameField = new TextField("", skin);
-        nameField.setMessageText("Pseudo");
+        nameField.setMessageText("Nickname");
         nameField.setMaxLength(Lobby.MAX_NAME_LENGTH);
         nameField.setTextFieldFilter((field, c) -> Character.isLetterOrDigit(c) || c == '_' || c == '-');
         nameField.setTextFieldListener((field, c) -> {
@@ -46,7 +46,7 @@ public class NameScreen extends ScreenAdapter {
         addressField = new TextField(address, skin);
         message = new Label("", skin);
         message.setColor(ERROR_COLOR);
-        TextButton joinButton = new TextButton("Rejoindre", skin, UiSkin.BLUE);
+        TextButton joinButton = new TextButton("Join", skin, UiSkin.BLUE);
         TextButton soloButton = new TextButton("Solo", skin);
         joinButton.addListener(onClick(this::join));
         soloButton.addListener(onClick(this::playSolo));
@@ -55,9 +55,9 @@ public class NameScreen extends ScreenAdapter {
         root.setFillParent(true);
         root.defaults().pad(SPACING / 2);
         root.add(new Label("Brawl POC", skin, UiSkin.TITLE)).colspan(2).padBottom(SPACING * 2).row();
-        root.add(new Label("Pseudo", skin)).right();
+        root.add(new Label("Nickname", skin)).right();
         root.add(nameField).width(FIELD_WIDTH).row();
-        root.add(new Label("Serveur", skin)).right();
+        root.add(new Label("Server", skin)).right();
         root.add(addressField).width(FIELD_WIDTH).row();
         Table buttons = new Table();
         buttons.defaults().pad(SPACING / 2).minWidth(FIELD_WIDTH / 2);
@@ -85,7 +85,7 @@ public class NameScreen extends ScreenAdapter {
                 connectedAddress = address;
             } catch (IOException e) {
                 session = null;
-                message.setText("Impossible de joindre le serveur " + address);
+                message.setText("Cannot reach the server " + address);
                 return;
             }
         }

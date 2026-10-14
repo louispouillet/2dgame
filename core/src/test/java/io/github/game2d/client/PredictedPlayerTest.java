@@ -16,7 +16,7 @@ class PredictedPlayerTest {
     private static final float START_X = 5f;
     private static final float START_Y = 5f;
     private final Arena arena = TestArenas.open(20, 12);
-    // Distance parcourue par Shelly en un tick : mesurée, pour ne pas dépendre de sa vitesse
+    // Distance Shelly covers in one tick: measured, so it does not depend on her speed
     private final float step = measureStep();
 
     private float measureStep() {
@@ -72,7 +72,7 @@ class PredictedPlayerTest {
         player.apply(move(2, 1, 0));
         player.apply(move(3, 1, 0));
 
-        // Le serveur a traité les 3 inputs mais n'a pas fait avancer le brawler (obstacle inconnu du client).
+        // The server processed the 3 inputs but did not move the brawler (an obstacle the client does not know).
         player.reconcile(serverState(START_X, START_Y, 3));
 
         assertEquals(START_X, player.getX(), DELTA);

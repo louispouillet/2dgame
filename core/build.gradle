@@ -27,7 +27,7 @@ jar {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-// Lance le serveur de jeu seul (sans fenêtre) : ./gradlew core:runServer
+// Runs the game server alone (no window): ./gradlew core:runServer
 tasks.register('runServer', JavaExec) {
   classpath = sourceSets.main.runtimeClasspath + files(rootProject.file('assets'))
   mainClass = 'io.github.game2d.server.ServerLauncher'

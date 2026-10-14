@@ -4,8 +4,8 @@ import io.github.game2d.model.Projectile;
 
 public class Revolver extends Weapon {
     private static final int MAX_AMMO = 3;
-    // Doit durer au moins toute la rafale ((BULLETS_PER_BURST - 1) * BULLET_INTERVAL) :
-    // un nouveau tir pendant la rafale couperait les balles restantes.
+    // Must last at least the whole burst ((BULLETS_PER_BURST - 1) * BULLET_INTERVAL):
+    // a new shot during the burst would cut the remaining bullets.
     private static final float COOLDOWN = 1f;
     private static final float RELOAD_TIME = 2f;
     private static final float MAX_RANGE = 8f;

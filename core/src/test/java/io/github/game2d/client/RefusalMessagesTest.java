@@ -16,6 +16,6 @@ class RefusalMessagesTest {
 
     @Test
     void takenNameIsExplained() {
-        assertEquals("Ce pseudo est déjà pris", RefusalMessages.describe(RefusalReason.NAME_TAKEN));
+        assertEquals("This nickname is already taken", RefusalMessages.describe(RefusalReason.NAME_TAKEN));
     }
 }

@@ -25,7 +25,7 @@ class ClientGameTest {
     private static final float START_X = 5f;
     private static final float START_Y = 5f;
     private final Arena arena = TestArenas.open(20, 12);
-    // Distance parcourue par Shelly en un tick : mesurée, pour ne pas dépendre de sa vitesse
+    // Distance Shelly covers in one tick: measured, so it does not depend on her speed
     private final float step = measureStep();
 
     private float measureStep() {
@@ -68,7 +68,7 @@ class ClientGameTest {
         return new BrawlerState(id, x, y, 0.25f, 120, 120, 3, 3, 0f, BrawlerType.SHELLY, 0);
     }
 
-    /** Remplace le clavier (Gdx.input n'existe pas hors d'une fenêtre libGDX). */
+    /** Replaces the keyboard (Gdx.input does not exist outside a libGDX window). */
     private static InputReader moveRight() {
         return new InputReader(null) {
             @Override

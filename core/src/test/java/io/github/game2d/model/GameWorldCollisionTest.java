@@ -39,7 +39,7 @@ class GameWorldCollisionTest {
         world.addPlayer(target, Team.RED);
 
         world.attack(shooter, 1, 0);
-        // assez longtemps pour que toute la rafale soit partie et ait atteint le mur
+        // long enough for the whole burst to leave and reach the wall
         run(world, 3f);
 
         assertFalse(hasProjectiles(world));

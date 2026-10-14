@@ -33,7 +33,7 @@ Principes illustrés :
 - Écrans du client : `Main extends Game` affiche un `Screen` à la fois. `Main.showScreen` libère l'ancien écran (`Game` ne le fait jamais). La session (`GameSession`) et le skin appartiennent à `Main` (`connect`, `startSolo`, `play(map)`) et survivent aux changements d'écran.
 - Parcours : `NameScreen` (pseudo, adresse du serveur pré-remplie avec l'argument ou `localhost`, boutons « Rejoindre » et « Solo ») → `LobbyScreen` (équipes, map pour le chef, « Lancer ») → `GameScreen` sur la map de `LobbyState`. « Solo » va directement au jeu, contre une cible immobile.
 - Pseudos et équipes en jeu : `PlayerRoster` (id → pseudo et équipe, et mon id) est construit par `GameScreen` à partir du dernier `LobbyState` (l'id du joueur est l'id du brawler). Couleurs relatives : moi et mes alliés en bleu, les ennemis en rouge (brawlers 3D et pseudos dessinés par `BrawlerHud` au-dessus de la barre de vie). Pseudos et équipes ne passent jamais dans les snapshots.
-- Interface Scene2D avec `UiSkin` (skin construit dans le code : police FreeType, fonds unis teintés). Les décisions d'affichage du lobby sont dans `LobbyView` (Java pur, testé) ; `RefusalMessages` traduit les refus.
+- Interface Scene2D avec `UiSkin` (skin construit dans le code : police FreeType, fonds unis teintés). Les décisions d'affichage du lobby sont dans `LobbyView` (Java pur, testé) ; `RefusalMessages` transforme une raison de refus en message pour le joueur.
 
 ## 4. Collisions
 - Toutes les collisions sont calculées côté serveur, dans `model`.
@@ -112,3 +112,4 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 
 ## Règles
 - Ne jamais créer de commit sans demande explicite de l'utilisateur.
+- Tout le texte du code est en anglais : interface du jeu, messages d'erreur, commentaires, Makefile (seules exceptions : des données de test comme un pseudo accentué).

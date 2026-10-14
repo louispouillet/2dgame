@@ -3,7 +3,7 @@ package io.github.game2d.model.weapon;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Les balles partent l'une après l'autre, alternativement à droite puis à gauche de la visée (deux armes). */
+/** Bullets leave one after another, alternately right then left of the aim (two guns). */
 public class BurstPattern implements AttackPattern {
     private final List<Shot> shots;
 

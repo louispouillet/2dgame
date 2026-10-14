@@ -11,7 +11,7 @@ import java.util.List;
 
 public class LocalSession implements GameSession {
     private static final String MAP = "solo";
-    private static final String TARGET_NAME = "Cible";
+    private static final String TARGET_NAME = "Target";
     private static final int NOT_JOINED = -1;
 
     private final GameServer server;
@@ -39,7 +39,7 @@ public class LocalSession implements GameSession {
         try {
             playerId = server.join(channel, name);
             rejection = null;
-            // Adversaire immobile, pour avoir une cible en solo
+            // Still opponent, so solo has a target
             server.join(new LocalChannel(), TARGET_NAME.equalsIgnoreCase(name.strip()) ? TARGET_NAME + "2" : TARGET_NAME);
         } catch (LobbyException e) {
             rejection = e.getReason();
@@ -75,7 +75,7 @@ public class LocalSession implements GameSession {
         try {
             request.run();
         } catch (LobbyException e) {
-            // Même règle qu'en réseau : une demande refusée est ignorée
+            // Same rule as over the network: a refused request is ignored
         }
     }
 }
