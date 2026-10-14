@@ -12,12 +12,16 @@ import io.github.game2d.model.Team;
 import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.ArenaLoader;
 import io.github.game2d.model.arena.SpawnPoint;
+import io.github.game2d.model.match.KnockoutMatch;
+import io.github.game2d.model.match.MatchPhase;
 import io.github.game2d.net.LocalChannel;
 import io.github.game2d.protocol.BrawlerState;
 import io.github.game2d.protocol.LobbyState;
+import io.github.game2d.protocol.MatchState;
 import io.github.game2d.protocol.PlayerInput;
 import io.github.game2d.protocol.RefusalReason;
 import io.github.game2d.protocol.WorldSnapshot;
+import io.github.game2d.time.TickClock;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,6 +78,33 @@ class GameServerTest {
 
     private void start(int leaderId) {
         server.requestStart(leaderId);
+    }
+
+    private static int ticksFor(float seconds) {
+        return Math.round(seconds * TickClock.TICK_RATE) + 1;
+    }
+
+    private static void tick(GameServer target, int ticks) {
+        for (int i = 0; i < ticks; i++) {
+            target.tick();
+        }
+    }
+
+    private void skipCountdown() {
+        tick(server, ticksFor(KnockoutMatch.COUNTDOWN_TIME));
+    }
+
+    private static MatchState matchOf(LocalChannel channel) {
+        return channel.latestSnapshot().match();
+    }
+
+    // Le premier joueur (Shelly, à gauche) tire vers la droite jusqu'à la fin de la manche
+    private void shootUntilTheRoundEnds(LocalChannel shooter) {
+        shooter.sendInput(new PlayerInput(1, 0, 0, 1, 0, true));
+        for (int i = 0; i < ticksFor(30f) && matchOf(shooter).phase() == MatchPhase.PLAYING; i++) {
+            server.tick();
+        }
+        shooter.sendInput(new PlayerInput(2, 0, 0, 1, 0, false));
     }
 
     @Test
@@ -242,6 +273,7 @@ class GameServerTest {
         LocalChannel channel = new LocalChannel();
         int id = join(channel);
         startWith(id);
+        skipCountdown();
 
         channel.sendInput(new PlayerInput(1, 1, 0, 1, 0, false));
         server.tick();
@@ -269,6 +301,7 @@ class GameServerTest {
         int firstId = join(first);
         int secondId = join(second);
         start(firstId);
+        skipCountdown();
 
         first.sendInput(new PlayerInput(1, 0, 1, 0, 1, false));
         server.tick();
@@ -404,10 +437,113 @@ class GameServerTest {
         int id = join(channel);
         int other = join(new LocalChannel());
         start(id);
+        skipCountdown();
 
         channel.sendInput(new PlayerInput(1, 0, 0, 1, 0, true));
         server.tick();
 
         assertTrue(channel.latestSnapshot().projectiles().stream().allMatch(p -> p.id() != id && p.id() != other));
+    }
+
+    @Test
+    void snapshotsCarryTheMatchState() {
+        LocalChannel channel = new LocalChannel();
+        startWith(join(channel));
+
+        server.tick();
+
+        MatchState match = matchOf(channel);
+        assertEquals(MatchPhase.COUNTDOWN, match.phase());
+        assertEquals(1, match.round());
+        assertEquals(0, match.blueScore());
+        assertEquals(0, match.redScore());
+    }
+
+    @Test
+    void brawlersCannotMoveDuringTheCountdown() {
+        LocalChannel channel = new LocalChannel();
+        int id = join(channel);
+        startWith(id);
+
+        channel.sendInput(new PlayerInput(4, 1, 0, 1, 0, false));
+        tick(server, 10);
+
+        assertEquals(1.5f, brawlerOf(channel, id).x());
+        assertEquals(4, brawlerOf(channel, id).lastProcessedInput());
+    }
+
+    @Test
+    void roundEndsWhenTheEnemyTeamIsEliminated() {
+        LocalChannel shooter = new LocalChannel();
+        startWith(join(shooter));
+        skipCountdown();
+
+        shootUntilTheRoundEnds(shooter);
+
+        MatchState match = matchOf(shooter);
+        assertEquals(MatchPhase.ROUND_OVER, match.phase());
+        assertEquals(Team.BLUE, match.roundWinner());
+        assertEquals(1, match.blueScore());
+    }
+
+    @Test
+    void nextRoundPutsEveryoneBackAtFullHealth() {
+        LocalChannel shooter = new LocalChannel();
+        int shooterId = join(shooter);
+        startWith(shooterId);
+        skipCountdown();
+        shootUntilTheRoundEnds(shooter);
+
+        tick(server, ticksFor(KnockoutMatch.ROUND_OVER_TIME));
+
+        MatchState match = matchOf(shooter);
+        assertEquals(MatchPhase.COUNTDOWN, match.phase());
+        assertEquals(2, match.round());
+        WorldSnapshot snapshot = shooter.latestSnapshot();
+        assertEquals(2, snapshot.brawlers().size());
+        BrawlerState enemy = snapshot.brawlers().stream().filter(b -> b.id() != shooterId).findFirst().orElseThrow();
+        assertEquals(4.5f, enemy.x());
+        assertEquals(enemy.maxHealth(), enemy.health());
+        assertTrue(snapshot.projectiles().isEmpty());
+    }
+
+    @Test
+    void winningTwoRoundsSendsEveryoneBackToTheLobby() {
+        LocalChannel shooter = new LocalChannel();
+        startWith(join(shooter));
+        skipCountdown();
+        shootUntilTheRoundEnds(shooter);
+        tick(server, ticksFor(KnockoutMatch.ROUND_OVER_TIME));
+        skipCountdown();
+        shootUntilTheRoundEnds(shooter);
+
+        assertEquals(MatchPhase.MATCH_OVER, matchOf(shooter).phase());
+        assertEquals(Team.BLUE, matchOf(shooter).matchWinner());
+
+        tick(server, ticksFor(KnockoutMatch.MATCH_OVER_TIME));
+
+        assertFalse(shooter.latestLobby().started());
+        server.join(new LocalChannel(), "Newcomer");
+    }
+
+    @Test
+    void lastPlayerOfATeamLeavingForfeitsTheMatch() {
+        Arena arena = ArenaLoader.parse(TEAM_MAP);
+        GameServer twoAgainstOne = new GameServer(List.of("teams"), "teams", map -> arena);
+        LocalChannel blue = new LocalChannel();
+        int leader = twoAgainstOne.join(blue, "Louis");
+        int red = twoAgainstOne.join(new LocalChannel(), "Lilian");
+        twoAgainstOne.join(new LocalChannel(), "Tom");
+        twoAgainstOne.requestStart(leader);
+
+        twoAgainstOne.leave(red);
+        twoAgainstOne.tick();
+
+        assertEquals(MatchPhase.MATCH_OVER, matchOf(blue).phase());
+        assertEquals(Team.BLUE, matchOf(blue).matchWinner());
+
+        tick(twoAgainstOne, ticksFor(KnockoutMatch.MATCH_OVER_TIME));
+
+        assertFalse(blue.latestLobby().started());
     }
 }

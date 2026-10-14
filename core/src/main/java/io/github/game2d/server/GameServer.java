@@ -5,14 +5,19 @@ import io.github.game2d.model.Team;
 import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.SpawnPoint;
 import io.github.game2d.model.brawler.BrawlerType;
+import io.github.game2d.model.match.KnockoutMatch;
+import io.github.game2d.model.match.MatchEvent;
+import io.github.game2d.model.match.MatchPhase;
 import io.github.game2d.net.ClientChannel;
 import io.github.game2d.protocol.LobbyPlayerState;
 import io.github.game2d.protocol.LobbyState;
+import io.github.game2d.protocol.MatchState;
 import io.github.game2d.protocol.RefusalReason;
 import io.github.game2d.protocol.WorldSnapshot;
 import io.github.game2d.time.TickClock;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,9 +36,12 @@ public class GameServer {
     private final TickClock clock = new TickClock();
     private Phase phase = Phase.LOBBY;
     private int nextPlayerId = 1;
+    private Arena arena;
     private GameWorld world;
     private InputApplier inputApplier;
     private SnapshotBuilder snapshotBuilder;
+    private KnockoutMatch match;
+    private final Map<Integer, BrawlerType> brawlerTypes = new HashMap<>();
 
     public GameServer(List<String> maps, String defaultMap, Function<String, Arena> mapLoader) {
         this.lobby = new Lobby(maps, defaultMap);
@@ -84,6 +92,8 @@ public class GameServer {
             inputApplier.forget(playerId);
             if (connections.isEmpty()) {
                 endMatch();
+            } else {
+                forfeitEmptyTeams();
             }
         }
         broadcastLobby();
@@ -100,27 +110,51 @@ public class GameServer {
     }
 
     private void startMatch() {
-        Arena arena = mapLoader.apply(lobby.map());
+        arena = mapLoader.apply(lobby.map());
         world = new GameWorld(arena);
         inputApplier = new InputApplier(world);
         snapshotBuilder = new SnapshotBuilder(world);
-        Map<Team, Integer> placedPerTeam = new EnumMap<>(Team.class);
+        match = new KnockoutMatch();
         List<LobbyPlayer> players = lobby.players();
         for (int index = 0; index < players.size(); index++) {
-            LobbyPlayer player = players.get(index);
-            int place = placedPerTeam.merge(player.team(), 1, Integer::sum) - 1;
-            SpawnPoint spawn = arena.getSpawnPoints(player.team()).get(place);
-            BrawlerType type = BRAWLER_ROTATION[index % BRAWLER_ROTATION.length];
-            world.addPlayer(type.create(player.id(), spawn.x(), spawn.y()), player.team());
+            brawlerTypes.put(players.get(index).id(), BRAWLER_ROTATION[index % BRAWLER_ROTATION.length]);
         }
+        placePlayers();
         phase = Phase.PLAYING;
     }
 
+    private void placePlayers() {
+        world.clear();
+        Map<Team, Integer> placedPerTeam = new EnumMap<>(Team.class);
+        for (LobbyPlayer player : lobby.players()) {
+            int place = placedPerTeam.merge(player.team(), 1, Integer::sum) - 1;
+            SpawnPoint spawn = arena.getSpawnPoints(player.team()).get(place);
+            BrawlerType type = brawlerTypes.get(player.id());
+            world.addPlayer(type.create(player.id(), spawn.x(), spawn.y()), player.team());
+        }
+    }
+
+    private void forfeitEmptyTeams() {
+        for (Team team : Team.values()) {
+            if (lobby.players().stream().noneMatch(player -> player.team() == team)) {
+                match.forfeit(team);
+            }
+        }
+    }
+
     private void endMatch() {
+        arena = null;
         world = null;
         inputApplier = null;
         snapshotBuilder = null;
+        match = null;
+        brawlerTypes.clear();
         phase = Phase.LOBBY;
+    }
+
+    private MatchState matchState() {
+        return new MatchState(match.phase(), match.round(), match.score(Team.BLUE), match.score(Team.RED),
+            match.timeLeft(), match.roundWinner(), match.matchWinner());
     }
 
     private void broadcastLobby() {
@@ -139,12 +173,28 @@ public class GameServer {
         if (phase != Phase.PLAYING) {
             return;
         }
+        boolean playing = match.phase() == MatchPhase.PLAYING;
         for (Map.Entry<Integer, ClientChannel> entry : connections.entrySet()) {
-            inputApplier.apply(entry.getKey(), entry.getValue().latestInput());
+            if (playing) {
+                inputApplier.apply(entry.getKey(), entry.getValue().latestInput());
+            } else {
+                inputApplier.acknowledge(entry.getKey(), entry.getValue().latestInput());
+            }
         }
-        world.update(clock.getStep());
+        if (playing) {
+            world.update(clock.getStep());
+        }
+        MatchEvent event = match.update(clock.getStep(), world::aliveCount);
+        if (event == MatchEvent.ROUND_STARTED) {
+            placePlayers();
+        } else if (event == MatchEvent.MATCH_FINISHED) {
+            endMatch();
+            broadcastLobby();
+            return;
+        }
+        MatchState state = matchState();
         for (Map.Entry<Integer, ClientChannel> entry : connections.entrySet()) {
-            WorldSnapshot snapshot = snapshotBuilder.build(tick, inputApplier::lastProcessedSequence, entry.getKey());
+            WorldSnapshot snapshot = snapshotBuilder.build(tick, inputApplier::lastProcessedSequence, entry.getKey(), state);
             entry.getValue().sendSnapshot(snapshot);
         }
     }

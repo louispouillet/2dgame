@@ -8,6 +8,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import io.github.game2d.model.Team;
 import io.github.game2d.model.brawler.BrawlerType;
+import io.github.game2d.model.match.MatchPhase;
 import io.github.game2d.protocol.BrawlerState;
 import io.github.game2d.protocol.ChooseMap;
 import io.github.game2d.protocol.ChooseTeam;
@@ -16,6 +17,7 @@ import io.github.game2d.protocol.JoinRejected;
 import io.github.game2d.protocol.JoinRequest;
 import io.github.game2d.protocol.LobbyPlayerState;
 import io.github.game2d.protocol.LobbyState;
+import io.github.game2d.protocol.MatchState;
 import io.github.game2d.protocol.PlayerInput;
 import io.github.game2d.protocol.ProjectileState;
 import io.github.game2d.protocol.RefusalReason;
@@ -61,14 +63,14 @@ class NetworkRegistryTest {
                 new BrawlerState(1, 1.5f, 2.5f, 0.25f, 120, 120, 3, 3, 0f, BrawlerType.SHELLY, 7),
                 new BrawlerState(2, 4.5f, 2.5f, 0.25f, 80, 100, 1, 3, 0.4f, BrawlerType.COLT, 5))),
             new ArrayList<>(List.of(
-                new ProjectileState(3, 2f, 2.5f, 0.05f))));
+                new ProjectileState(3, 2f, 2.5f, 0.05f))), null);
 
         assertEquals(snapshot, roundTrip(snapshot));
     }
 
     @Test
     void emptyWorldSnapshotSurvivesTheNetwork() {
-        WorldSnapshot snapshot = new WorldSnapshot(0, new ArrayList<>(), new ArrayList<>());
+        WorldSnapshot snapshot = new WorldSnapshot(0, new ArrayList<>(), new ArrayList<>(), null);
 
         assertEquals(snapshot, roundTrip(snapshot));
     }
@@ -106,5 +108,13 @@ class NetworkRegistryTest {
     @Test
     void unregisteredClassIsRefused() {
         assertThrows(IllegalArgumentException.class, () -> roundTrip(new Object()));
+    }
+
+    @Test
+    void matchStateSurvivesTheNetwork() {
+        WorldSnapshot snapshot = new WorldSnapshot(7, new ArrayList<>(), new ArrayList<>(),
+            new MatchState(MatchPhase.ROUND_OVER, 2, 1, 1, 2.5f, Team.RED, null));
+
+        assertEquals(snapshot, roundTrip(snapshot));
     }
 }

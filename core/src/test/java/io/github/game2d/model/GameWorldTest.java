@@ -213,4 +213,19 @@ class GameWorldTest {
         assertEquals(1, world.aliveCount(Team.BLUE));
         assertEquals(1, world.aliveCount(Team.RED));
     }
+
+    @Test
+    void clearRemovesEveryObjectButKeepsNewIdsUnique() {
+        GameWorld world = new GameWorld(ARENA);
+        Colt shooter = new Colt(world.nextId(), X0, Y0);
+        world.addPlayer(shooter, Team.BLUE);
+        world.attack(shooter, 1, 0);
+        int lastId = world.nextId();
+
+        world.clear();
+
+        assertTrue(world.getGameObjects().isEmpty());
+        assertEquals(0, world.aliveCount(Team.BLUE));
+        assertTrue(world.nextId() > lastId);
+    }
 }

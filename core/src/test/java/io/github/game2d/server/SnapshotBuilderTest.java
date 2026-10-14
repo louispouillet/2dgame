@@ -11,7 +11,9 @@ import io.github.game2d.model.arena.ArenaLoader;
 import io.github.game2d.model.arena.TestArenas;
 import io.github.game2d.model.brawler.Colt;
 import io.github.game2d.model.brawler.Shelly;
+import io.github.game2d.model.match.MatchPhase;
 import io.github.game2d.protocol.BrawlerState;
+import io.github.game2d.protocol.MatchState;
 import io.github.game2d.protocol.PlayerInput;
 import io.github.game2d.protocol.WorldSnapshot;
 import java.util.List;
@@ -42,7 +44,7 @@ class SnapshotBuilderTest {
         world.addPlayer(viewer, Team.BLUE);
         world.addPlayer(hidden, Team.RED);
 
-        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, viewer.getId());
+        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, viewer.getId(), null);
 
         assertFalse(sees(snapshot, hidden));
     }
@@ -55,7 +57,7 @@ class SnapshotBuilderTest {
         world.addPlayer(viewer, Team.BLUE);
         world.addPlayer(ally, Team.BLUE);
 
-        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, viewer.getId());
+        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, viewer.getId(), null);
 
         assertTrue(sees(snapshot, ally));
     }
@@ -69,7 +71,7 @@ class SnapshotBuilderTest {
         world.addPlayer(hidden, Team.RED);
 
         world.attack(hidden, 1, 0);
-        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, viewer.getId());
+        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, viewer.getId(), null);
 
         assertFalse(sees(snapshot, hidden));
         assertFalse(snapshot.projectiles().isEmpty());
@@ -83,7 +85,7 @@ class SnapshotBuilderTest {
         world.addPlayer(colt, Team.BLUE);
         world.addPlayer(shelly, Team.RED);
 
-        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, 1);
+        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, 1, null);
 
         assertEquals(2, snapshot.brawlers().size());
         BrawlerState state = snapshot.brawlers().stream().filter(b -> b.id() == shelly.getId()).findFirst().orElseThrow();
@@ -103,7 +105,7 @@ class SnapshotBuilderTest {
         world.addPlayer(shooter, Team.BLUE);
 
         world.attack(shooter, 1, 0);
-        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, 1);
+        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, 1, null);
 
         List<Projectile> projectiles = world.getGameObjects().stream()
             .filter(o -> o instanceof Projectile)
@@ -125,8 +127,8 @@ class SnapshotBuilderTest {
         dead.takeDamage(100);
         world.update(1 / 60f);
 
-        assertEquals(1, builder.build(0, id -> 0, 1).brawlers().size());
-        assertEquals(alive.getId(), builder.build(0, id -> 0, 1).brawlers().get(0).id());
+        assertEquals(1, builder.build(0, id -> 0, 1, null).brawlers().size());
+        assertEquals(alive.getId(), builder.build(0, id -> 0, 1, null).brawlers().get(0).id());
     }
 
     @Test
@@ -136,13 +138,23 @@ class SnapshotBuilderTest {
         InputApplier applier = new InputApplier(world);
         Colt colt = new Colt(world.nextId(), X0, Y0);
         world.addPlayer(colt, Team.BLUE);
-        WorldSnapshot before = builder.build(0, id -> 0, 1);
+        WorldSnapshot before = builder.build(0, id -> 0, 1, null);
 
         applier.apply(colt.getId(), new PlayerInput(1, 1, 0, 1, 0, true));
         world.update(1f);
 
         assertEquals(X0, before.brawlers().get(0).x());
         assertTrue(before.projectiles().isEmpty());
-        assertTrue(builder.build(0, id -> 0, 1).brawlers().get(0).x() > X0);
+        assertTrue(builder.build(0, id -> 0, 1, null).brawlers().get(0).x() > X0);
+    }
+
+    @Test
+    void snapshotCarriesTheMatchState() {
+        GameWorld world = new GameWorld(ARENA);
+        MatchState match = new MatchState(MatchPhase.PLAYING, 1, 0, 0, 0f, null, null);
+
+        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, 1, match);
+
+        assertEquals(match, snapshot.match());
     }
 }

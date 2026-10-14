@@ -26,6 +26,7 @@ package "Server → client: the match (UDP, 30 per second)" #FFF6E8 {
         tick
         brawlers
         projectiles
+        match
     }
     class BrawlerState <<record>> {
         id, x, y, radius
@@ -34,6 +35,12 @@ package "Server → client: the match (UDP, 30 per second)" #FFF6E8 {
     }
     class ProjectileState <<record>> {
         id, x, y, radius
+    }
+    class MatchState <<record>> {
+        phase, round
+        blueScore, redScore
+        timeLeft
+        roundWinner, matchWinner
     }
 }
 
@@ -60,9 +67,12 @@ package "Server → client: the lobby (TCP)" #EEFBEF {
 
 enum Team <<external>>
 enum BrawlerType <<external>>
+enum MatchPhase <<external>>
 
 WorldSnapshot *-- "*" BrawlerState : contains
 WorldSnapshot *-- "*" ProjectileState : contains
+WorldSnapshot *-- "1" MatchState : contains
+MatchState --> MatchPhase
 LobbyState *-- "*" LobbyPlayerState : contains
 JoinRejected --> RefusalReason : says why
 BrawlerState --> BrawlerType

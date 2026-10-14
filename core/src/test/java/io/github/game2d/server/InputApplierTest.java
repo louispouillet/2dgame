@@ -135,4 +135,19 @@ class InputApplierTest {
 
         assertEquals(normal.getX(), huge.getX(), DELTA);
     }
+
+    @Test
+    void acknowledgedInputIsCountedButNotApplied() {
+        GameWorld world = new GameWorld(ARENA);
+        InputApplier applier = new InputApplier(world);
+        Colt player = new Colt(world.nextId(), X0, Y0);
+        world.addPlayer(player, Team.BLUE);
+
+        applier.acknowledge(player.getId(), new PlayerInput(7, 1, 0, 1, 0, true));
+        world.update(1f);
+
+        assertEquals(7, applier.lastProcessedSequence(player.getId()));
+        assertEquals(X0, player.getX());
+        assertEquals(1, world.getGameObjects().size());
+    }
 }

@@ -9,7 +9,9 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import io.github.game2d.model.brawler.BrawlerType;
+import io.github.game2d.model.match.MatchPhase;
 import io.github.game2d.protocol.BrawlerState;
+import io.github.game2d.protocol.MatchState;
 import io.github.game2d.protocol.PlayerInput;
 import io.github.game2d.protocol.ProjectileState;
 import io.github.game2d.protocol.WorldSnapshot;
@@ -43,6 +45,8 @@ class KryoNetSpikeTest {
         kryo.register(ProjectileState.class);
         kryo.register(BrawlerType.class);
         kryo.register(ArrayList.class);
+        kryo.register(MatchState.class);
+        kryo.register(MatchPhase.class);
     }
 
     private static <T> T await(AtomicReference<T> box) throws InterruptedException {
@@ -159,6 +163,6 @@ class KryoNetSpikeTest {
         List<ProjectileState> projectiles = new ArrayList<>(List.of(
             new ProjectileState(3, 2f, 2.5f, 0.05f),
             new ProjectileState(4, 2.1f, 2.6f, 0.05f)));
-        return new WorldSnapshot(42, brawlers, projectiles);
+        return new WorldSnapshot(42, brawlers, projectiles, null);
     }
 }

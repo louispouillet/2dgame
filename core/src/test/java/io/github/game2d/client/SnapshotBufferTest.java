@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.game2d.model.brawler.BrawlerType;
+import io.github.game2d.model.match.MatchPhase;
 import io.github.game2d.protocol.BrawlerState;
+import io.github.game2d.protocol.MatchState;
 import io.github.game2d.protocol.ProjectileState;
 import io.github.game2d.protocol.WorldSnapshot;
 import java.util.List;
@@ -19,7 +21,7 @@ class SnapshotBufferTest {
     }
 
     private static WorldSnapshot world(BrawlerState... brawlers) {
-        return new WorldSnapshot(0, List.of(brawlers), List.of());
+        return new WorldSnapshot(0, List.of(brawlers), List.of(), null);
     }
 
     @Test
@@ -109,8 +111,8 @@ class SnapshotBufferTest {
     @Test
     void projectilesAreInterpolatedToo() {
         SnapshotBuffer buffer = new SnapshotBuffer();
-        buffer.add(new WorldSnapshot(0, List.of(), List.of(new ProjectileState(7, 0, 0, 0.1f))), 1.0);
-        buffer.add(new WorldSnapshot(0, List.of(), List.of(new ProjectileState(7, 4, 2, 0.1f))), 1.1);
+        buffer.add(new WorldSnapshot(0, List.of(), List.of(new ProjectileState(7, 0, 0, 0.1f)), null), 1.0);
+        buffer.add(new WorldSnapshot(0, List.of(), List.of(new ProjectileState(7, 4, 2, 0.1f)), null), 1.1);
 
         ProjectileState result = buffer.interpolate(1.05).projectiles().get(0);
 
@@ -135,5 +137,16 @@ class SnapshotBufferTest {
         }
 
         assertTrue(buffer.size() < 100);
+    }
+
+    @Test
+    void interpolationKeepsTheMatchStateOfTheLatestSnapshot() {
+        SnapshotBuffer buffer = new SnapshotBuffer();
+        MatchState countdown = new MatchState(MatchPhase.COUNTDOWN, 1, 0, 0, 2f, null, null);
+        MatchState playing = new MatchState(MatchPhase.PLAYING, 1, 0, 0, 0f, null, null);
+        buffer.add(new WorldSnapshot(0, List.of(), List.of(), countdown), 1.0);
+        buffer.add(new WorldSnapshot(1, List.of(), List.of(), playing), 2.0);
+
+        assertEquals(playing, buffer.interpolate(1.5).match());
     }
 }

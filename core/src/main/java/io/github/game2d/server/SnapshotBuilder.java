@@ -5,6 +5,7 @@ import io.github.game2d.model.GameWorld;
 import io.github.game2d.model.Projectile;
 import io.github.game2d.model.brawler.Brawler;
 import io.github.game2d.protocol.BrawlerState;
+import io.github.game2d.protocol.MatchState;
 import io.github.game2d.protocol.ProjectileState;
 import io.github.game2d.protocol.WorldSnapshot;
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class SnapshotBuilder {
         this.world = world;
     }
 
-    public WorldSnapshot build(int tick, IntUnaryOperator lastProcessed, int viewerId) {
+    public WorldSnapshot build(int tick, IntUnaryOperator lastProcessed, int viewerId, MatchState match) {
         Brawler viewer = world.getPlayer(viewerId);
         List<BrawlerState> brawlerStates = new ArrayList<>();
         List<ProjectileState> projectileStates = new ArrayList<>();
@@ -52,6 +53,6 @@ public class SnapshotBuilder {
                 );
             }
         }
-        return new WorldSnapshot(tick, brawlerStates, projectileStates);
+        return new WorldSnapshot(tick, brawlerStates, projectileStates, match);
     }
 }

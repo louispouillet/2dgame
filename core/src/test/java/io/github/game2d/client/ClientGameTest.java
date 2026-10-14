@@ -94,7 +94,7 @@ class ClientGameTest {
 
     @Test
     void sendsTheInputReadAtEachTick() {
-        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(MY_ID, START_X, START_Y)), List.of()));
+        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(MY_ID, START_X, START_Y)), List.of(), null));
 
         playOneTick();
 
@@ -103,7 +103,7 @@ class ClientGameTest {
 
     @Test
     void sendsNoInputWhileItsBrawlerIsNotInTheSnapshot() {
-        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(ENEMY_ID, START_X, START_Y)), List.of()));
+        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(ENEMY_ID, START_X, START_Y)), List.of(), null));
 
         playOneTick();
 
@@ -112,7 +112,7 @@ class ClientGameTest {
 
     @Test
     void drawsItsOwnBrawlerAtThePredictedPosition() {
-        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(MY_ID, START_X, START_Y)), List.of()));
+        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(MY_ID, START_X, START_Y)), List.of(), null));
 
         WorldSnapshot drawn = playOneTick();
 
@@ -122,7 +122,7 @@ class ClientGameTest {
     @Test
     void drawsOtherBrawlersAsReceived() {
         channel.sendSnapshot(new WorldSnapshot(1,
-            List.of(brawler(MY_ID, START_X, START_Y), brawler(ENEMY_ID, 8f, 6f)), List.of()));
+            List.of(brawler(MY_ID, START_X, START_Y), brawler(ENEMY_ID, 8f, 6f)), List.of(), null));
 
         WorldSnapshot drawn = playOneTick();
 

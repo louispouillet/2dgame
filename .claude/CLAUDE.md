@@ -47,7 +47,10 @@ Principes illustrés :
 ## 5. Mode Hors-jeu (manches)
 - `model.match.KnockoutMatch` : le premier à 2 manches gagne. Machine à états `MatchPhase` : `COUNTDOWN` (3 s, personne ne bouge) → `PLAYING` → `ROUND_OVER` (3 s) → manche suivante, ou `MATCH_OVER` (5 s) → retour au lobby.
 - Une manche est gagnée quand l'équipe adverse n'a plus de brawler vivant (`GameWorld.aliveCount(team)`), sans temps limite ; si les deux équipes tombent au même tick, la manche est rejouée sans point. `forfeit(team)` : une équipe qui part perd le match.
-- `update(dt, aliveCount)` renvoie un `MatchEvent` (`ROUND_STARTED` : le serveur recrée le monde ; `MATCH_FINISHED` : retour au lobby). Java pur, testé (`KnockoutMatchTest`).
+- `update(dt, aliveCount)` renvoie un `MatchEvent` (`ROUND_STARTED` : nouvelle manche ; `MATCH_FINISHED` : retour au lobby). Java pur, testé (`KnockoutMatchTest`).
+- Serveur (`GameServer`) : à chaque tick, si le match est en `PLAYING`, il applique les inputs et fait avancer le monde ; sinon il les accuse seulement (`InputApplier.acknowledge` : le numéro est confirmé pour la prédiction du client, sans déplacement ni tir) et le monde reste figé. Puis `match.update(dt, world::aliveCount)`.
+- Nouvelle manche : `placePlayers()` vide le même monde (`GameWorld.clear()`, les ids restent uniques) et replace chacun sur un point de son équipe, PV pleins. Le type de brawler de chaque joueur est fixé au lancement du match. Le dernier joueur d'une équipe qui part fait abandonner son équipe.
+- Protocole : chaque `WorldSnapshot` porte un `MatchState` (phase, manche, score des Bleus et des Rouges, temps restant, gagnant de la manche et du match), recopié par `SnapshotBuffer` et `ClientGame`.
 
 ## 6. Buissons
 - Un brawler dont le centre est sur un buisson (`~`) est caché aux adversaires à plus de 2 cases (`Arena.REVEAL_DISTANCE`). On se voit toujours soi-même, ses alliés restent visibles ; les projectiles restent visibles.
@@ -81,7 +84,7 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
   - `model.weapon` : `Weapon`, `Shotgun`, `Revolver`
   - `model.collision` : `Collisions`
   - `model.match` : `KnockoutMatch`, `MatchPhase`, `MatchEvent`
-- `protocol/` : messages échangés client/serveur (`PlayerInput`, `WorldSnapshot`, `BrawlerState`, `ProjectileState` ; lobby : `JoinRequest`, `JoinAccepted`, `JoinRejected`, `RefusalReason`, `ChooseTeam`, `ChooseMap`, `StartRequest`, `LobbyState`, `LobbyPlayerState`)
+- `protocol/` : messages échangés client/serveur (`PlayerInput`, `WorldSnapshot`, `BrawlerState`, `ProjectileState`, `MatchState` ; lobby : `JoinRequest`, `JoinAccepted`, `JoinRejected`, `RefusalReason`, `ChooseTeam`, `ChooseMap`, `StartRequest`, `LobbyState`, `LobbyPlayerState`)
 - `time/` : `TickClock` (tick fixe partagé : `TICK_RATE` = 30, `STEP`, numéro de tick, `timeOfTick`)
 - `server/` : autorité de jeu (`GameServer`, `ServerLauncher`), lobby (`Lobby`, `LobbyPlayer`, `LobbyException`) et traduction protocole ↔ modèle (`InputApplier`, `SnapshotBuilder`)
 - `net/` : transport. Interfaces `ClientChannel` / `ServerChannel`, `LocalChannel` (en mémoire)
@@ -95,7 +98,7 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 
 ## Reste à faire
 - Lobby : retour au lobby en fin de partie ; gérer la perte de connexion au serveur ; connexion sans bloquer l'écran (jusqu'à 5 s aujourd'hui)
-- Mode « Hors-jeu » : faire tourner les manches dans `GameServer` (monde recréé à chaque manche, inputs ignorés pendant le décompte, retour au lobby) puis HUD du match (score, manche, décompte, victoire ou défaite)
+- Mode « Hors-jeu », côté client : HUD du match (score, manche, décompte, victoire ou défaite) ; ne pas prédire ni envoyer de déplacement hors de `PLAYING` ; revenir au `LobbyScreen` quand `LobbyState.started` repasse à faux (aujourd'hui, le client reste figé)
 - Buissons : se révéler en tirant ou en étant touché
 - Caméra 3D : élargir la bande de décor pour que le joueur ne soit pas collé au coin au départ
 - `StartupHelper` ne transmet pas les arguments sur macOS (le Makefile passe `-XstartOnFirstThread`)

@@ -3,6 +3,7 @@ package io.github.game2d.net.kryo;
 import com.esotericsoftware.kryo.Kryo;
 import io.github.game2d.model.Team;
 import io.github.game2d.model.brawler.BrawlerType;
+import io.github.game2d.model.match.MatchPhase;
 import io.github.game2d.protocol.BrawlerState;
 import io.github.game2d.protocol.ChooseMap;
 import io.github.game2d.protocol.ChooseTeam;
@@ -11,6 +12,7 @@ import io.github.game2d.protocol.JoinRejected;
 import io.github.game2d.protocol.JoinRequest;
 import io.github.game2d.protocol.LobbyPlayerState;
 import io.github.game2d.protocol.LobbyState;
+import io.github.game2d.protocol.MatchState;
 import io.github.game2d.protocol.PlayerInput;
 import io.github.game2d.protocol.ProjectileState;
 import io.github.game2d.protocol.RefusalReason;
@@ -39,5 +41,7 @@ public class NetworkRegistry {
         kryo.register(StartRequest.class);
         kryo.register(LobbyPlayerState.class);
         kryo.register(LobbyState.class);
+        kryo.register(MatchPhase.class);
+        kryo.register(MatchState.class);
     }
 }

@@ -70,7 +70,7 @@ public class SnapshotBuffer {
             projectiles.add(earlier == null ? later : blend(earlier, later, t));
         }
 
-        return new WorldSnapshot(to.snapshot.tick(), brawlers, projectiles);
+        return new WorldSnapshot(to.snapshot.tick(), brawlers, projectiles, to.snapshot.match());
     }
 
     private static boolean tooFar(float ax, float ay, float bx, float by) {

@@ -8,7 +8,7 @@ package "1. Authority: the source of truth" #FDECEA {
         + {static} main(args)
     }
     class GameServer {
-        .. LOBBY phase, then PLAYING phase.\nEvery tick: apply inputs, move the world,\nsend one snapshot per player ..
+        .. LOBBY phase, then PLAYING phase.\nOwns the GameWorld (cleared each round).\nEvery tick: apply inputs, move the world,\nupdate the match, send one snapshot per player ..
         + join(channel, name)
         + chooseTeam / chooseMap
         + requestStart(playerId)
@@ -18,6 +18,8 @@ package "1. Authority: the source of truth" #FDECEA {
         .. fixed 30 Hz tick ..
     }
 }
+
+class KnockoutMatch <<external>>
 
 package "2. Lobby: the waiting room" #EEF4FF {
     class Lobby <<final>> {
@@ -37,6 +39,7 @@ package "3. Translation: protocol ↔ model" #EEFBEF {
     class InputApplier {
         .. PlayerInput → move / attack ..
         + apply(playerId, input)
+        + acknowledge(playerId, input)
     }
     class SnapshotBuilder {
         .. world → WorldSnapshot,\nhides enemies in bushes ..
@@ -48,18 +51,19 @@ class GameWorld <<external>>
 interface ClientChannel <<external>>
 class NetworkServer <<external>>
 
-ServerLauncher ..> GameServer : creates
-ServerLauncher ..> NetworkServer : creates
-GameServer *-- TickClock : owns
-GameServer *-- "1" Lobby : owns
-GameServer *-- "0..1" GameWorld : owns\n(created at start,\non the chosen map)
-GameServer *-- "0..1" InputApplier : owns
-GameServer *-- "0..1" SnapshotBuilder : owns
-GameServer --> "*" ClientChannel : sends to
-Lobby *-- "0..6" LobbyPlayer : owns
-Lobby ..> LobbyException : throws
-InputApplier --> GameWorld : changes
-SnapshotBuilder --> GameWorld : reads
+ServerLauncher .down.> GameServer : creates
+ServerLauncher .right.> NetworkServer : creates
+GameServer *-right- TickClock : owns
+GameServer *-down- "1" Lobby : owns
+GameServer *-down- "0..1" KnockoutMatch : owns\n(rounds, score)
+GameServer *-down- "0..1" InputApplier : owns
+GameServer *-down- "0..1" SnapshotBuilder : owns
+GameServer -down-> "*" ClientChannel : sends to
+Lobby *-down- "0..6" LobbyPlayer : owns
+Lobby .down.> LobbyException : throws
+InputApplier -down-> GameWorld : changes
+SnapshotBuilder -down-> GameWorld : reads
+KnockoutMatch .down.> GameWorld : counts players alive
 
 $legend("<b>Source of truth</b>: only the server owns the real GameWorld.", "Clients only send inputs and draw what they receive.")
 @enduml

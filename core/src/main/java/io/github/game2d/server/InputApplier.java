@@ -15,6 +15,10 @@ public class InputApplier {
         this.world = world;
     }
 
+    public void acknowledge(int brawlerId, PlayerInput input) {
+        lastSequences.put(brawlerId, input.sequence());
+    }
+
     public void apply(int brawlerId, PlayerInput input) {
         lastSequences.put(brawlerId, input.sequence());
         Brawler brawler = world.getPlayer(brawlerId);

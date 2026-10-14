@@ -15,14 +15,14 @@ class WorldSnapshotTest {
     @Test
     void findsABrawlerById() {
         BrawlerState second = brawler(2);
-        WorldSnapshot snapshot = new WorldSnapshot(1, List.of(brawler(1), second), List.of());
+        WorldSnapshot snapshot = new WorldSnapshot(1, List.of(brawler(1), second), List.of(), null);
 
         assertSame(second, snapshot.findBrawler(2));
     }
 
     @Test
     void returnsNullForABrawlerNotInTheSnapshot() {
-        WorldSnapshot snapshot = new WorldSnapshot(1, List.of(brawler(1)), List.of());
+        WorldSnapshot snapshot = new WorldSnapshot(1, List.of(brawler(1)), List.of(), null);
 
         assertNull(snapshot.findBrawler(3));
     }

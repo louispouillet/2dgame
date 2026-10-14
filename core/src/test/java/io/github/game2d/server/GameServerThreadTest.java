@@ -80,30 +80,24 @@ class GameServerThreadTest {
 
     @Test
     void serverRunsAtTheConfiguredTickRate() throws InterruptedException {
-        // un tick déplace le brawler d'une distance fixe : on s'en sert pour compter les ticks
-        GameServer calibration = newServer();
-        LocalChannel calibrationChannel = new LocalChannel();
-        joinAndStart(calibration, calibrationChannel);
-        calibration.tick();
-        float startX = firstBrawlerX(calibrationChannel);
-        calibrationChannel.sendInput(MOVE_RIGHT);
-        calibration.tick();
-        float distancePerTick = firstBrawlerX(calibrationChannel) - startX;
-
         GameServer server = newServer();
         LocalChannel channel = new LocalChannel();
         joinAndStart(server, channel);
-        channel.sendInput(MOVE_RIGHT);
 
-        long begin = System.nanoTime();
         server.start();
-        Thread.sleep(1000);
-        server.stop();
-        float elapsedSeconds = (System.nanoTime() - begin) / 1_000_000_000f;
+        try {
+            waitForSnapshot(channel);
+            int firstTick = channel.latestSnapshot().tick();
+            long begin = System.nanoTime();
+            Thread.sleep(1000);
+            int ticks = channel.latestSnapshot().tick() - firstTick;
+            float elapsedSeconds = (System.nanoTime() - begin) / 1_000_000_000f;
 
-        float ticks = (firstBrawlerX(channel) - startX) / distancePerTick;
-        float expected = TICK_RATE * elapsedSeconds;
-        assertTrue(ticks > expected * 0.5f, "too slow: " + ticks + " ticks, expected about " + expected);
-        assertTrue(ticks < expected * 1.5f, "too fast: " + ticks + " ticks, expected about " + expected);
+            float expected = TICK_RATE * elapsedSeconds;
+            assertTrue(ticks > expected * 0.5f, "too slow: " + ticks + " ticks, expected about " + expected);
+            assertTrue(ticks < expected * 1.5f, "too fast: " + ticks + " ticks, expected about " + expected);
+        } finally {
+            server.stop();
+        }
     }
 }

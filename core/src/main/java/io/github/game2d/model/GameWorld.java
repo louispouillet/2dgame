@@ -38,6 +38,12 @@ public class GameWorld {
         gameObjects.add(brawler);
     }
 
+    public void clear() {
+        gameObjects.clear();
+        players.clear();
+        teams.clear();
+    }
+
     public void removePlayer(int brawlerId) {
         Brawler brawler = players.remove(brawlerId);
         teams.remove(brawlerId);
