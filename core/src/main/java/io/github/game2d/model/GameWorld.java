@@ -50,6 +50,16 @@ public class GameWorld {
         return players.get(brawlerId);
     }
 
+    public int aliveCount(Team team) {
+        int alive = 0;
+        for (Brawler player : players.values()) {
+            if (teams.get(player.getId()) == team && player.isAlive()) {
+                alive++;
+            }
+        }
+        return alive;
+    }
+
     public boolean areAllies(int firstId, int secondId) {
         Team first = teams.get(firstId);
         return first != null && first == teams.get(secondId);

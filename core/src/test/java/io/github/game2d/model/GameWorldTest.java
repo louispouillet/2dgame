@@ -198,4 +198,19 @@ class GameWorldTest {
         assertFalse(world.areAllies(1, 2));
         assertFalse(world.areAllies(9, 9));
     }
+
+    @Test
+    void aliveCountOnlyCountsLivingPlayersOfTheTeam() {
+        GameWorld world = new GameWorld(ARENA);
+        Colt blue = new Colt(1, X0, Y0);
+        Colt deadBlue = new Colt(2, X0 + 1, Y0);
+        world.addPlayer(blue, Team.BLUE);
+        world.addPlayer(deadBlue, Team.BLUE);
+        world.addPlayer(new Colt(3, X0 + 2, Y0), Team.RED);
+
+        deadBlue.takeDamage(deadBlue.getHealth());
+
+        assertEquals(1, world.aliveCount(Team.BLUE));
+        assertEquals(1, world.aliveCount(Team.RED));
+    }
 }

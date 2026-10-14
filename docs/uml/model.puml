@@ -5,7 +5,8 @@ title Game model (package model, plain Java)
 package "World: what exists in a match" #EEF4FF {
     class GameWorld {
         .. owns every object, applies the rules ..
-        + addPlayer(brawler)
+        + addPlayer(brawler, team)
+        + areAllies(a, b) / aliveCount(team)
         + update(dt)
         + isVisibleTo(target, viewer)
     }
@@ -79,6 +80,20 @@ package "Arena: the map" #F6EEFB {
     }
 }
 
+package "Match: rounds and score" #FDECEA {
+    class KnockoutMatch <<final>> {
+        .. first team to win 2 rounds ..
+        + update(dt, aliveCount) : MatchEvent
+        + forfeit(team)
+    }
+    enum MatchPhase {
+        COUNTDOWN
+        PLAYING
+        ROUND_OVER
+        MATCH_OVER
+    }
+}
+
 class Collisions <<utility>> {
     .. circle and swept-shot maths ..
 }
@@ -104,6 +119,8 @@ Arena *-- "*" TileType : grid of
 Arena *-- "*" SpawnPoint : owns
 ArenaLoader ..> Arena : creates
 SpawnPoint ..> Team : gives
+KnockoutMatch *-- MatchPhase : current phase
+KnockoutMatch ..> GameWorld : counts players alive
 
 $legend("<b>Polymorphism</b>: GameWorld calls update(dt, arena) on every GameObject.", "<b>Strategy</b>: a Brawler owns a Weapon, a Weapon owns an AttackPattern.")
 @enduml
