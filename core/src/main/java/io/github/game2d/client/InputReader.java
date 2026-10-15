@@ -14,6 +14,11 @@ public class InputReader {
         this.view = view;
     }
 
+    public PlayerInput idle() {
+        sequence++;
+        return new PlayerInput(sequence, 0, 0, 0, 0, false);
+    }
+
     public PlayerInput read(float playerX, float playerY) {
         sequence++;
         float moveX = 0;

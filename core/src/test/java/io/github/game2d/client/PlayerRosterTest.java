@@ -2,6 +2,7 @@ package io.github.game2d.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.game2d.model.Team;
@@ -57,5 +58,12 @@ class PlayerRosterTest {
         assertEquals("", roster.nameOf(1));
         assertTrue(roster.isAlly(1));
         assertFalse(roster.isAlly(2));
+    }
+
+    @Test
+    void knowsTheTeamOfThePlayerLooking() {
+        assertEquals(Team.BLUE, PlayerRoster.from(LOBBY, 1).myTeam());
+        assertEquals(Team.RED, PlayerRoster.from(LOBBY, 2).myTeam());
+        assertNull(PlayerRoster.from(null, 1).myTeam());
     }
 }

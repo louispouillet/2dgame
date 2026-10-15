@@ -21,6 +21,7 @@ public final class UiSkin {
     public static final String BLUE = "blue";
     public static final String RED = "red";
     public static final String PANEL = "panel";
+    public static final String SHADE = "shade";
     public static final Color BACKGROUND = new Color(0.10f, 0.11f, 0.15f, 1f);
 
     private static final String FONT_FILE = "fonts/LiberationSans-Bold.ttf";
@@ -34,6 +35,7 @@ public final class UiSkin {
     private static final Color SELECTION_COLOR = new Color(0.35f, 0.45f, 0.75f, 1f);
     private static final Color DISABLED_COLOR = new Color(0.22f, 0.22f, 0.26f, 1f);
     private static final Color DISABLED_TEXT = new Color(0.5f, 0.5f, 0.55f, 1f);
+    private static final Color SHADE_COLOR = new Color(0f, 0f, 0f, 0.55f);
     private static final Color GRAY = new Color(0.35f, 0.37f, 0.45f, 1f);
     private static final Color BLUE_COLOR = new Color(0.20f, 0.45f, 0.90f, 1f);
     private static final Color RED_COLOR = new Color(0.85f, 0.25f, 0.25f, 1f);
@@ -52,6 +54,7 @@ public final class UiSkin {
         skin.add("default", new Label.LabelStyle(text, Color.WHITE));
         skin.add(TITLE, new Label.LabelStyle(title, Color.WHITE));
         skin.add(PANEL, padded(skin, PANEL_COLOR), Drawable.class);
+        skin.add(SHADE, skin.newDrawable(WHITE, SHADE_COLOR), Drawable.class);
 
         skin.add("default", button(skin, text, GRAY));
         skin.add(BLUE, button(skin, text, BLUE_COLOR));

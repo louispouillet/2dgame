@@ -33,6 +33,10 @@ public final class PlayerRoster {
         return names.getOrDefault(brawlerId, "");
     }
 
+    public Team myTeam() {
+        return teams.get(myId);
+    }
+
     public boolean isAlly(int brawlerId) {
         Team myTeam = teams.get(myId);
         return brawlerId == myId || (myTeam != null && myTeam == teams.get(brawlerId));

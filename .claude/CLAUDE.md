@@ -51,6 +51,8 @@ Principes illustrés :
 - Serveur (`GameServer`) : à chaque tick, si le match est en `PLAYING`, il applique les inputs et fait avancer le monde ; sinon il les accuse seulement (`InputApplier.acknowledge` : le numéro est confirmé pour la prédiction du client, sans déplacement ni tir) et le monde reste figé. Puis `match.update(dt, world::aliveCount)`.
 - Nouvelle manche : `placePlayers()` vide le même monde (`GameWorld.clear()`, les ids restent uniques) et replace chacun sur un point de son équipe, PV pleins. Le type de brawler de chaque joueur est fixé au lancement du match. Le dernier joueur d'une équipe qui part fait abandonner son équipe.
 - Protocole : chaque `WorldSnapshot` porte un `MatchState` (phase, manche, score des Bleus et des Rouges, temps restant, gagnant de la manche et du match), recopié par `SnapshotBuffer` et `ClientGame`.
+- Client : hors de `PLAYING`, `ClientGame` envoie un input neutre (`InputReader.idle()`, numéroté, accusé par le serveur) : ni le serveur ni la prédiction ne déplacent le brawler. `MatchView` (Java pur, testé) décide quoi afficher (mon score toujours à gauche en bleu, « ROUND n », décompte arrondi au-dessus, « Round won! » / « Round lost » / « Draw, replaying the round », « VICTORY » / « DEFEAT ») ; `MatchHud` le dessine par-dessus la 3D (polices du skin, bandeau `UiSkin.SHADE`).
+- Fin du match : quand `LobbyState.started` repasse à faux, `GameScreen` affiche `LobbyScreen` avec la même session ; le chef peut relancer (un nouveau `GameScreen` repart de zéro). En solo, la map du lobby est `ArenaLoader.DEFAULT_MAP`, pour pouvoir la recharger et rejouer.
 
 ## 6. Buissons
 - Un brawler dont le centre est sur un buisson (`~`) est caché aux adversaires à plus de 2 cases (`Arena.REVEAL_DISTANCE`). On se voit toujours soi-même, ses alliés restent visibles ; les projectiles restent visibles.
@@ -89,7 +91,7 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 - `server/` : autorité de jeu (`GameServer`, `ServerLauncher`), lobby (`Lobby`, `LobbyPlayer`, `LobbyException`) et traduction protocole ↔ modèle (`InputApplier`, `SnapshotBuilder`)
 - `net/` : transport. Interfaces `ClientChannel` / `ServerChannel`, `LocalChannel` (en mémoire)
   - `net.kryo` : `NetworkEndpoint` (classe abstraite : thread d'update KryoNet, `stop`) → `NetworkServer`, `NetworkClient`, `NetworkClientChannel`, `NetworkServerChannel` (traducteurs de protocole), `NetworkRegistry`
-- `client/` : libGDX. `Main` (`Game` libGDX : ouvre la session, qu'il possède et ferme, puis affiche un écran), écrans `NameScreen`, `LobbyScreen`, `GameScreen` (vue 3D, `InputReader`, `ClientGame` ; reçoit la session et la map), interface `UiSkin`, `LobbyView`, `RefusalMessages`, `PlayerRoster`, `ClientGame` (réception, prédiction, envoi des inputs), `GameSession` → `LocalSession` / `RemoteSession`, `InputReader`, `PredictedPlayer`, `SnapshotBuffer`, `ClientClock` (seule horloge du client : temps local, estimation du temps serveur, cadence des inputs) ; vue `WorldRenderer3D` + `ArenaModelFactory` (3D, textures dans `assets/textures/arena`) ; HUD `BrawlerHud`, `HudAnchor`
+- `client/` : libGDX. `Main` (`Game` libGDX : ouvre la session, qu'il possède et ferme, puis affiche un écran), écrans `NameScreen`, `LobbyScreen`, `GameScreen` (vue 3D, `InputReader`, `ClientGame`, `MatchHud` ; reçoit la session et la map, revient au lobby à la fin du match), interface `UiSkin`, `LobbyView`, `RefusalMessages`, `PlayerRoster`, `MatchView`, `MatchHud`, `ClientGame` (réception, prédiction, envoi des inputs), `GameSession` → `LocalSession` / `RemoteSession`, `InputReader`, `PredictedPlayer`, `SnapshotBuffer`, `ClientClock` (seule horloge du client : temps local, estimation du temps serveur, cadence des inputs) ; vue `WorldRenderer3D` + `ArenaModelFactory` (3D, textures dans `assets/textures/arena`) ; HUD `BrawlerHud`, `HudAnchor`
 
 ## 10. Lancement (Makefile)
 - `make solo` : partie locale ; `make server` : serveur multijoueur (TCP 54555 / UDP 54777) ; `make client [HOST=ip]` : client ; `make duo` : serveur + 2 fenêtres sur la même machine. Chaque client démarre sur l'écran du pseudo.
@@ -98,7 +100,7 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 
 ## Reste à faire
 - Lobby : retour au lobby en fin de partie ; gérer la perte de connexion au serveur ; connexion sans bloquer l'écran (jusqu'à 5 s aujourd'hui)
-- Mode « Hors-jeu », côté client : HUD du match (score, manche, décompte, victoire ou défaite) ; ne pas prédire ni envoyer de déplacement hors de `PLAYING` ; revenir au `LobbyScreen` quand `LobbyState.started` repasse à faux (aujourd'hui, le client reste figé)
+- Mode « Hors-jeu » : caméra qui suit un allié après sa mort, « GO! » à la fin du décompte, sons
 - Buissons : se révéler en tirant ou en étant touché
 - Caméra 3D : élargir la bande de décor pour que le joueur ne soit pas collé au coin au départ
 - `StartupHelper` ne transmet pas les arguments sur macOS (le Makefile passe `-XstartOnFirstThread`)

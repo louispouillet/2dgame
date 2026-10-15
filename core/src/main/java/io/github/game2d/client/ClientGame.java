@@ -2,6 +2,7 @@ package io.github.game2d.client;
 
 import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.brawler.Brawler;
+import io.github.game2d.model.match.MatchPhase;
 import io.github.game2d.protocol.BrawlerState;
 import io.github.game2d.protocol.PlayerInput;
 import io.github.game2d.protocol.WorldSnapshot;
@@ -38,13 +39,17 @@ public class ClientGame {
         }
         BrawlerState mine = snapshot.findBrawler(session.playerId());
         if (mine != null) {
-            predict(mine, isNew, inputs);
+            predict(mine, isNew, inputs, isPlaying(snapshot));
         }
         WorldSnapshot interpolated = buffer.interpolate(clock.serverTime() - INTERPOLATION_DELAY);
         return withOwnBrawler(interpolated, predictedState(mine));
     }
 
-    private void predict(BrawlerState mine, boolean isNew, InputReader inputs) {
+    private static boolean isPlaying(WorldSnapshot snapshot) {
+        return snapshot.match() == null || snapshot.match().phase() == MatchPhase.PLAYING;
+    }
+
+    private void predict(BrawlerState mine, boolean isNew, InputReader inputs, boolean playing) {
         if (predicted == null) {
             Brawler copy = mine.type().create(mine.id(), mine.x(), mine.y());
             predicted = new PredictedPlayer(arena, TickClock.STEP, copy);
@@ -53,7 +58,7 @@ public class ClientGame {
             predicted.reconcile(mine);
         }
         clock.forEachInputTick(() -> {
-            PlayerInput input = inputs.read(predicted.getX(), predicted.getY());
+            PlayerInput input = playing ? inputs.read(predicted.getX(), predicted.getY()) : inputs.idle();
             session.channel().sendInput(input);
             predicted.apply(input);
         });

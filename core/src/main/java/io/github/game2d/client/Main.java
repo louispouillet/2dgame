@@ -50,13 +50,13 @@ public class Main extends Game {
         solo.join(name);
         if (solo.playerId() != -1) {
             solo.start();
-            showScreen(new GameScreen(solo, arena));
+            showScreen(new GameScreen(this, skin, solo, arena));
         }
         return solo;
     }
 
     public void play(String map) {
-        showScreen(new GameScreen(session, ArenaLoader.loadResource(map)));
+        showScreen(new GameScreen(this, skin, session, ArenaLoader.loadResource(map)));
     }
 
     private void closeSession() {

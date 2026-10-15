@@ -2,6 +2,7 @@ package io.github.game2d.client;
 
 import io.github.game2d.model.Team;
 import io.github.game2d.model.arena.Arena;
+import io.github.game2d.model.arena.ArenaLoader;
 import io.github.game2d.net.LocalChannel;
 import io.github.game2d.net.ServerChannel;
 import io.github.game2d.protocol.RefusalReason;
@@ -10,7 +11,7 @@ import io.github.game2d.server.LobbyException;
 import java.util.List;
 
 public class LocalSession implements GameSession {
-    private static final String MAP = "solo";
+    private static final String MAP = ArenaLoader.DEFAULT_MAP;
     private static final String TARGET_NAME = "Target";
     private static final int NOT_JOINED = -1;
 

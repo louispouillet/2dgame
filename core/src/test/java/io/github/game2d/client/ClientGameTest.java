@@ -2,15 +2,18 @@ package io.github.game2d.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.game2d.model.Team;
 import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.TestArenas;
 import io.github.game2d.model.brawler.BrawlerType;
+import io.github.game2d.model.match.MatchPhase;
 import io.github.game2d.model.brawler.Shelly;
 import io.github.game2d.net.LocalChannel;
 import io.github.game2d.net.ServerChannel;
 import io.github.game2d.protocol.BrawlerState;
+import io.github.game2d.protocol.MatchState;
 import io.github.game2d.protocol.PlayerInput;
 import io.github.game2d.protocol.RefusalReason;
 import io.github.game2d.protocol.WorldSnapshot;
@@ -128,5 +131,31 @@ class ClientGameTest {
 
         assertEquals(8f, find(drawn, ENEMY_ID).x(), DELTA);
         assertEquals(6f, find(drawn, ENEMY_ID).y(), DELTA);
+    }
+
+    private static MatchState matchIn(MatchPhase phase) {
+        return new MatchState(phase, 1, 0, 0, 0f, null, null);
+    }
+
+    @Test
+    void doesNotMoveDuringTheCountdown() {
+        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(MY_ID, START_X, START_Y)), List.of(),
+            matchIn(MatchPhase.COUNTDOWN)));
+
+        WorldSnapshot drawn = playOneTick();
+
+        assertEquals(START_X, find(drawn, MY_ID).x(), DELTA);
+        assertEquals(0, channel.latestInput().moveX());
+        assertTrue(channel.latestInput().sequence() > 0);
+    }
+
+    @Test
+    void movesWhileTheRoundIsPlayed() {
+        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(MY_ID, START_X, START_Y)), List.of(),
+            matchIn(MatchPhase.PLAYING)));
+
+        WorldSnapshot drawn = playOneTick();
+
+        assertEquals(START_X + step, find(drawn, MY_ID).x(), DELTA);
     }
 }

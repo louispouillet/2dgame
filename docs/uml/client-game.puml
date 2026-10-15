@@ -23,7 +23,19 @@ package "Game loop: what to show" #FFF6E8 {
 }
 
 class InputReader {
-    .. keyboard + mouse → PlayerInput ..
+    .. keyboard + mouse → PlayerInput,\nor an idle input outside PLAYING ..
+}
+
+package "Match HUD: score, countdown, result" #FDECEA {
+    class MatchHud {
+        .. draws over the 3D view ..
+        + draw(view)
+    }
+    class MatchView <<final>> {
+        .. decides the texts (plain Java, tested) ..
+        + myScore() / enemyScore()
+        + centerText()
+    }
 }
 
 package "3D rendering: how to draw it" #F6EEFB {
@@ -35,8 +47,9 @@ package "3D rendering: how to draw it" #F6EEFB {
     class BrawlerHud {
         .. health, ammo, nicknames ..
     }
-    class PlayerNames <<final>> {
-        .. id → nickname ..
+    class PlayerRoster <<final>> {
+        .. id → nickname and team ..
+        + isAlly(id) / myTeam()
     }
     class ArenaModelFactory <<utility>> {
         .. builds the 3D map ..
@@ -58,7 +71,9 @@ InputReader -right-> WorldRenderer3D : where does\nthe mouse aim?
 
 WorldRenderer3D *-down- BrawlerHud : owns
 WorldRenderer3D .down.> ArenaModelFactory : uses
-BrawlerHud -down-> PlayerNames : reads
+BrawlerHud -down-> PlayerRoster : reads nicknames
+GameScreen *-down- MatchHud : owns
+MatchHud ..> MatchView : asks what to show
 
-$legend("<b>Every frame</b>: ClientGame gives the world to show,", "WorldRenderer3D draws it, InputReader reads what the player does.")
+$legend("<b>Every frame</b>: ClientGame gives the world to show, WorldRenderer3D draws it,", "MatchHud draws the match over it, InputReader reads what the player does.")
 @enduml

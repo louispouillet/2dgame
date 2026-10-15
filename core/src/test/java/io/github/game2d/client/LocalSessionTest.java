@@ -3,11 +3,13 @@ package io.github.game2d.client;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import io.github.game2d.model.Team;
+import io.github.game2d.model.arena.ArenaLoader;
 import io.github.game2d.model.arena.TestArenas;
 import io.github.game2d.protocol.LobbyPlayerState;
 import io.github.game2d.protocol.LobbyState;
@@ -98,5 +100,15 @@ class LocalSessionTest {
 
         assertEquals(2, session.channel().latestLobby().players().size());
         assertNull(session.rejection());
+    }
+
+    @Test
+    void soloMapCanBeLoadedAgainToPlayAnotherMatch() {
+        session.join("Louis");
+
+        String map = session.channel().latestLobby().map();
+
+        assertEquals(ArenaLoader.DEFAULT_MAP, map);
+        assertNotNull(ArenaLoader.loadResource(map));
     }
 }

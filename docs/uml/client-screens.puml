@@ -41,6 +41,7 @@ package "Connection: solo or network" #EEFBEF {
 Main -down-> NameScreen : shows first
 NameScreen -[#1E64C8,bold]right-> LobbyScreen : <color:#1E64C8>join accepted</color>
 LobbyScreen -[#1E64C8,bold]right-> GameScreen : <color:#1E64C8>leader starts</color>
+GameScreen -[#1E64C8,bold,dashed]up-> LobbyScreen : <color:#1E64C8>match finished</color>
 LobbyScreen -down-> LobbyView : asks what to show
 
 Main *-right- "0..1" GameSession : owns
