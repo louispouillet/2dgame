@@ -30,10 +30,10 @@ import java.util.Map;
 
 public class WorldRenderer3D {
     private static final float FIELD_OF_VIEW = 28f;
-    private static final float CAMERA_HEIGHT = 16.4f;
-    private static final float CAMERA_BACK = 11.5f;
+    private static final float CAMERA_HEIGHT = 22.1f;
+    private static final float CAMERA_BACK = 15.5f;
     private static final float CAMERA_FOLLOW_SPEED = 5f;
-    private static final float CAMERA_MARGIN = ArenaModelFactory.OUTSIDE_MARGIN / 2f;
+    private static final float CAMERA_MARGIN = 1.5f;
 
     private static final float BRAWLER_MODEL_RADIUS = AvatarFactory.MODEL_RADIUS;
     private static final float BRAWLER_MODEL_HEIGHT = AvatarFactory.MODEL_HEIGHT;
@@ -202,12 +202,13 @@ public class WorldRenderer3D {
         Vector3 bottomLeft = groundPoint(0f, camera.viewportHeight);
         Vector3 bottomRight = groundPoint(camera.viewportWidth, camera.viewportHeight);
 
-        float farHalfWidth = Math.max(Math.abs(topLeft.x), Math.abs(topRight.x));
+        // The view is a trapezoid: its near edge is the narrowest, so that is the width every row shows at least
+        float visibleHalfWidth = Math.min(Math.abs(bottomLeft.x), Math.abs(bottomRight.x));
         float farZ = Math.min(topLeft.z, topRight.z);
         float nearZ = Math.max(bottomLeft.z, bottomRight.z);
 
-        minTargetX = farHalfWidth - CAMERA_MARGIN;
-        maxTargetX = arenaWidth - farHalfWidth + CAMERA_MARGIN;
+        minTargetX = visibleHalfWidth - CAMERA_MARGIN;
+        maxTargetX = arenaWidth - visibleHalfWidth + CAMERA_MARGIN;
         if (minTargetX > maxTargetX) {
             minTargetX = arenaWidth / 2f;
             maxTargetX = minTargetX;

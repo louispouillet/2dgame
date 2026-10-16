@@ -17,7 +17,7 @@ class BrawlerCollisionTest {
         #######
         """);
     private static final float TICK = 1 / 30f;
-    private static final float RADIUS = 0.25f;
+    private static final float RADIUS = 0.4f;
 
     private static void moveFor(Colt colt, float seconds) {
         for (float time = 0; time < seconds; time += TICK) {

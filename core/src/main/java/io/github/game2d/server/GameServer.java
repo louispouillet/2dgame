@@ -26,7 +26,7 @@ import java.util.function.Function;
 public class GameServer {
     private enum Phase { LOBBY, PLAYING }
 
-    private static final BrawlerType[] BRAWLER_ROTATION = BrawlerType.values();
+    private static final BrawlerType BRAWLER = BrawlerType.COLT;
 
     private volatile boolean running;
     private Thread thread;
@@ -116,8 +116,8 @@ public class GameServer {
         snapshotBuilder = new SnapshotBuilder(world);
         match = new KnockoutMatch();
         List<LobbyPlayer> players = lobby.players();
-        for (int index = 0; index < players.size(); index++) {
-            brawlerTypes.put(players.get(index).id(), BRAWLER_ROTATION[index % BRAWLER_ROTATION.length]);
+        for (LobbyPlayer player : players) {
+            brawlerTypes.put(player.id(), BRAWLER);
         }
         placePlayers();
         phase = Phase.PLAYING;

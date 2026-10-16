@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ArenaModelFactory {
-    static final float OUTSIDE_MARGIN = 3f;
+    static final float OUTSIDE_MARGIN = 12f;
 
     private static final String TEXTURE_FOLDER = "textures/arena/";
     private static final float OUTSIDE_LEVEL = -0.01f;

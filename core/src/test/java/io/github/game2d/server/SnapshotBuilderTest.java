@@ -91,7 +91,7 @@ class SnapshotBuilderTest {
         BrawlerState state = snapshot.brawlers().stream().filter(b -> b.id() == shelly.getId()).findFirst().orElseThrow();
         assertEquals(X0 + 3, state.x());
         assertEquals(Y0 + 4, state.y());
-        assertEquals(0.25f, state.radius());
+        assertEquals(0.4f, state.radius());
         assertEquals(120, state.health());
         assertEquals(120, state.maxHealth());
         assertEquals(3, state.ammo());
