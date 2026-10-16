@@ -9,12 +9,14 @@ import io.github.game2d.model.Team;
 import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.ArenaLoader;
 import io.github.game2d.model.arena.TestArenas;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.model.brawler.Colt;
 import io.github.game2d.model.brawler.Shelly;
 import io.github.game2d.model.match.MatchPhase;
 import io.github.game2d.protocol.BrawlerState;
 import io.github.game2d.protocol.MatchState;
 import io.github.game2d.protocol.PlayerInput;
+import io.github.game2d.protocol.ProjectileState;
 import io.github.game2d.protocol.WorldSnapshot;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -174,5 +176,33 @@ class SnapshotBuilderTest {
         WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, 1, match);
 
         assertEquals(match, snapshot.match());
+    }
+
+    @Test
+    void projectileStateTellsWhoFiredAndWhereItGoes() {
+        GameWorld world = new GameWorld(ARENA);
+        Colt shooter = new Colt(world.nextId(), X0, Y0);
+        world.addPlayer(shooter, Team.BLUE);
+
+        world.attack(shooter, 0, 1);
+        ProjectileState bullet = new SnapshotBuilder(world).build(0, id -> 0, 1, null).projectiles().get(0);
+
+        assertEquals(shooter.getId(), bullet.ownerId());
+        assertEquals(0f, bullet.dirX(), 1e-4f);
+        assertEquals(1f, bullet.dirY(), 1e-4f);
+        assertEquals(BrawlerType.COLT, bullet.shooter());
+    }
+
+    @Test
+    void projectileOfAShooterWhoLeftHasNoShooterType() {
+        GameWorld world = new GameWorld(ARENA);
+        Colt shooter = new Colt(world.nextId(), X0, Y0);
+        world.addPlayer(shooter, Team.BLUE);
+        world.attack(shooter, 1, 0);
+
+        world.removePlayer(shooter.getId());
+        ProjectileState bullet = new SnapshotBuilder(world).build(0, id -> 0, 1, null).projectiles().get(0);
+
+        assertEquals(null, bullet.shooter());
     }
 }

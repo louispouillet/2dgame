@@ -30,6 +30,14 @@ public class Projectile extends GameObject {
         return ownerId;
     }
 
+    public float getDirX() {
+        return dirX;
+    }
+
+    public float getDirY() {
+        return dirY;
+    }
+
     public int getDamage() {
         return damage;
     }

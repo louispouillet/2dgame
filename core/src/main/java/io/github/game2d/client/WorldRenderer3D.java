@@ -60,6 +60,8 @@ public class WorldRenderer3D {
     private final AvatarFactory avatarFactory = new AvatarFactory();
     private final Model projectileModel;
     private final ModelInstance projectileInstance;
+    private final BulletModels bulletModels = new BulletModels();
+    private final PlayerRoster roster;
     private final Map<Integer, BrawlerAvatar> avatars = new HashMap<>();
     private final Vector3 cameraTarget = new Vector3();
     private final Vector3 playerPosition = new Vector3();
@@ -79,6 +81,7 @@ public class WorldRenderer3D {
     private float maxTargetZ;
 
     public WorldRenderer3D(Arena arena, PlayerRoster roster) {
+        this.roster = roster;
         hud = new BrawlerHud(roster);
         camera = new PerspectiveCamera(FIELD_OF_VIEW, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 0.1f;
@@ -139,12 +142,27 @@ public class WorldRenderer3D {
             avatar.render(modelBatch, environment);
         }
         for (ProjectileState projectile : snapshot.projectiles()) {
-            float scale = projectile.radius() / PROJECTILE_MODEL_RADIUS;
-            projectileInstance.transform.setToTranslation(projectile.x(), PROJECTILE_HEIGHT, -projectile.y()).scale(scale, scale, scale);
-            modelBatch.render(projectileInstance, environment);
+            switch (BulletLook.of(projectile, roster, bulletModels.texturedTypes())) {
+                case BulletLook.Textured look -> renderBullet(projectile, look);
+                case BulletLook.Sphere sphere -> renderSphere(projectile);
+            }
         }
         modelBatch.end();
         drawHud(snapshot);
+    }
+
+    /** Turned towards where the projectile goes (game y is -z in 3D); not lit, so it keeps the colors of its image. */
+    private void renderBullet(ProjectileState projectile, BulletLook.Textured look) {
+        float angle = MathUtils.atan2(projectile.dirY(), projectile.dirX()) * MathUtils.radiansToDegrees;
+        ModelInstance bullet = bulletModels.instance(look);
+        bullet.transform.setToTranslation(projectile.x(), PROJECTILE_HEIGHT, -projectile.y()).rotate(Vector3.Y, angle);
+        modelBatch.render(bullet);
+    }
+
+    private void renderSphere(ProjectileState projectile) {
+        float scale = projectile.radius() / PROJECTILE_MODEL_RADIUS;
+        projectileInstance.transform.setToTranslation(projectile.x(), PROJECTILE_HEIGHT, -projectile.y()).scale(scale, scale, scale);
+        modelBatch.render(projectileInstance, environment);
     }
 
     private void drawHud(WorldSnapshot snapshot) {
@@ -271,6 +289,7 @@ public class WorldRenderer3D {
         bushModel.dispose();
         avatarFactory.dispose();
         projectileModel.dispose();
+        bulletModels.dispose();
         shapes.dispose();
         batch.dispose();
         hud.dispose();

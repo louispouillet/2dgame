@@ -54,6 +54,17 @@ package "3D rendering: how to draw it" #F6EEFB {
     class ArenaModelFactory <<utility>> {
         .. builds the 3D map ..
     }
+    interface BulletLook <<sealed>> {
+        .. textured bullet (blue or red)\nor sphere (plain Java, tested) ..
+        + {static} of(projectile, roster, texturedTypes)
+    }
+    class BulletModels {
+        .. finds the bullet images,\nbuilds their models ..
+        + texturedTypes()
+    }
+    class BulletStyles <<utility>> {
+        .. bullet size of each type ..
+    }
 }
 
 interface GameSession <<external>>
@@ -72,6 +83,10 @@ InputReader -right-> WorldRenderer3D : where does\nthe mouse aim?
 WorldRenderer3D *-down- BrawlerHud : owns
 WorldRenderer3D .down.> ArenaModelFactory : uses
 BrawlerHud -down-> PlayerRoster : reads nicknames
+WorldRenderer3D *-down- BulletModels : owns
+WorldRenderer3D .down.> BulletLook : asks how to\ndraw each shot
+BulletLook .down.> PlayerRoster : ally or enemy?
+BulletModels .down.> BulletStyles : reads sizes
 GameScreen *-down- MatchHud : owns
 MatchHud ..> MatchView : asks what to show
 

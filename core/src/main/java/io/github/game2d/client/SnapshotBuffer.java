@@ -103,7 +103,7 @@ public class SnapshotBuffer {
         }
         float x = lerp(a.x(), b.x(), t);
         float y = lerp(a.y(), b.y(), t);
-        return new ProjectileState(b.id(), x, y, b.radius());
+        return new ProjectileState(b.id(), x, y, b.radius(), b.ownerId(), b.dirX(), b.dirY(), b.shooter());
     }
 
     private static float lerp(float a, float b, float t) {

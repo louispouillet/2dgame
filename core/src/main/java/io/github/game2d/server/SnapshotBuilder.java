@@ -25,12 +25,17 @@ public class SnapshotBuilder {
         List<ProjectileState> projectileStates = new ArrayList<>();
         for (GameObject object : world.getGameObjects()) {
             if (object instanceof Projectile projectile) {
+                Brawler shooter = world.getPlayer(projectile.getOwnerId());
                 projectileStates.add(
                     new ProjectileState(
                         projectile.getId(),
                         projectile.getX(),
                         projectile.getY(),
-                        projectile.getRadius()
+                        projectile.getRadius(),
+                        projectile.getOwnerId(),
+                        projectile.getDirX(),
+                        projectile.getDirY(),
+                        shooter == null ? null : shooter.getType()
                     )
                 );
             }
