@@ -11,6 +11,8 @@ public abstract class Weapon {
     private final float cooldown;
     private final float reloadTime;
     private final AttackPattern pattern;
+    // Distance from the brawler's center to the gun muzzle, along the aim
+    private final float muzzleDistance;
 
     private int ammo;
     private float cooldownTimer;
@@ -21,11 +23,12 @@ public abstract class Weapon {
     private float aimX;
     private float aimY;
 
-    protected Weapon(int maxAmmo, float cooldown, float reloadTime, AttackPattern pattern) {
+    protected Weapon(int maxAmmo, float cooldown, float reloadTime, AttackPattern pattern, float muzzleDistance) {
         this.maxAmmo = maxAmmo;
         this.cooldown = cooldown;
         this.reloadTime = reloadTime;
         this.pattern = pattern;
+        this.muzzleDistance = muzzleDistance;
         this.ammo = maxAmmo;
     }
 
@@ -39,6 +42,11 @@ public abstract class Weapon {
 
     public float getReloadProgress() {
         return reloadTimer / reloadTime;
+    }
+
+    /** True while bullets of the current attack still have to leave. */
+    public boolean isAttacking() {
+        return !pendingShots.isEmpty();
     }
 
     protected abstract Projectile createProjectile(int id, int ownerId, float x, float y, float dirX, float dirY);
@@ -68,9 +76,10 @@ public abstract class Weapon {
                 continue;
             }
             iterator.remove();
-            // the right of the aim (aimX, aimY) is (aimY, -aimX)
-            float startX = x + aimY * shot.sideOffset();
-            float startY = y - aimX * shot.sideOffset();
+            // the bullet leaves from the muzzle: ahead of the shooter, then shifted sideways.
+            // The right of the aim (aimX, aimY) is (aimY, -aimX)
+            float startX = x + aimX * muzzleDistance + aimY * shot.sideOffset();
+            float startY = y + aimY * muzzleDistance - aimX * shot.sideOffset();
             float angle = (float) Math.toRadians(shot.angle());
             float dirX = (float) (aimX * Math.cos(angle) - aimY * Math.sin(angle));
             float dirY = (float) (aimX * Math.sin(angle) + aimY * Math.cos(angle));

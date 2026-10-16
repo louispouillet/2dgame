@@ -17,7 +17,44 @@ class SnapshotBufferTest {
     private static final float DELTA = 1e-4f;
 
     private static BrawlerState brawler(int id, float x, float y, int health) {
-        return new BrawlerState(id, x, y, 0.4f, health, 100, 3, 3, 0f, BrawlerType.SHELLY, 0);
+        return new BrawlerState(id, BrawlerType.SHELLY, x, y, 0.4f, 0f, health, 100, 3, 3, 0f, false, false, 0, 0);
+    }
+
+    private static BrawlerState animated(float facing, boolean moving, int shotsFired) {
+        return new BrawlerState(1, BrawlerType.SHELLY, 10, 0, 0.4f, facing, 100, 100, 3, 3, 0f, moving, false, shotsFired, 0);
+    }
+
+    @Test
+    void facingIsInterpolatedBetweenTwoSnapshots() {
+        SnapshotBuffer buffer = new SnapshotBuffer();
+        buffer.add(world(animated(0f, false, 0)), 1.0);
+        buffer.add(world(animated(1f, false, 0)), 1.1);
+
+        assertEquals(0.5f, buffer.interpolate(1.05).brawlers().get(0).facing(), DELTA);
+    }
+
+    @Test
+    void facingTurnsTheShortestWayRound() {
+        SnapshotBuffer buffer = new SnapshotBuffer();
+        // just under +180° then just over -180°: a small turn, not a full half turn through 0
+        buffer.add(world(animated(3.0f, false, 0)), 1.0);
+        buffer.add(world(animated(-3.0f, false, 0)), 1.1);
+
+        float facing = buffer.interpolate(1.05).brawlers().get(0).facing();
+
+        assertEquals(Math.PI, Math.abs(facing), 1e-3);
+    }
+
+    @Test
+    void movementAndShotsComeFromTheLatestSnapshot() {
+        SnapshotBuffer buffer = new SnapshotBuffer();
+        buffer.add(world(animated(0f, false, 4)), 1.0);
+        buffer.add(world(animated(0f, true, 5)), 1.1);
+
+        BrawlerState result = buffer.interpolate(1.05).brawlers().get(0);
+
+        assertTrue(result.moving());
+        assertEquals(5, result.shotsFired());
     }
 
     private static WorldSnapshot world(BrawlerState... brawlers) {

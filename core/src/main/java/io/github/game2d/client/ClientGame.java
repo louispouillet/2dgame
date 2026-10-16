@@ -68,7 +68,10 @@ public class ClientGame {
         if (mine == null) {
             return null;
         }
-        return new BrawlerState(mine.id(), predicted.getX(), predicted.getY(), mine.radius(), mine.health(), mine.maxHealth(), mine.ammo(), mine.maxAmmo(), mine.reloadProgress(), mine.type(), mine.lastProcessedInput());
+        float facing = mine.attacking() ? mine.facing() : predicted.getFacing();
+        return new BrawlerState(mine.id(), mine.type(), predicted.getX(), predicted.getY(), mine.radius(), facing,
+            mine.health(), mine.maxHealth(), mine.ammo(), mine.maxAmmo(), mine.reloadProgress(),
+            predicted.isMoving(), mine.attacking(), mine.shotsFired(), mine.lastProcessedInput());
     }
 
     private static WorldSnapshot withOwnBrawler(WorldSnapshot view, BrawlerState mine) {

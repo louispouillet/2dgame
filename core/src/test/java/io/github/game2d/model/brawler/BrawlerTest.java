@@ -174,4 +174,97 @@ class BrawlerTest {
         assertEquals(before, colt.getHealth());
     }
 
+    // --- What the client needs to know to animate the brawler ---
+
+    @Test
+    void startsStillAndWithoutShots() {
+        Colt colt = new Colt(1, X0, Y0);
+
+        assertFalse(colt.isMoving());
+        assertEquals(0, colt.getShotsFired());
+    }
+
+    @Test
+    void facesTheDirectionItMovesIn() {
+        Colt colt = new Colt(1, X0, Y0);
+
+        colt.setDirection(0, 1);
+
+        assertTrue(colt.isMoving());
+        assertEquals(Math.PI / 2, colt.getFacing(), 1e-5);
+    }
+
+    @Test
+    void keepsItsFacingWhenItStops() {
+        Colt colt = new Colt(1, X0, Y0);
+        colt.setDirection(-1, 0);
+
+        colt.setDirection(0, 0);
+
+        assertFalse(colt.isMoving());
+        assertEquals(Math.PI, Math.abs(colt.getFacing()), 1e-5);
+    }
+
+    @Test
+    void facesItsAimWhileAttackingEvenWhenMovingElsewhere() {
+        Colt colt = new Colt(1, X0, Y0);
+
+        colt.attack(ids::incrementAndGet, 0, -1);
+        colt.setDirection(1, 0);
+
+        assertTrue(colt.isMoving());
+        assertEquals(-Math.PI / 2, colt.getFacing(), 1e-5);
+    }
+
+    @Test
+    void facesItsMovementAgainAsSoonAsTheBurstIsOver() {
+        Colt colt = new Colt(1, X0, Y0);
+        colt.attack(ids::incrementAndGet, 0, -1);
+        colt.setDirection(1, 0);
+
+        for (int i = 0; i < 300; i++) {
+            colt.update(0.01f, ARENA);
+            colt.releaseShots(ids::incrementAndGet);
+        }
+        colt.update(0.01f, ARENA);
+
+        assertEquals(0, colt.getFacing(), 1e-5);
+    }
+
+    @Test
+    void countsOneShotPerVolleyFired() {
+        Shelly shelly = new Shelly(1, X0, Y0);
+
+        shelly.attack(ids::incrementAndGet, 1, 0);
+
+        // the shotgun fires several pellets at once: that is one shot
+        assertEquals(1, shelly.getShotsFired());
+    }
+
+    @Test
+    void countsAWholeBurstAsOneShot() {
+        Colt colt = new Colt(1, X0, Y0);
+        colt.attack(ids::incrementAndGet, 1, 0);
+
+        int bullets = 1;
+        for (int i = 0; i < 300; i++) {
+            colt.update(0.01f, ARENA);
+            if (!colt.releaseShots(ids::incrementAndGet).isEmpty()) {
+                bullets++;
+            }
+        }
+
+        assertTrue(bullets > 1);
+        assertEquals(1, colt.getShotsFired());
+    }
+
+    @Test
+    void aRefusedAttackIsNotCounted() {
+        Colt colt = new Colt(1, X0, Y0);
+        colt.attack(ids::incrementAndGet, 1, 0);
+
+        colt.attack(ids::incrementAndGet, 1, 0);
+
+        assertEquals(1, colt.getShotsFired());
+    }
 }

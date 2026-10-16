@@ -32,6 +32,7 @@ public class PredictedPlayer {
         }
         lastAcknowledged = brawlerState.lastProcessedInput();
         brawler.correctPositionTo(brawlerState.x(), brawlerState.y(), arena);
+        brawler.correctFacingTo(brawlerState.facing());
         pending.removeIf(input -> input.sequence() <= brawlerState.lastProcessedInput());
         for (PlayerInput input : pending) {
             simulate(input);
@@ -49,5 +50,13 @@ public class PredictedPlayer {
 
     public float getY() {
         return brawler.getY();
+    }
+
+    public float getFacing() {
+        return brawler.getFacing();
+    }
+
+    public boolean isMoving() {
+        return brawler.isMoving();
     }
 }

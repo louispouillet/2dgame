@@ -1,6 +1,7 @@
 package io.github.game2d.model.weapon;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.game2d.model.Projectile;
@@ -22,12 +23,17 @@ class WeaponTest {
     private static final int BURST_SIZE = 4;
     private static final float BURST_INTERVAL = 0.1f;
     private static final float GUN_OFFSET = 0.15f;
+    private static final float MUZZLE_DISTANCE = 0.4f;
 
     private final AtomicInteger ids = new AtomicInteger();
 
     private static class TestWeapon extends Weapon {
+        TestWeapon(AttackPattern pattern, float muzzleDistance) {
+            super(MAX_AMMO, COOLDOWN, RELOAD_TIME, pattern, muzzleDistance);
+        }
+
         TestWeapon(AttackPattern pattern) {
-            super(MAX_AMMO, COOLDOWN, RELOAD_TIME, pattern);
+            this(pattern, 0);
         }
 
         TestWeapon() {
@@ -173,6 +179,20 @@ class WeaponTest {
     }
 
     @Test
+    void shotsLeaveFromTheMuzzleAheadOfTheShooter() {
+        TestWeapon weapon = new TestWeapon(new SpreadPattern(1, 0), MUZZLE_DISTANCE);
+
+        Projectile towardsX = weapon.fire(1, ids::incrementAndGet, 2, 3, 1, 0).get(0);
+        weapon.update(COOLDOWN);
+        Projectile towardsY = weapon.fire(1, ids::incrementAndGet, 2, 3, 0, 1).get(0);
+
+        assertEquals(2 + MUZZLE_DISTANCE, towardsX.getX(), 1e-5);
+        assertEquals(3, towardsX.getY(), 1e-5);
+        assertEquals(2, towardsY.getX(), 1e-5);
+        assertEquals(3 + MUZZLE_DISTANCE, towardsY.getY(), 1e-5);
+    }
+
+    @Test
     void delayedShotsStartFromTheShootersCurrentPosition() {
         TestWeapon weapon = new TestWeapon();
         fire(weapon);
@@ -196,6 +216,34 @@ class WeaponTest {
         assertEquals(0, shots.get(1).getY(), 1e-5);
         assertTrue(shots.get(1).getX() > 0);
         assertTrue(shots.get(2).getY() > 0);
+    }
+
+    @Test
+    void isAttackingUntilTheLastShotOfTheBurstLeaves() {
+        TestWeapon weapon = new TestWeapon();
+        assertFalse(weapon.isAttacking());
+
+        fire(weapon);
+        assertTrue(weapon.isAttacking());
+
+        fireWholeAttackRemainder(weapon);
+        assertFalse(weapon.isAttacking());
+    }
+
+    @Test
+    void aSpreadIsOverAsSoonAsItIsFired() {
+        TestWeapon weapon = new TestWeapon(new SpreadPattern(3, 10));
+
+        fire(weapon);
+
+        assertFalse(weapon.isAttacking());
+    }
+
+    private void fireWholeAttackRemainder(Weapon weapon) {
+        for (int i = 0; i < 500; i++) {
+            weapon.update(0.01f);
+            release(weapon);
+        }
     }
 
     @Test

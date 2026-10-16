@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 class WorldSnapshotTest {
     private static BrawlerState brawler(int id) {
-        return new BrawlerState(id, 1f, 1f, 0.25f, 100, 100, 3, 3, 0f, BrawlerType.COLT, 0);
+        return new BrawlerState(id, BrawlerType.COLT, 1f, 1f, 0.25f, 0f, 100, 100, 3, 3, 0f, false, false, 0, 0);
     }
 
     @Test

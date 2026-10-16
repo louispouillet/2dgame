@@ -68,7 +68,11 @@ class ClientGameTest {
     }
 
     private static BrawlerState brawler(int id, float x, float y) {
-        return new BrawlerState(id, x, y, 0.25f, 120, 120, 3, 3, 0f, BrawlerType.SHELLY, 0);
+        return new BrawlerState(id, BrawlerType.SHELLY, x, y, 0.25f, 0f, 120, 120, 3, 3, 0f, false, false, 0, 0);
+    }
+
+    private static BrawlerState attacking(int id, float x, float y, float facing) {
+        return new BrawlerState(id, BrawlerType.SHELLY, x, y, 0.25f, facing, 120, 120, 3, 3, 0f, true, true, 1, 0);
     }
 
     /** Replaces the keyboard (Gdx.input does not exist outside a libGDX window). */
@@ -157,5 +161,26 @@ class ClientGameTest {
         WorldSnapshot drawn = playOneTick();
 
         assertEquals(START_X + step, find(drawn, MY_ID).x(), DELTA);
+    }
+
+    @Test
+    void animatesItsOwnBrawlerFromThePrediction() {
+        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(MY_ID, START_X, START_Y)), List.of(), null));
+
+        BrawlerState mine = find(playOneTick(), MY_ID);
+
+        assertTrue(mine.moving());
+        assertEquals(0f, mine.facing(), DELTA);
+    }
+
+    @Test
+    void keepsFacingTheTargetOfTheServerDuringAnAttack() {
+        float target = (float) Math.PI;
+        channel.sendSnapshot(new WorldSnapshot(1, List.of(attacking(MY_ID, START_X, START_Y, target)), List.of(), null));
+
+        BrawlerState mine = find(playOneTick(), MY_ID);
+
+        assertTrue(mine.moving());
+        assertEquals(target, mine.facing(), DELTA);
     }
 }

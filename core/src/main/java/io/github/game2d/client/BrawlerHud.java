@@ -16,10 +16,13 @@ public class BrawlerHud {
     private static final float BAR_HEIGHT = 0.1f;
     private static final float BAR_GAP = 0.1f;
     private static final float AMMO_BAR_HEIGHT = 0.08f;
-    private static final Color BAR_FILL = new Color(0.25f, 0.85f, 0.35f, 1f);
+    private static final Color MY_BAR_FILL = new Color(0.25f, 0.85f, 0.35f, 1f);
+    private static final Color ALLY_BAR_FILL = new Color(0.20f, 0.50f, 1f, 1f);
+    private static final Color ENEMY_BAR_FILL = new Color(0.90f, 0.25f, 0.25f, 1f);
     private static final Color AMMO_FILL = new Color(1f, 0.55f, 0.1f, 1f);
     private static final Color AMMO_RELOAD_FILL = new Color(0.6f, 0.38f, 0.1f, 1f);
     private static final Color BAR_OUTLINE = new Color(0f, 0f, 0f, 1f);
+    private static final Color MY_NAME = new Color(0.55f, 1f, 0.6f, 1f);
     private static final Color ALLY_NAME = new Color(0.55f, 0.75f, 1f, 1f);
     private static final Color ENEMY_NAME = new Color(1f, 0.55f, 0.55f, 1f);
 
@@ -91,13 +94,21 @@ public class BrawlerHud {
             return;
         }
         font.getData().setScale(FONT_SCALE * anchor.unit());
-        font.setColor(roster.isAlly(id) ? ALLY_NAME : ENEMY_NAME);
+        font.setColor(colorFor(id, MY_NAME, ALLY_NAME, ENEMY_NAME));
         layout.setText(font, name);
         float barTop = healthBarBottom(anchor) + BAR_HEIGHT * anchor.unit();
         float healthTextTop = barTop + layout.height / 2;
         float x = anchor.centerX() - layout.width / 2;
         float y = healthTextTop + NAME_GAP * anchor.unit() + layout.height;
         font.draw(batch, layout, x, y);
+    }
+
+    /** Green for the player's brawler, blue for allies, red for enemies. */
+    private Color colorFor(int brawlerId, Color me, Color ally, Color enemy) {
+        if (roster.isMe(brawlerId)) {
+            return me;
+        }
+        return roster.isAlly(brawlerId) ? ally : enemy;
     }
 
     private static float barWidth(HudAnchor anchor) {
@@ -116,13 +127,13 @@ public class BrawlerHud {
         return ammoBarBottom(anchor) + (AMMO_BAR_HEIGHT + BAR_GAP / 2) * anchor.unit();
     }
 
-    private static void drawHealthBar(ShapeRenderer shapes, HudAnchor anchor) {
+    private void drawHealthBar(ShapeRenderer shapes, HudAnchor anchor) {
         BrawlerState brawler = anchor.brawler();
         float ratio = (float) brawler.health() / brawler.maxHealth();
         float height = BAR_HEIGHT * anchor.unit();
         shapes.setColor(BAR_OUTLINE);
         shapes.rect(barLeft(anchor), healthBarBottom(anchor), barWidth(anchor), height);
-        shapes.setColor(BAR_FILL);
+        shapes.setColor(colorFor(brawler.id(), MY_BAR_FILL, ALLY_BAR_FILL, ENEMY_BAR_FILL));
         shapes.rect(barLeft(anchor), healthBarBottom(anchor), barWidth(anchor) * ratio, height);
     }
 

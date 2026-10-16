@@ -37,8 +37,12 @@ public final class PlayerRoster {
         return teams.get(myId);
     }
 
+    public boolean isMe(int brawlerId) {
+        return brawlerId == myId;
+    }
+
     public boolean isAlly(int brawlerId) {
         Team myTeam = teams.get(myId);
-        return brawlerId == myId || (myTeam != null && myTeam == teams.get(brawlerId));
+        return isMe(brawlerId) ||(myTeam != null && myTeam == teams.get(brawlerId));
     }
 }

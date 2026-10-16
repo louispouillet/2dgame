@@ -99,6 +99,24 @@ class SnapshotBuilderTest {
     }
 
     @Test
+    void snapshotTellsWhereTheBrawlerLooksAndWhatItDoes() {
+        GameWorld world = new GameWorld(ARENA);
+        Colt colt = new Colt(world.nextId(), X0, Y0);
+        world.addPlayer(colt, Team.BLUE);
+
+        colt.setDirection(1, 0);
+        world.attack(colt, 0, 1);
+        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, colt.getId(), null);
+
+        BrawlerState state = snapshot.brawlers().getFirst();
+        assertEquals(colt.getFacing(), state.facing());
+        assertTrue(state.moving());
+        assertTrue(state.attacking());
+        assertEquals(colt.getShotsFired(), state.shotsFired());
+        assertEquals(1, state.shotsFired());
+    }
+
+    @Test
     void snapshotContainsProjectilesWithTheirRadius() {
         GameWorld world = new GameWorld(ARENA);
         Shelly shooter = new Shelly(world.nextId(), X0, Y0);

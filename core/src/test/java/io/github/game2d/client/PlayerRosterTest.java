@@ -33,6 +33,14 @@ class PlayerRosterTest {
     }
 
     @Test
+    void recognizesMyOwnBrawler() {
+        PlayerRoster roster = PlayerRoster.from(LOBBY, 1);
+
+        assertTrue(roster.isMe(1));
+        assertFalse(roster.isMe(3));
+    }
+
+    @Test
     void playersOfMyTeamAreAllies() {
         PlayerRoster roster = PlayerRoster.from(LOBBY, 1);
 

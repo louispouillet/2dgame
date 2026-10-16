@@ -9,6 +9,8 @@ import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
+import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.HdpiUtils;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -33,30 +35,32 @@ public class WorldRenderer3D {
     private static final float CAMERA_FOLLOW_SPEED = 5f;
     private static final float CAMERA_MARGIN = ArenaModelFactory.OUTSIDE_MARGIN / 2f;
 
-    private static final float MODEL_RADIUS = 0.5f;
-    private static final float BRAWLER_MODEL_HEIGHT = 2f;
+    private static final float BRAWLER_MODEL_RADIUS = AvatarFactory.MODEL_RADIUS;
+    private static final float BRAWLER_MODEL_HEIGHT = AvatarFactory.MODEL_HEIGHT;
+    // Radius of the projectile sphere: a projectile of this radius is drawn at scale 1
+    private static final float PROJECTILE_MODEL_RADIUS = 0.5f;
     private static final float PROJECTILE_HEIGHT = 0.5f;
-    private static final Color ALLY_COLOR = new Color(0.20f, 0.50f, 1f, 1f);
-    private static final Color ENEMY_COLOR = new Color(0.90f, 0.25f, 0.25f, 1f);
     private static final long ATTRIBUTES = Usage.Position | Usage.Normal;
     private static final Plane GROUND = new Plane(Vector3.Y, 0f);
     private static final Plane AIM_PLANE = new Plane(Vector3.Y, new Vector3(0f, PROJECTILE_HEIGHT, 0f));
     private static final BlendingAttribute SEE_THROUGH = new BlendingAttribute(0.6f);
+    // Imported skeletons have up to 64 bones; the default shader only handles 12.
+    private static final int MAX_BONES = 64;
 
     private record Bush(int col, int row, ModelInstance instance) {
     }
 
     private final PerspectiveCamera camera;
-    private final ModelBatch modelBatch = new ModelBatch();
+    private final ModelBatch modelBatch = createModelBatch();
     private final Environment environment = new Environment();
     private final Model arenaModel;
     private final ModelInstance arenaInstance;
     private final Model bushModel;
     private final List<Bush> bushes = new ArrayList<>();
-    private final Model brawlerModel;
+    private final AvatarFactory avatarFactory = new AvatarFactory();
     private final Model projectileModel;
-    private final Map<Integer, ModelInstance> brawlerInstances = new HashMap<>();
-    private final List<ModelInstance> projectileInstances = new ArrayList<>();
+    private final ModelInstance projectileInstance;
+    private final Map<Integer, BrawlerAvatar> avatars = new HashMap<>();
     private final Vector3 cameraTarget = new Vector3();
     private final Vector3 playerPosition = new Vector3();
     private final Vector3 aimPoint = new Vector3();
@@ -65,7 +69,6 @@ public class WorldRenderer3D {
     private final ShapeRenderer shapes = new ShapeRenderer();
     private final SpriteBatch batch = new SpriteBatch();
     private final BrawlerHud hud;
-    private final PlayerRoster roster;
     private final Matrix4 screenProjection = new Matrix4();
     private boolean followingPlayer;
     private final float arenaWidth;
@@ -76,7 +79,6 @@ public class WorldRenderer3D {
     private float maxTargetZ;
 
     public WorldRenderer3D(Arena arena, PlayerRoster roster) {
-        this.roster = roster;
         hud = new BrawlerHud(roster);
         camera = new PerspectiveCamera(FIELD_OF_VIEW, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 0.1f;
@@ -102,11 +104,15 @@ public class WorldRenderer3D {
             }
         }
 
-        ModelBuilder builder = new ModelBuilder();
-        brawlerModel = builder.createCapsule(MODEL_RADIUS, BRAWLER_MODEL_HEIGHT, 16,
-            new Material(ColorAttribute.createDiffuse(ENEMY_COLOR)), ATTRIBUTES);
-        projectileModel = builder.createSphere(2 * MODEL_RADIUS, 2 * MODEL_RADIUS, 2 * MODEL_RADIUS, 12, 12,
+        projectileModel = new ModelBuilder().createSphere(2 * PROJECTILE_MODEL_RADIUS, 2 * PROJECTILE_MODEL_RADIUS, 2 * PROJECTILE_MODEL_RADIUS, 12, 12,
             new Material(ColorAttribute.createDiffuse(Color.WHITE)), ATTRIBUTES);
+        projectileInstance = new ModelInstance(projectileModel);
+    }
+
+    private static ModelBatch createModelBatch() {
+        DefaultShader.Config config = new DefaultShader.Config();
+        config.numBones = MAX_BONES;
+        return new ModelBatch(new DefaultShaderProvider(config));
     }
 
     public void resize(int width, int height) {
@@ -117,10 +123,10 @@ public class WorldRenderer3D {
 
     public void render(WorldSnapshot snapshot, Arena arena, int playerId) {
         BrawlerState player = snapshot.findBrawler(playerId);
-        followPlayer(player, Gdx.graphics.getDeltaTime());
+        float frameTime = Gdx.graphics.getDeltaTime();
+        followPlayer(player, frameTime);
         updateBushes(arena, player);
-        updateBrawlers(snapshot);
-        updateProjectiles(snapshot);
+        updateAvatars(snapshot, frameTime);
 
         HdpiUtils.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         ScreenUtils.clear(0.35f, 0.6f, 0.85f, 1f, true);
@@ -129,9 +135,13 @@ public class WorldRenderer3D {
         for (Bush bush : bushes) {
             modelBatch.render(bush.instance(), environment);
         }
-        modelBatch.render(brawlerInstances.values(), environment);
-        for (int i = 0; i < snapshot.projectiles().size(); i++) {
-            modelBatch.render(projectileInstances.get(i), environment);
+        for (BrawlerAvatar avatar : avatars.values()) {
+            avatar.render(modelBatch, environment);
+        }
+        for (ProjectileState projectile : snapshot.projectiles()) {
+            float scale = projectile.radius() / PROJECTILE_MODEL_RADIUS;
+            projectileInstance.transform.setToTranslation(projectile.x(), PROJECTILE_HEIGHT, -projectile.y()).scale(scale, scale, scale);
+            modelBatch.render(projectileInstance, environment);
         }
         modelBatch.end();
         drawHud(snapshot);
@@ -140,7 +150,7 @@ public class WorldRenderer3D {
     private void drawHud(WorldSnapshot snapshot) {
         List<HudAnchor> anchors = new ArrayList<>();
         for (BrawlerState brawler : snapshot.brawlers()) {
-            float top = BRAWLER_MODEL_HEIGHT * brawler.radius() / MODEL_RADIUS;
+            float top = BRAWLER_MODEL_HEIGHT * brawler.radius() / BRAWLER_MODEL_RADIUS;
             headPoint.set(brawler.x(), top, -brawler.y());
             sidePoint.set(brawler.x() + 1f, top, -brawler.y());
             camera.project(headPoint, 0f, 0f, camera.viewportWidth, camera.viewportHeight);
@@ -233,28 +243,16 @@ public class WorldRenderer3D {
         camera.update();
     }
 
-    private void updateBrawlers(WorldSnapshot snapshot) {
+    /** Syncs the avatars with the snapshot: removes those whose brawler is gone, creates those of new ones, updates each. */
+    private void updateAvatars(WorldSnapshot snapshot, float frameTime) {
+        avatars.keySet().removeIf(id -> snapshot.findBrawler(id) == null);
         for (BrawlerState brawler : snapshot.brawlers()) {
-            ModelInstance instance = brawlerInstances.computeIfAbsent(brawler.id(), id -> new ModelInstance(brawlerModel));
-            Color color = roster.isAlly(brawler.id()) ? ALLY_COLOR : ENEMY_COLOR;
-            instance.materials.get(0).set(ColorAttribute.createDiffuse(color));
-            float scale = brawler.radius() / MODEL_RADIUS;
-            instance.transform.setToTranslation(brawler.x(), BRAWLER_MODEL_HEIGHT * scale / 2, -brawler.y())
-                .scale(scale, scale, scale);
-        }
-        brawlerInstances.keySet().removeIf(id -> snapshot.brawlers().stream().noneMatch(b -> b.id() == id));
-    }
-
-    private void updateProjectiles(WorldSnapshot snapshot) {
-        List<ProjectileState> projectiles = snapshot.projectiles();
-        while (projectileInstances.size() < projectiles.size()) {
-            projectileInstances.add(new ModelInstance(projectileModel));
-        }
-        for (int i = 0; i < projectiles.size(); i++) {
-            ProjectileState projectile = projectiles.get(i);
-            float scale = projectile.radius() / MODEL_RADIUS;
-            projectileInstances.get(i).transform.setToTranslation(projectile.x(), PROJECTILE_HEIGHT, -projectile.y())
-                .scale(scale, scale, scale);
+            BrawlerAvatar avatar = avatars.get(brawler.id());
+            if (avatar == null) {
+                avatar = avatarFactory.create(brawler);
+                avatars.put(brawler.id(), avatar);
+            }
+            avatar.update(brawler, frameTime);
         }
     }
 
@@ -270,7 +268,7 @@ public class WorldRenderer3D {
         modelBatch.dispose();
         arenaModel.dispose();
         bushModel.dispose();
-        brawlerModel.dispose();
+        avatarFactory.dispose();
         projectileModel.dispose();
         shapes.dispose();
         batch.dispose();

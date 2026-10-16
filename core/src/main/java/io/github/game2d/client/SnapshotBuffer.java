@@ -85,7 +85,16 @@ public class SnapshotBuffer {
         }
         float x = lerp(a.x(), b.x(), t);
         float y = lerp(a.y(), b.y(), t);
-        return new BrawlerState(b.id(), x, y, b.radius(), b.health(), b.maxHealth(), b.ammo(), b.maxAmmo(), b.reloadProgress(), b.type(), b.lastProcessedInput());
+        float facing = lerpAngle(a.facing(), b.facing(), t);
+        return new BrawlerState(b.id(), b.type(), x, y, b.radius(), facing,
+            b.health(), b.maxHealth(), b.ammo(), b.maxAmmo(), b.reloadProgress(),
+            b.moving(), b.attacking(), b.shotsFired(), b.lastProcessedInput());
+    }
+
+    /** Interpolates an angle (radians) along the shortest path: from 170° to -170°, it goes through 180°, not through 0°. */
+    private static float lerpAngle(float a, float b, float t) {
+        double difference = Math.IEEEremainder(b - a, 2 * Math.PI);
+        return (float) (a + difference * t);
     }
 
     private static ProjectileState blend(ProjectileState a, ProjectileState b, float t) {

@@ -1,6 +1,8 @@
 package io.github.game2d.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.TestArenas;
@@ -92,7 +94,52 @@ class PredictedPlayerTest {
         assertEquals(START_X + 3 * step, player.getX(), DELTA);
     }
 
+    @Test
+    void facesItsMovementWithoutWaitingForTheServer() {
+        PredictedPlayer player = new PredictedPlayer(arena, DT, new Shelly(1, START_X, START_Y));
+
+        player.apply(move(1, 0, 1));
+
+        assertTrue(player.isMoving());
+        assertEquals((float) (Math.PI / 2), player.getFacing(), DELTA);
+    }
+
+    @Test
+    void stopsMovingWithoutWaitingForTheServer() {
+        PredictedPlayer player = new PredictedPlayer(arena, DT, new Shelly(1, START_X, START_Y));
+        player.apply(move(1, 1, 0));
+
+        player.apply(move(2, 0, 0));
+
+        assertFalse(player.isMoving());
+    }
+
+    @Test
+    void takesTheFacingOfTheServerWhenStandingStill() {
+        PredictedPlayer player = new PredictedPlayer(arena, DT, new Shelly(1, START_X, START_Y));
+        player.apply(move(1, 0, 0));
+
+        player.reconcile(serverState(START_X, START_Y, 1, (float) Math.PI));
+
+        assertEquals((float) Math.PI, player.getFacing(), DELTA);
+    }
+
+    @Test
+    void replaysTheMovementOverTheFacingOfTheServer() {
+        PredictedPlayer player = new PredictedPlayer(arena, DT, new Shelly(1, START_X, START_Y));
+        player.apply(move(1, 0, 0));
+        player.apply(move(2, 1, 0));
+
+        player.reconcile(serverState(START_X, START_Y, 1, (float) Math.PI));
+
+        assertEquals(0f, player.getFacing(), DELTA);
+    }
+
     private static BrawlerState serverState(float x, float y, int lastProcessedInput) {
-        return new BrawlerState(1, x, y, 0.25f, 120, 120, 3, 3, 1f, BrawlerType.SHELLY, lastProcessedInput);
+        return serverState(x, y, lastProcessedInput, 0f);
+    }
+
+    private static BrawlerState serverState(float x, float y, int lastProcessedInput, float facing) {
+        return new BrawlerState(1, BrawlerType.SHELLY, x, y, 0.25f, facing, 120, 120, 3, 3, 1f, false, false, 0, lastProcessedInput);
     }
 }

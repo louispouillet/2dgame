@@ -39,15 +39,19 @@ public class SnapshotBuilder {
                 brawlerStates.add(
                     new BrawlerState(
                         brawler.getId(),
+                        brawler.getType(),
                         brawler.getX(),
                         brawler.getY(),
                         brawler.getRadius(),
+                        brawler.getFacing(),
                         brawler.getHealth(),
                         brawler.getMaxHealth(),
                         brawler.getAmmo(),
                         brawler.getMaxAmmo(),
                         brawler.getReloadProgress(),
-                        brawler.getType(),
+                        brawler.isMoving(),
+                        brawler.isAttacking(),
+                        brawler.getShotsFired(),
                         lastProcessedSequence
                     )
                 );

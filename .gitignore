@@ -166,3 +166,6 @@ Thumbs.db
 .idea
 *.pdf
 .lwjgl
+
+# Sauvegardes automatiques de Blender
+*.blend1

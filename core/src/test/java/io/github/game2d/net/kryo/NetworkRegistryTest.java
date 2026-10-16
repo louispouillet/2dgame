@@ -60,8 +60,8 @@ class NetworkRegistryTest {
         WorldSnapshot snapshot = new WorldSnapshot(
             42,
             new ArrayList<>(List.of(
-                new BrawlerState(1, 1.5f, 2.5f, 0.25f, 120, 120, 3, 3, 0f, BrawlerType.SHELLY, 7),
-                new BrawlerState(2, 4.5f, 2.5f, 0.25f, 80, 100, 1, 3, 0.4f, BrawlerType.COLT, 5))),
+                new BrawlerState(1, BrawlerType.SHELLY, 1.5f, 2.5f, 0.25f, 1.25f, 120, 120, 3, 3, 0f, true, false, 4, 7),
+                new BrawlerState(2, BrawlerType.COLT, 4.5f, 2.5f, 0.25f, -2.5f, 80, 100, 1, 3, 0.4f, false, true, 9, 5))),
             new ArrayList<>(List.of(
                 new ProjectileState(3, 2f, 2.5f, 0.05f))), null);
 

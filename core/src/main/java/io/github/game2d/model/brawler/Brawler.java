@@ -14,6 +14,8 @@ public abstract class Brawler extends GameObject {
 
     private float dirX;
     private float dirY;
+    private float facing = (float) (-Math.PI / 2);
+    private int shotsFired;
     private final float speed;
     private final int maxHealth;
     private int health;
@@ -51,6 +53,23 @@ public abstract class Brawler extends GameObject {
 
     public abstract BrawlerType getType();
 
+    public float getFacing() {
+        return facing;
+    }
+
+    public boolean isMoving() {
+        return dirX != 0 || dirY != 0;
+    }
+
+    public boolean isAttacking() {
+        return weapon.isAttacking();
+    }
+
+    /** Number of shots since the start of the game (a shot can hold several projectiles: a whole Colt burst counts as one). */
+    public int getShotsFired() {
+        return shotsFired;
+    }
+
     @Override
     public boolean isExpired() {
         return !isAlive();
@@ -64,6 +83,7 @@ public abstract class Brawler extends GameObject {
         move(dt, arena);
         weapon.update(dt);
         regenerate(dt);
+        faceMovement();
     }
 
     private void move(float dt, Arena arena) {
@@ -91,6 +111,10 @@ public abstract class Brawler extends GameObject {
         this.y = y;
     }
 
+    public void correctFacingTo(float facing) {
+        this.facing = facing;
+    }
+
     private void regenerate(float dt) {
         timeSinceCombat += dt;
         if (timeSinceCombat < REGEN_DELAY || health >= maxHealth) {
@@ -112,6 +136,14 @@ public abstract class Brawler extends GameObject {
             this.dirX = dirX / length;
             this.dirY = dirY / length;
         }
+        faceMovement();
+    }
+
+    /** Looks where it is going, except during an attack: it then stays turned towards its target. */
+    private void faceMovement() {
+        if (isMoving() && !weapon.isAttacking()) {
+            facing = (float) Math.atan2(dirY, dirX);
+        }
     }
 
     public void takeDamage(int damage) {
@@ -129,11 +161,13 @@ public abstract class Brawler extends GameObject {
         List<Projectile> projectiles = weapon.fire(getId(), ids, x, y, aimX, aimY);
         if (!projectiles.isEmpty()) {
             timeSinceCombat = 0;
+            facing = (float) Math.atan2(aimY, aimX);
+            shotsFired++;
         }
         return projectiles;
     }
 
-    /** Les balles de l'attaque en cours qui partent maintenant, depuis la position actuelle. */
+    /** The bullets of the current attack that leave now, from the current position. */
     public List<Projectile> releaseShots(IntSupplier ids) {
         if (!isAlive()) {
             return List.of();
