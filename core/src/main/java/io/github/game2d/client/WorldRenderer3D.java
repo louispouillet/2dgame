@@ -143,7 +143,7 @@ public class WorldRenderer3D {
         }
         for (ProjectileState projectile : snapshot.projectiles()) {
             if (bulletSprites.hasSprite(projectile.ownerType())) {
-                bulletSprites.render(modelBatch, projectile, roster.isAlly(projectile.ownerId()));
+                bulletSprites.render(modelBatch, environment, projectile, roster.isAlly(projectile.ownerId()));
             } else {
                 float radius = projectile.radius();
                 projectileInstance.transform.setToTranslation(projectile.x(), PROJECTILE_HEIGHT, -projectile.y()).scale(radius, radius, radius);

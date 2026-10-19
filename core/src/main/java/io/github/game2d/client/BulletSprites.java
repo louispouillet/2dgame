@@ -4,12 +4,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
+import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
@@ -28,7 +28,6 @@ import java.util.Map;
  * The texture of a bullet is {@code textures/<type>_bullet_blue.png} for me and my allies and
  * {@code textures/<type>_bullet_red.png} for my enemies: a brawler without both files has no sprite
  * ({@link #hasSprite}) and the caller draws a sphere instead.
- * Sprites are not lit, so they keep the colors of their image.
  */
 public class BulletSprites {
     private static final float HEIGHT = 0.5f;
@@ -59,7 +58,7 @@ public class BulletSprites {
     }
 
     /** Draws the sprite of a projectile whose type {@link #hasSprite has one}. */
-    public void render(ModelBatch modelBatch, ProjectileState projectile, boolean ally) {
+    public void render(ModelBatch modelBatch, Environment environment, ProjectileState projectile, boolean ally) {
         String path = fileName(projectile.ownerType(), ally);
         Sprite sprite = sprites.get(path);
         if (sprite == null) {
@@ -76,7 +75,7 @@ public class BulletSprites {
             .rotate(Vector3.X, TILT)
             .rotate(Vector3.Y, heading)
             .scale(length, 1f, thickness);
-        modelBatch.render(sprite.instance());
+        modelBatch.render(sprite.instance(), environment);
     }
 
     public void dispose() {
@@ -93,8 +92,8 @@ public class BulletSprites {
     }
 
     private static Sprite load(String path) {
-        Texture texture = new Texture(Gdx.files.internal(path), true);
-        texture.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
+        Texture texture = new Texture(Gdx.files.internal(path));
+        texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         float aspect = texture.getWidth() / (float) texture.getHeight();
         Model model = createQuad(texture, aspect);
         return new Sprite(texture, model, new ModelInstance(model), aspect);
@@ -104,8 +103,7 @@ public class BulletSprites {
     private static Model createQuad(Texture texture, float aspect) {
         Material material = new Material(
             TextureAttribute.createDiffuse(texture),
-            new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA),
-            new DepthTestAttribute(GL20.GL_LEQUAL, false)
+            new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         );
         float back = -HEAD_POSITION;
         float front = 1f - HEAD_POSITION;
