@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ArenaLoader {
-    public static final String DEFAULT_MAP = "maps/arena2.txt";
+    public static final String DEFAULT_MAP = "maps/Etoile-Filante.txt";
     private static final String ASSET_LIST = "assets.txt";
     private static final String MAP_FOLDER = "maps/";
     private static final String MAP_EXTENSION = ".txt";

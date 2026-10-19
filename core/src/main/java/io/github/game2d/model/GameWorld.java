@@ -79,6 +79,9 @@ public class GameWorld {
         if (!arena.hidesBrawlerAt(target.getX(), target.getY())) {
             return true;
         }
+        if (target.isExposed()) {
+            return true;
+        }
         if (viewer == null) {
             return false;
         }

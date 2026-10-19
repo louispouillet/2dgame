@@ -104,27 +104,23 @@ class ArenaLoaderTest {
     }
 
     @Test
-    void shippedArenaIsValid() {
-        Arena arena = ArenaLoader.loadResource("maps/arena1.txt");
+    void everyShippedMapIsValidAndHasTheStandardSize() {
+        for (String map : ArenaLoader.availableMaps()) {
+            Arena arena = ArenaLoader.loadResource(map);
 
-        assertEquals(16, arena.getWidth());
-        assertEquals(9, arena.getHeight());
-    }
-
-    @Test
-    void shippedLargeArenaIsValid() {
-        Arena arena = ArenaLoader.loadResource("maps/arena2.txt");
-
-        assertEquals(30, arena.getWidth());
-        assertEquals(20, arena.getHeight());
+            assertEquals(23, arena.getWidth(), map);
+            assertEquals(35, arena.getHeight(), map);
+        }
     }
 
     @Test
     void availableMapsListsTheMapsFolder() {
         List<String> maps = ArenaLoader.availableMaps();
 
-        assertTrue(maps.contains("maps/arena1.txt"));
-        assertTrue(maps.contains("maps/arena2.txt"));
+        assertTrue(maps.contains("maps/Chambre-Chorale.txt"));
+        assertTrue(maps.contains("maps/Ravin-du-Bras-d-Or.txt"));
+        assertTrue(maps.contains("maps/Phenix-Flamboyant.txt"));
+        assertTrue(maps.contains("maps/Pinces-de-Crabe.txt"));
         assertTrue(maps.contains(ArenaLoader.DEFAULT_MAP));
         assertTrue(maps.stream().allMatch(map -> map.startsWith("maps/") && map.endsWith(".txt")));
     }
@@ -148,8 +144,8 @@ class ArenaLoaderTest {
     void loadResourceReadsTheDefaultMap() {
         Arena arena = ArenaLoader.loadResource(ArenaLoader.DEFAULT_MAP);
 
-        assertEquals(30, arena.getWidth());
-        assertEquals(20, arena.getHeight());
+        assertEquals(23, arena.getWidth());
+        assertEquals(35, arena.getHeight());
     }
 
     @Test

@@ -64,6 +64,33 @@ class SnapshotBuilderTest {
 
     @Test
     void projectilesOfAHiddenEnemyStayVisible() {
+        // long enough for the bullets to still be flying once the shooter is hidden again
+        Arena longArena = ArenaLoader.parse("""
+            #####################
+            #1................2.#
+            #...................#
+            #.~~~...............#
+            #...................#
+            #####################
+            """);
+        GameWorld world = new GameWorld(longArena);
+        Colt viewer = new Colt(world.nextId(), 1.5f, 1.5f);
+        Colt hidden = new Colt(world.nextId(), 3.5f, 2.5f);
+        world.addPlayer(viewer, Team.BLUE);
+        world.addPlayer(hidden, Team.RED);
+
+        world.attack(hidden, 1, 0);
+        for (int i = 0; i < 20; i++) {
+            world.update(0.05f);
+        }
+        WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, viewer.getId(), null);
+
+        assertFalse(sees(snapshot, hidden));
+        assertFalse(snapshot.projectiles().isEmpty());
+    }
+
+    @Test
+    void anEnemyInABushShowsUpInTheSnapshotWhenItShoots() {
         GameWorld world = new GameWorld(BUSH_ARENA);
         Colt viewer = new Colt(world.nextId(), 1.5f, 1.5f);
         Colt hidden = new Colt(world.nextId(), 4.5f, 2.5f);
@@ -73,8 +100,7 @@ class SnapshotBuilderTest {
         world.attack(hidden, 1, 0);
         WorldSnapshot snapshot = new SnapshotBuilder(world).build(0, id -> 0, viewer.getId(), null);
 
-        assertFalse(sees(snapshot, hidden));
-        assertFalse(snapshot.projectiles().isEmpty());
+        assertTrue(sees(snapshot, hidden));
     }
 
     @Test

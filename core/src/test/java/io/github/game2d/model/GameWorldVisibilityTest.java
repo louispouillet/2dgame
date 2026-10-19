@@ -69,6 +69,65 @@ class GameWorldVisibilityTest {
     }
 
     @Test
+    void enemyInBushIsRevealedWhenItShoots() {
+        Colt viewer = new Colt(1, 1.5f, 1.5f);
+        Colt enemy = new Colt(2, 4.5f, 2.5f);
+        world.addPlayer(viewer, Team.BLUE);
+        world.addPlayer(enemy, Team.RED);
+
+        world.attack(enemy, -1, 0);
+
+        assertTrue(world.isVisibleTo(enemy, viewer));
+    }
+
+    @Test
+    void enemyInBushStaysRevealedThroughoutItsBurst() {
+        Colt viewer = new Colt(1, 1.5f, 1.5f);
+        Colt enemy = new Colt(2, 4.5f, 2.5f);
+        world.addPlayer(viewer, Team.BLUE);
+        world.addPlayer(enemy, Team.RED);
+
+        world.attack(enemy, -1, 0);
+        // the burst lasts 0.5 s: this is well after the first bullet and before the last one
+        for (int i = 0; i < 9; i++) {
+            world.update(0.05f);
+        }
+        assertTrue(world.isVisibleTo(enemy, viewer));
+
+        for (int i = 0; i < 20; i++) {
+            world.update(0.05f);
+        }
+        assertFalse(world.isVisibleTo(enemy, viewer));
+    }
+
+    @Test
+    void enemyInBushIsRevealedWhenHit() {
+        Colt viewer = new Colt(1, 1.5f, 1.5f);
+        Colt enemy = new Colt(2, 4.5f, 2.5f);
+        world.addPlayer(viewer, Team.BLUE);
+        world.addPlayer(enemy, Team.RED);
+
+        enemy.takeDamage(10);
+
+        assertTrue(world.isVisibleTo(enemy, viewer));
+    }
+
+    @Test
+    void enemyInBushIsHiddenAgainAfterTheReveal() {
+        Colt viewer = new Colt(1, 1.5f, 1.5f);
+        Colt enemy = new Colt(2, 4.5f, 2.5f);
+        world.addPlayer(viewer, Team.BLUE);
+        world.addPlayer(enemy, Team.RED);
+        enemy.takeDamage(10);
+
+        for (int i = 0; i < 20; i++) {
+            world.update(0.05f);
+        }
+
+        assertFalse(world.isVisibleTo(enemy, viewer));
+    }
+
+    @Test
     void registeredEnemyInBushIsStillHiddenWhenFar() {
         Colt viewer = new Colt(1, 1.5f, 1.5f);
         Colt enemy = new Colt(2, 4.5f, 2.5f);

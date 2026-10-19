@@ -57,6 +57,7 @@ Principes illustrés :
 
 ## 6. Buissons
 - Un brawler dont le centre est sur un buisson (`~`) est caché aux adversaires à plus de 2 cases (`Arena.REVEAL_DISTANCE`). On se voit toujours soi-même, ses alliés restent visibles ; les projectiles restent visibles.
+- Un brawler qui tire ou vient d'être touché est visible de tous, même caché (`Brawler.isExposed`) : pendant toute l'attaque (rafale comprise), puis 0,3 s après la dernière balle ou le dernier dégât (`timeSinceCombat`). Ces 0,3 s laissent au moins un ou deux snapshots (30 Hz) pour que le client le voie.
 - `Arena.hidesBrawlerAt(x, y)` : la case sous le point cache-t-elle ? `GameWorld.isVisibleTo(target, viewer)` : la règle. `SnapshotBuilder` filtre selon cette règle.
 - Filtrage côté serveur : un client ne reçoit jamais la position d'un ennemi caché (anti-triche).
 - Côté client, les cases buisson dans ce même rayon autour du joueur sont dessinées transparentes (40 %) (`Arena.canSeeIntoBush`). Chaque buisson est une `ModelInstance` séparée (`ArenaModelFactory.createBush`) pour avoir sa propre opacité.
@@ -98,12 +99,11 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 ## 10. Lancement (Makefile)
 - `make solo` : partie locale ; `make server` : serveur multijoueur (TCP 54555 / UDP 54777) ; `make client [HOST=ip]` : client ; `make duo` : serveur + 2 fenêtres sur la même machine. Chaque client démarre sur l'écran du pseudo.
 - `make test`, `make build`, `make clean`.
-- Maps lues dans le classpath par `ArenaLoader.loadResource` (fonctionne aussi depuis le jar seul). Le serveur propose `ArenaLoader.availableMaps()` (par défaut `DEFAULT_MAP`, `maps/arena2.txt`) et charge celle choisie dans le lobby ; le client charge la map de `LobbyState` au lancement (le solo utilise `DEFAULT_MAP`).
+- Maps lues dans le classpath par `ArenaLoader.loadResource` (fonctionne aussi depuis le jar seul). Le serveur propose `ArenaLoader.availableMaps()` (par défaut `DEFAULT_MAP`, `maps/Etoile-Filante.txt`) et charge celle choisie dans le lobby ; le client charge la map de `LobbyState` au lancement (le solo utilise `DEFAULT_MAP`).
 
 ## Reste à faire
 - Lobby : retour au lobby en fin de partie ; gérer la perte de connexion au serveur ; connexion sans bloquer l'écran (jusqu'à 5 s aujourd'hui)
 - Mode « Hors-jeu » : caméra qui suit un allié après sa mort, « GO! » à la fin du décompte, sons
-- Buissons : se révéler en tirant ou en étant touché
 - Caméra 3D : élargir la bande de décor pour que le joueur ne soit pas collé au coin au départ
 - `StartupHelper` ne transmet pas les arguments sur macOS (le Makefile passe `-XstartOnFirstThread`)
 - Soutenance : Javadoc, couverture JaCoCo, diagrammes UML, mise à jour du GDD (`docs/GDD.md`)

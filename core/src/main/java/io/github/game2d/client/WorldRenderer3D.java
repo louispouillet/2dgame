@@ -138,8 +138,8 @@ public class WorldRenderer3D {
         for (Bush bush : bushes) {
             modelBatch.render(bush.instance(), environment);
         }
-        for (BrawlerAvatar avatar : avatars.values()) {
-            avatar.render(modelBatch, environment);
+        for (BrawlerState brawler : snapshot.brawlers()) {
+            avatars.get(brawler.id()).render(modelBatch, environment);
         }
         for (ProjectileState projectile : snapshot.projectiles()) {
             if (bulletSprites.hasSprite(projectile.ownerType())) {
@@ -251,9 +251,12 @@ public class WorldRenderer3D {
         camera.update();
     }
 
-    /** Syncs the avatars with the snapshot: removes those whose brawler is gone, creates those of new ones, updates each. */
+    /**
+     * Creates the avatars of new brawlers and updates those in the snapshot. An avatar is kept while its brawler is
+     * hidden in a bush: when it shows up again (because it shoots), the avatar still knows how many shots it had seen,
+     * so the shooting animation plays instead of being missed by a fresh avatar.
+     */
     private void updateAvatars(WorldSnapshot snapshot, float frameTime) {
-        avatars.keySet().removeIf(id -> snapshot.findBrawler(id) == null);
         for (BrawlerState brawler : snapshot.brawlers()) {
             BrawlerAvatar avatar = avatars.get(brawler.id());
             if (avatar == null) {

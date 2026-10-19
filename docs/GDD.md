@@ -89,7 +89,7 @@ An arena is a grid of tiles described in a text file in `assets/maps/`. Adding a
 | `1`–`3` | Blue spawn point | No | No | Starting position of the n-th blue player (left side) |
 | `4`–`6` | Red spawn point | No | No | Starting position of the n-th red player (right side) |
 
-Example arena (`arena1`, 16 × 9 tiles), mirrored for fairness:
+Example arena (16 × 9 tiles), mirrored for fairness. The shipped maps (`Etoile-Filante`, `Chambre-Chorale`, `Ravin-du-Bras-d-Or`, `Phenix-Flamboyant`, `Pinces-de-Crabe`) are 21 × 33 tiles plus the border:
 
 ```
 ################

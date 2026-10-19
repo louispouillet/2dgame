@@ -10,6 +10,7 @@ import java.util.function.IntSupplier;
 public abstract class Brawler extends GameObject {
     private static final float REGEN_DELAY = 3f;
     private static final float REGEN_RATE = 0.2f;
+    private static final float EXPOSED_DURATION = 0.3f;
     private static final int MOVE_ATTEMPTS = 5;
 
     private float dirX;
@@ -19,7 +20,7 @@ public abstract class Brawler extends GameObject {
     private final float speed;
     private final int maxHealth;
     private int health;
-    private float timeSinceCombat;
+    private float timeSinceCombat = Float.POSITIVE_INFINITY;
     private float regenBuffer;
     private final Weapon weapon;
 
@@ -55,6 +56,14 @@ public abstract class Brawler extends GameObject {
 
     public float getFacing() {
         return facing;
+    }
+
+    /**
+     * Whether it is shooting or was just hit: it then shows itself even from a bush.
+     * It stays exposed during the whole attack, then for a very short time after the last bullet or the last hit.
+     */
+    public boolean isExposed() {
+        return weapon.isAttacking() || timeSinceCombat < EXPOSED_DURATION;
     }
 
     public boolean isMoving() {
@@ -172,7 +181,11 @@ public abstract class Brawler extends GameObject {
         if (!isAlive()) {
             return List.of();
         }
-        return weapon.releaseShots(getId(), ids, x, y);
+        List<Projectile> released = weapon.releaseShots(getId(), ids, x, y);
+        if (!released.isEmpty()) {
+            timeSinceCombat = 0;
+        }
+        return released;
     }
 
     public float getReloadProgress() {
