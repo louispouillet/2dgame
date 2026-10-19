@@ -13,6 +13,8 @@ public class Main extends Game {
     private final String host;
     private Skin skin;
     private GameSession session;
+    // Lives as long as the session: the server keeps the highest input number of a connection
+    private InputSequence inputSequence = new InputSequence();
 
     public Main() {
         this(null);
@@ -50,13 +52,13 @@ public class Main extends Game {
         solo.join(name);
         if (solo.playerId() != -1) {
             solo.start();
-            showScreen(new GameScreen(this, skin, solo, arena));
+            showScreen(new GameScreen(this, skin, solo, arena, inputSequence));
         }
         return solo;
     }
 
     public void play(String map) {
-        showScreen(new GameScreen(this, skin, session, ArenaLoader.loadResource(map)));
+        showScreen(new GameScreen(this, skin, session, ArenaLoader.loadResource(map), inputSequence));
     }
 
     private void closeSession() {
@@ -64,6 +66,7 @@ public class Main extends Game {
             session.close();
             session = null;
         }
+        inputSequence = new InputSequence();
     }
 
     @Override

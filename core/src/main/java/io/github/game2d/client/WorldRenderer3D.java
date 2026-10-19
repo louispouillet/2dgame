@@ -37,8 +37,6 @@ public class WorldRenderer3D {
 
     private static final float BRAWLER_MODEL_RADIUS = AvatarFactory.MODEL_RADIUS;
     private static final float BRAWLER_MODEL_HEIGHT = AvatarFactory.MODEL_HEIGHT;
-    // Radius of the projectile sphere: a projectile of this radius is drawn at scale 1
-    private static final float PROJECTILE_MODEL_RADIUS = 0.5f;
     private static final float PROJECTILE_HEIGHT = 0.5f;
     private static final long ATTRIBUTES = Usage.Position | Usage.Normal;
     private static final Plane GROUND = new Plane(Vector3.Y, 0f);
@@ -58,10 +56,11 @@ public class WorldRenderer3D {
     private final Model bushModel;
     private final List<Bush> bushes = new ArrayList<>();
     private final AvatarFactory avatarFactory = new AvatarFactory();
+    private final PlayerRoster roster;
+    // Unit sphere (radius 1), scaled to the radius of each projectile so it is exactly as big as its hitbox
     private final Model projectileModel;
     private final ModelInstance projectileInstance;
-    private final BulletModels bulletModels = new BulletModels();
-    private final PlayerRoster roster;
+    private final BulletSprites bulletSprites = new BulletSprites();
     private final Map<Integer, BrawlerAvatar> avatars = new HashMap<>();
     private final Vector3 cameraTarget = new Vector3();
     private final Vector3 playerPosition = new Vector3();
@@ -107,7 +106,7 @@ public class WorldRenderer3D {
             }
         }
 
-        projectileModel = new ModelBuilder().createSphere(2 * PROJECTILE_MODEL_RADIUS, 2 * PROJECTILE_MODEL_RADIUS, 2 * PROJECTILE_MODEL_RADIUS, 12, 12,
+        projectileModel = new ModelBuilder().createSphere(2f, 2f, 2f, 12, 12,
             new Material(ColorAttribute.createDiffuse(Color.WHITE)), ATTRIBUTES);
         projectileInstance = new ModelInstance(projectileModel);
     }
@@ -130,6 +129,7 @@ public class WorldRenderer3D {
         followPlayer(player, frameTime);
         updateBushes(arena, player);
         updateAvatars(snapshot, frameTime);
+        bulletSprites.update(frameTime);
 
         HdpiUtils.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         ScreenUtils.clear(0.35f, 0.6f, 0.85f, 1f, true);
@@ -142,27 +142,16 @@ public class WorldRenderer3D {
             avatar.render(modelBatch, environment);
         }
         for (ProjectileState projectile : snapshot.projectiles()) {
-            switch (BulletLook.of(projectile, roster, bulletModels.texturedTypes())) {
-                case BulletLook.Textured look -> renderBullet(projectile, look);
-                case BulletLook.Sphere sphere -> renderSphere(projectile);
+            if (bulletSprites.hasSprite(projectile.ownerType())) {
+                bulletSprites.render(modelBatch, projectile, roster.isAlly(projectile.ownerId()));
+            } else {
+                float radius = projectile.radius();
+                projectileInstance.transform.setToTranslation(projectile.x(), PROJECTILE_HEIGHT, -projectile.y()).scale(radius, radius, radius);
+                modelBatch.render(projectileInstance, environment);
             }
         }
         modelBatch.end();
         drawHud(snapshot);
-    }
-
-    /** Turned towards where the projectile goes (game y is -z in 3D); not lit, so it keeps the colors of its image. */
-    private void renderBullet(ProjectileState projectile, BulletLook.Textured look) {
-        float angle = MathUtils.atan2(projectile.dirY(), projectile.dirX()) * MathUtils.radiansToDegrees;
-        ModelInstance bullet = bulletModels.instance(look);
-        bullet.transform.setToTranslation(projectile.x(), PROJECTILE_HEIGHT, -projectile.y()).rotate(Vector3.Y, angle);
-        modelBatch.render(bullet);
-    }
-
-    private void renderSphere(ProjectileState projectile) {
-        float scale = projectile.radius() / PROJECTILE_MODEL_RADIUS;
-        projectileInstance.transform.setToTranslation(projectile.x(), PROJECTILE_HEIGHT, -projectile.y()).scale(scale, scale, scale);
-        modelBatch.render(projectileInstance, environment);
     }
 
     private void drawHud(WorldSnapshot snapshot) {
@@ -289,7 +278,7 @@ public class WorldRenderer3D {
         bushModel.dispose();
         avatarFactory.dispose();
         projectileModel.dispose();
-        bulletModels.dispose();
+        bulletSprites.dispose();
         shapes.dispose();
         batch.dispose();
         hud.dispose();

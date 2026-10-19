@@ -26,6 +26,11 @@ class InputReader {
     .. keyboard + mouse → PlayerInput,\nor an idle input outside PLAYING ..
 }
 
+class InputSequence {
+    .. numbers the inputs of a session,\nkept by Main across games ..
+    + next()
+}
+
 package "Match HUD: score, countdown, result" #FDECEA {
     class MatchHud {
         .. draws over the 3D view ..
@@ -51,19 +56,13 @@ package "3D rendering: how to draw it" #F6EEFB {
         .. id → nickname and team ..
         + isAlly(id) / myTeam()
     }
+    class BulletSprites {
+        .. tilted, pulsing bullet images ..
+        + hasSprite(type)
+        + render(batch, projectile, ally)
+    }
     class ArenaModelFactory <<utility>> {
         .. builds the 3D map ..
-    }
-    interface BulletLook <<sealed>> {
-        .. textured bullet (blue or red)\nor sphere (plain Java, tested) ..
-        + {static} of(projectile, roster, texturedTypes)
-    }
-    class BulletModels {
-        .. finds the bullet images,\nbuilds their models ..
-        + texturedTypes()
-    }
-    class BulletStyles <<utility>> {
-        .. bullet size of each type ..
     }
 }
 
@@ -79,14 +78,12 @@ ClientGame *-down- SnapshotBuffer : owns
 ClientGame *-down- ClientClock : owns
 
 InputReader -right-> WorldRenderer3D : where does\nthe mouse aim?
+InputReader -down-> InputSequence : next number
 
 WorldRenderer3D *-down- BrawlerHud : owns
 WorldRenderer3D .down.> ArenaModelFactory : uses
+WorldRenderer3D *-down- BulletSprites : owns\n(sphere if no image)
 BrawlerHud -down-> PlayerRoster : reads nicknames
-WorldRenderer3D *-down- BulletModels : owns
-WorldRenderer3D .down.> BulletLook : asks how to\ndraw each shot
-BulletLook .down.> PlayerRoster : ally or enemy?
-BulletModels .down.> BulletStyles : reads sizes
 GameScreen *-down- MatchHud : owns
 MatchHud ..> MatchView : asks what to show
 

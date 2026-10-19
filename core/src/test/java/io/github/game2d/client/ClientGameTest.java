@@ -81,7 +81,7 @@ class ClientGameTest {
 
     /** Replaces the keyboard (Gdx.input does not exist outside a libGDX window). */
     private static InputReader moveRight() {
-        return new InputReader(null) {
+        return new InputReader(null, new InputSequence()) {
             @Override
             public PlayerInput read(float playerX, float playerY) {
                 return new PlayerInput(1, 1, 0, 0, 0, false);

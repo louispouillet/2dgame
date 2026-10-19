@@ -161,8 +161,8 @@ class KryoNetSpikeTest {
             new BrawlerState(1, BrawlerType.SHELLY, 1.5f, 2.5f, 0.25f, 1.25f, 120, 120, 3, 3, 0f, true, false, 4, 7),
             new BrawlerState(2, BrawlerType.COLT, 4.5f, 2.5f, 0.25f, -2.5f, 80, 100, 1, 3, 0.4f, false, true, 9, 5)));
         List<ProjectileState> projectiles = new ArrayList<>(List.of(
-            new ProjectileState(3, 2f, 2.5f, 0.05f, 0, 1f, 0f, null),
-            new ProjectileState(4, 2.1f, 2.6f, 0.05f, 0, 1f, 0f, null)));
+            new ProjectileState(3, 1, BrawlerType.COLT, 2f, 2.5f, 1f, 0f, 0.05f),
+            new ProjectileState(4, 1, BrawlerType.COLT, 2.1f, 2.6f, 1f, 0f, 0.05f)));
         return new WorldSnapshot(42, brawlers, projectiles, null);
     }
 }

@@ -118,7 +118,7 @@ When loading, the game checks that the border is closed by walls, that only know
 
 - Above each brawler: nickname, health bar with the exact HP, and the ammo bar (one segment per charge, filling up while reloading).
 - Bushes close to your brawler are drawn see-through, so you can see who hides in them.
-- Bullets are drawn with their brawler's image: blue for yours and your allies', red for enemies' (Colt for now; other brawlers' shots are white spheres).
+- Bullets are drawn with their brawler's image, tilted towards the camera and pulsing: blue for yours and your allies', red for enemies' (Colt and Shelly; a brawler without images shoots white spheres the size of the bullet's hitbox).
 - Top of the screen: round score and remaining players in each team.
 
 ## Technical overview

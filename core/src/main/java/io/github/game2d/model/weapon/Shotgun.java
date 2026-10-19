@@ -9,10 +9,10 @@ public class Shotgun extends Weapon {
     private static final float MAX_RANGE = 4f;
     private static final int NUM_PROJECTILES = 5;
     private static final float SPREAD_ANGLE = 7;
-    private static final float PROJECTILE_RADIUS = 0.1f;
+    private static final float PROJECTILE_RADIUS = 0.25f;
     private static final float PROJECTILE_SPEED = 10f;
     private static final int DAMAGE = 15;
-    private static final float MUZZLE_DISTANCE = 0.3f;
+    private static final float MUZZLE_DISTANCE = 0.5f;
 
     public Shotgun() {
         super(MAX_AMMO, COOLDOWN, RELOAD_TIME, new SpreadPattern(NUM_PROJECTILES, SPREAD_ANGLE), MUZZLE_DISTANCE);

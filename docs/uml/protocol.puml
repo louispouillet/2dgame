@@ -39,7 +39,7 @@ package "Server → client: the match (UDP, 30 per second)" #FFF6E8 {
     class ProjectileState <<record>> {
         id, x, y, radius
         ownerId, dirX, dirY
-        shooter
+        ownerType
     }
     class MatchState <<record>> {
         phase, round
@@ -82,7 +82,7 @@ MatchState --> MatchPhase
 LobbyState *-- "*" LobbyPlayerState : contains
 JoinRejected --> RefusalReason : says why
 BrawlerState --> BrawlerType
-ProjectileState --> BrawlerType : shooter
+ProjectileState --> BrawlerType : ownerType
 LobbyPlayerState --> Team
 LobbyPlayerState --> BrawlerType
 

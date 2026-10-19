@@ -17,14 +17,14 @@ public class GameScreen extends ScreenAdapter {
     private final PlayerRoster roster;
     private final MatchHud matchHud;
 
-    public GameScreen(Main main, Skin skin, GameSession session, Arena arena) {
+    public GameScreen(Main main, Skin skin, GameSession session, Arena arena, InputSequence inputSequence) {
         this.main = main;
         this.skin = skin;
         this.session = session;
         this.arena = arena;
         roster = PlayerRoster.from(session.channel().latestLobby(), session.playerId());
         renderer = new WorldRenderer3D(arena, roster);
-        inputReader = new InputReader(renderer);
+        inputReader = new InputReader(renderer, inputSequence);
         game = new ClientGame(arena, session);
         matchHud = new MatchHud(skin);
     }

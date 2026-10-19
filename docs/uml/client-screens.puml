@@ -6,6 +6,7 @@ class Main {
     .. the application: shows one screen at a time,\nowns the connection ..
     + showScreen(next)
     + connect(address) / startSolo(name)
+    + play(map)
 }
 
 package "Screens, in order" #EEF4FF {

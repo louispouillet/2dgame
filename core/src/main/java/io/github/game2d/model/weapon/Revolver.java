@@ -14,8 +14,8 @@ public class Revolver extends Weapon {
     private static final int DAMAGE = 10;
     private static final int BULLETS_PER_BURST = 6;
     private static final float BULLET_INTERVAL = 0.1f;
-    private static final float GUN_OFFSET = 0.12f;
-    private static final float MUZZLE_DISTANCE = 0.5f;
+    private static final float GUN_OFFSET = 0.25f;
+    private static final float MUZZLE_DISTANCE = 1f;
 
     public Revolver() {
         super(MAX_AMMO, COOLDOWN, RELOAD_TIME, new BurstPattern(BULLETS_PER_BURST, BULLET_INTERVAL, GUN_OFFSET),

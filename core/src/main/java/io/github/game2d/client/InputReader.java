@@ -8,19 +8,18 @@ import io.github.game2d.protocol.PlayerInput;
 public class InputReader {
     private final WorldRenderer3D view;
     private final Vector2 mouse = new Vector2();
-    private int sequence;
+    private final InputSequence sequence;
 
-    public InputReader(WorldRenderer3D view) {
+    public InputReader(WorldRenderer3D view, InputSequence sequence) {
         this.view = view;
+        this.sequence = sequence;
     }
 
     public PlayerInput idle() {
-        sequence++;
-        return new PlayerInput(sequence, 0, 0, 0, 0, false);
+        return new PlayerInput(sequence.next(), 0, 0, 0, 0, false);
     }
 
     public PlayerInput read(float playerX, float playerY) {
-        sequence++;
         float moveX = 0;
         float moveY = 0;
         if (Gdx.input.isKeyPressed(Input.Keys.D)) moveX += 1;
@@ -32,6 +31,6 @@ public class InputReader {
         mouse.sub(playerX, playerY).nor();
 
         boolean shooting = Gdx.input.isButtonPressed(Input.Buttons.LEFT);
-        return new PlayerInput(sequence, moveX, moveY, mouse.x, mouse.y, shooting);
+        return new PlayerInput(sequence.next(), moveX, moveY, mouse.x, mouse.y, shooting);
     }
 }

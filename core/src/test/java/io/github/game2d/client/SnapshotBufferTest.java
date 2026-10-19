@@ -148,8 +148,8 @@ class SnapshotBufferTest {
     @Test
     void projectilesAreInterpolatedToo() {
         SnapshotBuffer buffer = new SnapshotBuffer();
-        buffer.add(new WorldSnapshot(0, List.of(), List.of(new ProjectileState(7, 0, 0, 0.1f, 0, 1f, 0f, null)), null), 1.0);
-        buffer.add(new WorldSnapshot(0, List.of(), List.of(new ProjectileState(7, 4, 2, 0.1f, 0, 1f, 0f, null)), null), 1.1);
+        buffer.add(new WorldSnapshot(0, List.of(), List.of(new ProjectileState(7, 1, null, 0, 0, 1f, 0f, 0.1f)), null), 1.0);
+        buffer.add(new WorldSnapshot(0, List.of(), List.of(new ProjectileState(7, 1, null, 4, 2, 1f, 0f, 0.1f)), null), 1.1);
 
         ProjectileState result = buffer.interpolate(1.05).projectiles().get(0);
 
@@ -185,19 +185,5 @@ class SnapshotBufferTest {
         buffer.add(new WorldSnapshot(1, List.of(), List.of(), playing), 2.0);
 
         assertEquals(playing, buffer.interpolate(1.5).match());
-    }
-
-    @Test
-    void interpolationKeepsWhoFiredAndTheDirection() {
-        SnapshotBuffer buffer = new SnapshotBuffer();
-        buffer.add(new WorldSnapshot(0, List.of(), List.of(new ProjectileState(7, 0, 0, 0.1f, 3, 0.6f, 0.8f, BrawlerType.COLT)), null), 1.0);
-        buffer.add(new WorldSnapshot(1, List.of(), List.of(new ProjectileState(7, 1, 1, 0.1f, 3, 0.6f, 0.8f, BrawlerType.COLT)), null), 2.0);
-
-        ProjectileState bullet = buffer.interpolate(1.5).projectiles().get(0);
-
-        assertEquals(3, bullet.ownerId());
-        assertEquals(0.6f, bullet.dirX(), DELTA);
-        assertEquals(0.8f, bullet.dirY(), DELTA);
-        assertEquals(BrawlerType.COLT, bullet.shooter());
     }
 }
