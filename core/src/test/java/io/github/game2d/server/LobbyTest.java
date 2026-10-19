@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.game2d.model.Team;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.protocol.RefusalReason;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -132,6 +133,61 @@ class LobbyTest {
     }
 
     @Test
+    void newPlayerGetsTheDefaultBrawler() {
+        assertEquals(Lobby.DEFAULT_BRAWLER, lobby.join(1, "Louis").brawler());
+    }
+
+    @Test
+    void playerCanChooseABrawler() {
+        lobby.join(1, "Louis");
+
+        lobby.chooseBrawler(1, BrawlerType.SHELLY);
+
+        assertEquals(BrawlerType.SHELLY, lobby.players().get(0).brawler());
+    }
+
+    @Test
+    void changingTeamKeepsTheBrawler() {
+        lobby.join(1, "Louis");
+        lobby.chooseBrawler(1, BrawlerType.SHELLY);
+
+        lobby.chooseTeam(1, Team.RED);
+
+        assertEquals(BrawlerType.SHELLY, lobby.players().get(0).brawler());
+    }
+
+    @Test
+    void changingBrawlerKeepsTheTeamAndTheName() {
+        lobby.join(1, "Louis");
+        lobby.chooseTeam(1, Team.RED);
+
+        lobby.chooseBrawler(1, BrawlerType.SHELLY);
+
+        LobbyPlayer louis = lobby.players().get(0);
+        assertEquals(Team.RED, louis.team());
+        assertEquals("Louis", louis.name());
+    }
+
+    @Test
+    void teammatesCanPlayTheSameBrawler() {
+        lobby.join(1, "Louis");
+        lobby.join(2, "Lilian");
+        lobby.chooseTeam(2, Team.BLUE);
+
+        lobby.chooseBrawler(1, BrawlerType.SHELLY);
+        lobby.chooseBrawler(2, BrawlerType.SHELLY);
+
+        assertTrue(lobby.players().stream().allMatch(player -> player.brawler() == BrawlerType.SHELLY));
+    }
+
+    @Test
+    void rejectsAMissingBrawler() {
+        lobby.join(1, "Louis");
+
+        assertRefused(RefusalReason.UNKNOWN_BRAWLER, () -> lobby.chooseBrawler(1, null));
+    }
+
+    @Test
     void rejectsJoiningAFullTeam() {
         for (int id = 1; id <= 4; id++) {
             lobby.join(id, "Player" + id);
@@ -154,7 +210,7 @@ class LobbyTest {
         lobby.join(1, "Louis");
 
         assertThrows(UnsupportedOperationException.class,
-            () -> lobby.players().add(new LobbyPlayer(2, "Intrus", Team.RED)));
+            () -> lobby.players().add(new LobbyPlayer(2, "Intrus", Team.RED, BrawlerType.COLT)));
     }
 
     @Test

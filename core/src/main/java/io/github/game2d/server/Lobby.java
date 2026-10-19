@@ -1,6 +1,7 @@
 package io.github.game2d.server;
 
 import io.github.game2d.model.Team;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.protocol.RefusalReason;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +11,7 @@ public final class Lobby {
     public static final int MAX_TEAM_SIZE = 3;
     public static final int MAX_NAME_LENGTH = 16;
     public static final int NO_LEADER = -1;
+    public static final BrawlerType DEFAULT_BRAWLER = BrawlerType.COLT;
 
     private static final int MAX_PLAYERS = 2 * MAX_TEAM_SIZE;
     private static final Pattern VALID_NAME = Pattern.compile("[\\p{L}\\p{N}_-]{1," + MAX_NAME_LENGTH + "}");
@@ -37,7 +39,7 @@ public final class Lobby {
         if (players.stream().anyMatch(player -> player.name().equalsIgnoreCase(cleanName))) {
             throw new LobbyException(RefusalReason.NAME_TAKEN);
         }
-        LobbyPlayer player = new LobbyPlayer(id, cleanName, smallestTeam());
+        LobbyPlayer player = new LobbyPlayer(id, cleanName, smallestTeam(), DEFAULT_BRAWLER);
         players.add(player);
         return player;
     }
@@ -55,7 +57,16 @@ public final class Lobby {
         if (teamSize(team) >= MAX_TEAM_SIZE) {
             throw new LobbyException(RefusalReason.TEAM_FULL);
         }
-        players.set(index, new LobbyPlayer(id, player.name(), team));
+        players.set(index, player.withTeam(team));
+    }
+
+    /** Several players, even in the same team, may play the same brawler. */
+    public void chooseBrawler(int id, BrawlerType brawler) {
+        if (brawler == null) {
+            throw new LobbyException(RefusalReason.UNKNOWN_BRAWLER);
+        }
+        int index = indexOf(id);
+        players.set(index, players.get(index).withBrawler(brawler));
     }
 
     public void chooseMap(int requesterId, String map) {

@@ -1,6 +1,7 @@
 package io.github.game2d.client;
 
 import io.github.game2d.model.Team;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.net.ServerChannel;
 import io.github.game2d.net.kryo.NetworkClient;
 import io.github.game2d.net.kryo.NetworkRegistry;
@@ -32,6 +33,11 @@ public class RemoteSession implements GameSession {
     @Override
     public void chooseTeam(Team team) {
         client.channel().sendChooseTeam(team);
+    }
+
+    @Override
+    public void chooseBrawler(BrawlerType brawler) {
+        client.channel().sendChooseBrawler(brawler);
     }
 
     @Override

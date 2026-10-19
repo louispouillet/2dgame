@@ -7,6 +7,7 @@ public enum RefusalReason {
     TEAM_FULL,
     NOT_LEADER,
     UNKNOWN_MAP,
+    UNKNOWN_BRAWLER,
     TEAMS_NOT_READY,
     GAME_IN_PROGRESS
 }

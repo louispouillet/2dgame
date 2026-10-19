@@ -13,7 +13,7 @@ package "Screens, in order" #EEF4FF {
         .. 1. nickname + server address ..
     }
     class LobbyScreen {
-        .. 2. teams, map, start ..
+        .. 2. teams, brawler, map, start ..
     }
     class GameScreen {
         .. 3. the match (see diagram 2/2) ..
@@ -28,6 +28,7 @@ package "Connection: solo or network" #EEFBEF {
     interface GameSession {
         .. "a match I take part in" ..
         + join(name) / chooseTeam(team)
+        + chooseBrawler(brawler)
         + chooseMap(map) / start()
     }
     class LocalSession {
@@ -45,7 +46,7 @@ GameScreen -[#1E64C8,bold,dashed]up-> LobbyScreen : <color:#1E64C8>match finishe
 LobbyScreen -down-> LobbyView : asks what to show
 
 Main *-right- "0..1" GameSession : owns
-LobbyScreen -down-> GameSession : join, team, map, start
+LobbyScreen -down-> GameSession : join, team, brawler,\nmap, start
 GameSession <|.down. LocalSession : implements
 GameSession <|.down. RemoteSession : implements
 

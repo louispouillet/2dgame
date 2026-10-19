@@ -3,6 +3,7 @@ package io.github.game2d.client;
 import io.github.game2d.model.Team;
 import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.ArenaLoader;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.net.LocalChannel;
 import io.github.game2d.net.ServerChannel;
 import io.github.game2d.protocol.RefusalReason;
@@ -50,6 +51,11 @@ public class LocalSession implements GameSession {
     @Override
     public void chooseTeam(Team team) {
         ignoreRefusal(() -> server.chooseTeam(playerId, team));
+    }
+
+    @Override
+    public void chooseBrawler(BrawlerType brawler) {
+        ignoreRefusal(() -> server.chooseBrawler(playerId, brawler));
     }
 
     @Override

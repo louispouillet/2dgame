@@ -2,9 +2,11 @@ package io.github.game2d.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.game2d.model.Team;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.protocol.LobbyPlayerState;
 import io.github.game2d.protocol.LobbyState;
 import java.util.List;
@@ -18,11 +20,11 @@ class LobbyViewTest {
     }
 
     private static LobbyPlayerState blue(int id, String name) {
-        return new LobbyPlayerState(id, name, Team.BLUE);
+        return new LobbyPlayerState(id, name, Team.BLUE, BrawlerType.COLT);
     }
 
     private static LobbyPlayerState red(int id, String name) {
-        return new LobbyPlayerState(id, name, Team.RED);
+        return new LobbyPlayerState(id, name, Team.RED, BrawlerType.COLT);
     }
 
     @Test
@@ -35,8 +37,8 @@ class LobbyViewTest {
     void labelsMarkTheLeaderAndThePlayerThemself() {
         LobbyView view = new LobbyView(lobby(1, true, blue(1, "Louis"), red(2, "Lilian"), blue(3, "Tom")), 3);
 
-        assertEquals(List.of("Louis (leader)", "Tom (you)"), view.playerLabels(Team.BLUE));
-        assertEquals(List.of("Lilian"), view.playerLabels(Team.RED));
+        assertEquals(List.of("Louis (leader) · Colt", "Tom (you) · Colt"), view.playerLabels(Team.BLUE));
+        assertEquals(List.of("Lilian · Colt"), view.playerLabels(Team.RED));
         assertEquals(2, view.count(Team.BLUE));
     }
 
@@ -44,7 +46,36 @@ class LobbyViewTest {
     void leaderSeesBothMarksOnTheirName() {
         LobbyView view = new LobbyView(lobby(1, true, blue(1, "Louis")), 1);
 
-        assertEquals(List.of("Louis (leader, you)"), view.playerLabels(Team.BLUE));
+        assertEquals(List.of("Louis (leader, you) · Colt"), view.playerLabels(Team.BLUE));
+    }
+
+    @Test
+    void brawlerLabelIsTheCapitalizedName() {
+        assertEquals("Colt", LobbyView.brawlerLabel(BrawlerType.COLT));
+        assertEquals("Shelly", LobbyView.brawlerLabel(BrawlerType.SHELLY));
+    }
+
+    @Test
+    void labelsShowTheBrawlerOfEachPlayer() {
+        LobbyPlayerState lilian = new LobbyPlayerState(2, "Lilian", Team.RED, BrawlerType.SHELLY);
+        LobbyView view = new LobbyView(lobby(1, true, blue(1, "Louis"), lilian), 1);
+
+        assertEquals(List.of("Louis (leader, you) · Colt"), view.playerLabels(Team.BLUE));
+        assertEquals(List.of("Lilian · Shelly"), view.playerLabels(Team.RED));
+    }
+
+    @Test
+    void myBrawlerIsTheOneIChose() {
+        LobbyPlayerState lilian = new LobbyPlayerState(2, "Lilian", Team.RED, BrawlerType.SHELLY);
+        LobbyState state = lobby(1, true, blue(1, "Louis"), lilian);
+
+        assertEquals(BrawlerType.COLT, new LobbyView(state, 1).myBrawler());
+        assertEquals(BrawlerType.SHELLY, new LobbyView(state, 2).myBrawler());
+    }
+
+    @Test
+    void unknownPlayerHasNoBrawler() {
+        assertNull(new LobbyView(lobby(1, true, blue(1, "Louis")), 9).myBrawler());
     }
 
     @Test

@@ -1,15 +1,18 @@
 package io.github.game2d.client;
 
 import io.github.game2d.model.Team;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.protocol.LobbyPlayerState;
 import io.github.game2d.protocol.LobbyState;
 import io.github.game2d.server.Lobby;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public final class LobbyView {
     private static final String LEADER_MARK = "leader";
     private static final String MY_MARK = "you";
+    private static final String BRAWLER_SEPARATOR = " · ";
 
     private final LobbyState state;
     private final int myId;
@@ -23,6 +26,12 @@ public final class LobbyView {
         String name = map.substring(map.lastIndexOf('/') + 1);
         int extension = name.lastIndexOf('.');
         return extension < 0 ? name : name.substring(0, extension);
+    }
+
+    /** COLT → "Colt": a new brawler type gets its label without extra code. */
+    public static String brawlerLabel(BrawlerType type) {
+        String name = type.name().toLowerCase(Locale.ROOT);
+        return Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }
 
     public List<String> playerLabels(Team team) {
@@ -40,6 +49,12 @@ public final class LobbyView {
     public boolean canJoin(Team team) {
         LobbyPlayerState me = me();
         return me != null && me.team() != team && count(team) < Lobby.MAX_TEAM_SIZE;
+    }
+
+    /** The brawler I chose, or null if I am not in the lobby. */
+    public BrawlerType myBrawler() {
+        LobbyPlayerState me = me();
+        return me == null ? null : me.brawler();
     }
 
     public boolean canChooseMap() {
@@ -65,7 +80,8 @@ public final class LobbyView {
         if (player.id() == myId) {
             marks.add(MY_MARK);
         }
-        return marks.isEmpty() ? player.name() : player.name() + " (" + String.join(", ", marks) + ")";
+        String name = marks.isEmpty() ? player.name() : player.name() + " (" + String.join(", ", marks) + ")";
+        return name + BRAWLER_SEPARATOR + brawlerLabel(player.brawler());
     }
 
     private List<LobbyPlayerState> playersOf(Team team) {

@@ -14,6 +14,7 @@ public final class RefusalMessages {
             case TEAM_FULL -> "This team is full";
             case NOT_LEADER -> "Only the leader can do that";
             case UNKNOWN_MAP -> "Unknown map";
+            case UNKNOWN_BRAWLER -> "Unknown brawler";
             case TEAMS_NOT_READY -> "Each team needs at least one player";
             case GAME_IN_PROGRESS -> "A game is in progress";
         };

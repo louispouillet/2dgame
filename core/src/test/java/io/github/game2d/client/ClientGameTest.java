@@ -50,6 +50,10 @@ class ClientGameTest {
         }
 
         @Override
+        public void chooseBrawler(BrawlerType brawler) {
+        }
+
+        @Override
         public void chooseMap(String map) {
         }
 

@@ -5,6 +5,7 @@ import io.github.game2d.model.Team;
 import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.model.match.MatchPhase;
 import io.github.game2d.protocol.BrawlerState;
+import io.github.game2d.protocol.ChooseBrawler;
 import io.github.game2d.protocol.ChooseMap;
 import io.github.game2d.protocol.ChooseTeam;
 import io.github.game2d.protocol.JoinAccepted;
@@ -43,5 +44,6 @@ public class NetworkRegistry {
         kryo.register(LobbyState.class);
         kryo.register(MatchPhase.class);
         kryo.register(MatchState.class);
+        kryo.register(ChooseBrawler.class);
     }
 }

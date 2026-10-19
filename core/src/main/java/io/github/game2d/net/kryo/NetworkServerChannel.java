@@ -2,7 +2,9 @@ package io.github.game2d.net.kryo;
 
 import com.esotericsoftware.kryonet.Client;
 import io.github.game2d.model.Team;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.net.ServerChannel;
+import io.github.game2d.protocol.ChooseBrawler;
 import io.github.game2d.protocol.ChooseMap;
 import io.github.game2d.protocol.ChooseTeam;
 import io.github.game2d.protocol.JoinRequest;
@@ -54,6 +56,10 @@ public class NetworkServerChannel implements ServerChannel {
 
     public void sendChooseTeam(Team team) {
         client.sendTCP(new ChooseTeam(team));
+    }
+
+    public void sendChooseBrawler(BrawlerType brawler) {
+        client.sendTCP(new ChooseBrawler(brawler));
     }
 
     public void sendChooseMap(String map) {

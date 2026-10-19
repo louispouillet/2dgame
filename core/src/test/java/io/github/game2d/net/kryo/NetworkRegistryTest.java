@@ -10,6 +10,7 @@ import io.github.game2d.model.Team;
 import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.model.match.MatchPhase;
 import io.github.game2d.protocol.BrawlerState;
+import io.github.game2d.protocol.ChooseBrawler;
 import io.github.game2d.protocol.ChooseMap;
 import io.github.game2d.protocol.ChooseTeam;
 import io.github.game2d.protocol.JoinAccepted;
@@ -79,6 +80,7 @@ class NetworkRegistryTest {
     void lobbyRequestsSurviveTheNetwork() {
         assertEquals(new JoinRequest("Louis"), roundTrip(new JoinRequest("Louis")));
         assertEquals(new ChooseTeam(Team.RED), roundTrip(new ChooseTeam(Team.RED)));
+        assertEquals(new ChooseBrawler(BrawlerType.SHELLY), roundTrip(new ChooseBrawler(BrawlerType.SHELLY)));
         assertEquals(new ChooseMap("maps/arena1.txt"), roundTrip(new ChooseMap("maps/arena1.txt")));
         assertEquals(new StartRequest(), roundTrip(new StartRequest()));
     }
@@ -94,8 +96,8 @@ class NetworkRegistryTest {
     void lobbyStateSurvivesTheNetwork() {
         LobbyState lobby = new LobbyState(
             new ArrayList<>(List.of(
-                new LobbyPlayerState(1, "Louis", Team.BLUE),
-                new LobbyPlayerState(2, "Élodie", Team.RED))),
+                new LobbyPlayerState(1, "Louis", Team.BLUE, BrawlerType.COLT),
+                new LobbyPlayerState(2, "Élodie", Team.RED, BrawlerType.SHELLY))),
             1,
             "maps/arena2.txt",
             new ArrayList<>(List.of("maps/arena1.txt", "maps/arena2.txt")),

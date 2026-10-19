@@ -12,8 +12,10 @@ import com.esotericsoftware.kryonet.Listener;
 import io.github.game2d.model.Team;
 import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.ArenaLoader;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.net.LocalChannel;
 import io.github.game2d.protocol.BrawlerState;
+import io.github.game2d.protocol.ChooseBrawler;
 import io.github.game2d.protocol.ChooseTeam;
 import io.github.game2d.protocol.JoinAccepted;
 import io.github.game2d.protocol.JoinRejected;
@@ -196,6 +198,18 @@ class NetworkServerTest {
         awaitTrue("lobby where Louis is red", () -> {
             LobbyState lobby = client.lobby.get();
             return lobby != null && lobby.players().get(0).team() == Team.RED;
+        });
+    }
+
+    @Test
+    void brawlerChoiceSentByTheClientIsApplied() throws Exception {
+        TestClient client = joinedClient("Louis");
+
+        client.client.sendTCP(new ChooseBrawler(BrawlerType.SHELLY));
+
+        awaitTrue("lobby where Louis plays Shelly", () -> {
+            LobbyState lobby = client.lobby.get();
+            return lobby != null && lobby.players().get(0).brawler() == BrawlerType.SHELLY;
         });
     }
 

@@ -12,6 +12,7 @@ import io.github.game2d.model.Team;
 import io.github.game2d.model.arena.Arena;
 import io.github.game2d.model.arena.ArenaLoader;
 import io.github.game2d.model.arena.SpawnPoint;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.model.match.KnockoutMatch;
 import io.github.game2d.model.match.MatchPhase;
 import io.github.game2d.net.LocalChannel;
@@ -98,7 +99,7 @@ class GameServerTest {
         return channel.latestSnapshot().match();
     }
 
-    // The first player (Shelly, on the left) shoots to the right until the round ends
+    // The first player (on the left) shoots to the right until the round ends
     private void shootUntilTheRoundEnds(LocalChannel shooter) {
         shooter.sendInput(new PlayerInput(1, 0, 0, 1, 0, true));
         for (int i = 0; i < ticksFor(30f) && matchOf(shooter).phase() == MatchPhase.PLAYING; i++) {
@@ -163,6 +164,20 @@ class GameServerTest {
     }
 
     @Test
+    void brawlerChoiceIsSentToEveryone() {
+        LocalChannel first = new LocalChannel();
+        LocalChannel second = new LocalChannel();
+        int id = server.join(first, "Louis");
+        server.join(second, "Lilian");
+
+        server.chooseBrawler(id, BrawlerType.SHELLY);
+
+        assertEquals(BrawlerType.SHELLY, first.latestLobby().players().get(0).brawler());
+        assertEquals(BrawlerType.SHELLY, second.latestLobby().players().get(0).brawler());
+        assertEquals(Lobby.DEFAULT_BRAWLER, second.latestLobby().players().get(1).brawler());
+    }
+
+    @Test
     void onlyTheLeaderCanStart() {
         int leader = server.join(new LocalChannel(), "Louis");
         int other = server.join(new LocalChannel(), "Lilian");
@@ -198,6 +213,7 @@ class GameServerTest {
 
         assertRefused(RefusalReason.GAME_IN_PROGRESS, () -> server.join(new LocalChannel(), "Tom"));
         assertRefused(RefusalReason.GAME_IN_PROGRESS, () -> server.chooseTeam(leader, Team.RED));
+        assertRefused(RefusalReason.GAME_IN_PROGRESS, () -> server.chooseBrawler(leader, BrawlerType.SHELLY));
         assertRefused(RefusalReason.GAME_IN_PROGRESS, () -> server.chooseMap(leader, "test"));
         assertRefused(RefusalReason.GAME_IN_PROGRESS, () -> server.requestStart(leader));
     }
@@ -524,6 +540,40 @@ class GameServerTest {
 
         assertFalse(shooter.latestLobby().started());
         server.join(new LocalChannel(), "Newcomer");
+    }
+
+    @Test
+    void eachPlayerPlaysTheBrawlerTheyChose() {
+        LocalChannel channel = new LocalChannel();
+        int louis = server.join(channel, "Louis");
+        int lilian = server.join(new LocalChannel(), "Lilian");
+
+        server.chooseBrawler(lilian, BrawlerType.SHELLY);
+        start(louis);
+        server.tick();
+
+        assertEquals(Lobby.DEFAULT_BRAWLER, brawlerOf(channel, louis).type());
+        assertEquals(BrawlerType.SHELLY, brawlerOf(channel, lilian).type());
+    }
+
+    @Test
+    void brawlerChoiceIsKeptForTheNextMatch() {
+        LocalChannel shooter = new LocalChannel();
+        int leader = join(shooter);
+        int opponent = server.join(new LocalChannel(), "Opponent");
+        server.chooseBrawler(opponent, BrawlerType.SHELLY);
+        start(leader);
+        skipCountdown();
+        shootUntilTheRoundEnds(shooter);
+        tick(server, ticksFor(KnockoutMatch.ROUND_OVER_TIME));
+        skipCountdown();
+        shootUntilTheRoundEnds(shooter);
+        tick(server, ticksFor(KnockoutMatch.MATCH_OVER_TIME));
+
+        start(leader);
+        server.tick();
+
+        assertEquals(BrawlerType.SHELLY, brawlerOf(shooter, opponent).type());
     }
 
     @Test

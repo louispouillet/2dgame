@@ -15,6 +15,9 @@ package "Client → server" #EEF4FF {
     class ChooseTeam <<record>> {
         team
     }
+    class ChooseBrawler <<record>> {
+        brawler
+    }
     class ChooseMap <<record>> {
         map
     }
@@ -54,6 +57,7 @@ package "Server → client: the lobby (TCP)" #EEFBEF {
     }
     class LobbyPlayerState <<record>> {
         id, name, team
+        brawler
     }
     class JoinAccepted <<record>> {
         brawlerId
@@ -80,7 +84,7 @@ JoinRejected --> RefusalReason : says why
 BrawlerState --> BrawlerType
 ProjectileState --> BrawlerType : shooter
 LobbyPlayerState --> Team
-ChooseTeam --> Team
+LobbyPlayerState --> BrawlerType
 
 $legend("<b>Records</b>: immutable messages, serialized by Kryo (NetworkRegistry).", "One snapshot per player per tick: hidden enemies are left out.")
 @enduml

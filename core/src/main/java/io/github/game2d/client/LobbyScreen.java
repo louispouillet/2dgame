@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.game2d.model.Team;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.protocol.LobbyState;
 import io.github.game2d.server.Lobby;
 import java.util.List;
@@ -33,12 +34,14 @@ public class LobbyScreen extends ScreenAdapter {
     private final Table redPlayers = new Table();
     private final TextButton joinBlue;
     private final TextButton joinRed;
+    private final SelectBox<String> brawlerBox;
     private final SelectBox<String> mapBox;
     private final TextButton startButton;
     private final Label status;
     private LobbyState shown;
     private List<String> maps = List.of();
-    private boolean updatingMapBox;
+    // Set while the screen itself changes a selection, so that this change is not sent back to the server
+    private boolean updatingBoxes;
 
     public LobbyScreen(Main main, Skin skin, GameSession session) {
         this.main = main;
@@ -48,6 +51,9 @@ public class LobbyScreen extends ScreenAdapter {
         redTitle = new Label("", skin);
         joinBlue = new TextButton("Join Blue", skin, UiSkin.BLUE);
         joinRed = new TextButton("Join Red", skin, UiSkin.RED);
+        brawlerBox = new SelectBox<>(skin);
+        // Filled before its listener is added: setItems selects the first item, which fires a change event
+        brawlerBox.setItems(brawlerLabels());
         mapBox = new SelectBox<>(skin);
         startButton = new TextButton("Start", skin);
         status = new Label("", skin);
@@ -55,6 +61,7 @@ public class LobbyScreen extends ScreenAdapter {
         joinBlue.addListener(onClick(() -> session.chooseTeam(Team.BLUE)));
         joinRed.addListener(onClick(() -> session.chooseTeam(Team.RED)));
         startButton.addListener(onClick(session::start));
+        brawlerBox.addListener(onClick(this::chooseBrawler));
         mapBox.addListener(onClick(this::chooseMap));
 
         Table root = new Table();
@@ -65,11 +72,9 @@ public class LobbyScreen extends ScreenAdapter {
         root.add(panel(redTitle, redPlayers)).size(PANEL_WIDTH, PANEL_HEIGHT).row();
         root.add(joinBlue).fillX();
         root.add(joinRed).fillX().row();
-        Table map = new Table();
-        map.add(new Label("Map", skin)).padRight(SPACING);
-        map.add(mapBox).width(PANEL_WIDTH / 2);
-        root.add(map).left();
-        root.add(startButton).right().minWidth(PANEL_WIDTH / 2).row();
+        root.add(choice("Brawler", brawlerBox)).left();
+        root.add(choice("Map", mapBox)).right().row();
+        root.add(startButton).colspan(2).right().minWidth(PANEL_WIDTH / 2).row();
         root.add(status).colspan(2).padTop(SPACING);
         stage.addActor(root);
     }
@@ -83,6 +88,21 @@ public class LobbyScreen extends ScreenAdapter {
         return panel;
     }
 
+    private static Array<String> brawlerLabels() {
+        Array<String> labels = new Array<>();
+        for (BrawlerType type : BrawlerType.values()) {
+            labels.add(LobbyView.brawlerLabel(type));
+        }
+        return labels;
+    }
+
+    private Table choice(String title, SelectBox<String> box) {
+        Table choice = new Table();
+        choice.add(new Label(title, skin)).padRight(SPACING);
+        choice.add(box).width(PANEL_WIDTH / 2);
+        return choice;
+    }
+
     private static ChangeListener onClick(Runnable action) {
         return new ChangeListener() {
             @Override
@@ -92,9 +112,16 @@ public class LobbyScreen extends ScreenAdapter {
         };
     }
 
+    private void chooseBrawler() {
+        int index = brawlerBox.getSelectedIndex();
+        if (!updatingBoxes && index >= 0) {
+            session.chooseBrawler(BrawlerType.values()[index]);
+        }
+    }
+
     private void chooseMap() {
         int index = mapBox.getSelectedIndex();
-        if (!updatingMapBox && index >= 0 && index < maps.size()) {
+        if (!updatingBoxes && index >= 0 && index < maps.size()) {
             session.chooseMap(maps.get(index));
         }
     }
@@ -109,7 +136,10 @@ public class LobbyScreen extends ScreenAdapter {
         joinRed.setDisabled(!view.canJoin(Team.RED));
         startButton.setDisabled(!view.canStart());
         status.setText(view.status());
+        updatingBoxes = true;
+        updateBrawlerBox(view.myBrawler());
         updateMapBox(state, view.canChooseMap());
+        updatingBoxes = false;
     }
 
     private void fill(Table players, List<String> labels) {
@@ -119,8 +149,13 @@ public class LobbyScreen extends ScreenAdapter {
         }
     }
 
+    private void updateBrawlerBox(BrawlerType myBrawler) {
+        if (myBrawler != null) {
+            brawlerBox.setSelectedIndex(myBrawler.ordinal());
+        }
+    }
+
     private void updateMapBox(LobbyState state, boolean enabled) {
-        updatingMapBox = true;
         if (!state.maps().equals(maps)) {
             maps = List.copyOf(state.maps());
             Array<String> labels = new Array<>();
@@ -129,7 +164,6 @@ public class LobbyScreen extends ScreenAdapter {
         }
         mapBox.setSelectedIndex(maps.indexOf(state.map()));
         mapBox.setDisabled(!enabled);
-        updatingMapBox = false;
     }
 
     @Override

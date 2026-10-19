@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import io.github.game2d.model.Team;
 import io.github.game2d.model.arena.ArenaLoader;
 import io.github.game2d.model.arena.TestArenas;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.protocol.LobbyPlayerState;
 import io.github.game2d.protocol.LobbyState;
 import io.github.game2d.protocol.RefusalReason;
@@ -64,6 +65,15 @@ class LocalSessionTest {
         session.chooseTeam(Team.RED);
 
         assertEquals(Team.RED, player("Louis").team());
+    }
+
+    @Test
+    void playerCanChooseABrawlerBeforeStarting() {
+        session.join("Louis");
+
+        session.chooseBrawler(BrawlerType.SHELLY);
+
+        assertEquals(BrawlerType.SHELLY, player("Louis").brawler());
     }
 
     @Test

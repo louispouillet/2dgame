@@ -10,7 +10,7 @@ package "1. Authority: the source of truth" #FDECEA {
     class GameServer {
         .. LOBBY phase, then PLAYING phase.\nOwns the GameWorld (cleared each round).\nEvery tick: apply inputs, move the world,\nupdate the match, send one snapshot per player ..
         + join(channel, name)
-        + chooseTeam / chooseMap
+        + chooseTeam / chooseBrawler / chooseMap
         + requestStart(playerId)
         + tick()
     }
@@ -23,12 +23,14 @@ class KnockoutMatch <<external>>
 
 package "2. Lobby: the waiting room" #EEF4FF {
     class Lobby <<final>> {
-        .. nicknames, teams, leader, map ..
+        .. nicknames, teams, brawlers, leader, map ..
         + join(id, name)
+        + chooseBrawler(id, brawler)
         + canStart()
     }
     class LobbyPlayer <<record>> {
-        .. id, name, team ..
+        .. id, name, team, brawler ..
+        + withTeam / withBrawler
     }
     class LobbyException {
         .. a refusal with its reason ..

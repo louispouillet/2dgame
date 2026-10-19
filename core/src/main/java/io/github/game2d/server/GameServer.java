@@ -17,7 +17,6 @@ import io.github.game2d.protocol.WorldSnapshot;
 import io.github.game2d.time.TickClock;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +24,6 @@ import java.util.function.Function;
 
 public class GameServer {
     private enum Phase { LOBBY, PLAYING }
-
-    private static final BrawlerType BRAWLER = BrawlerType.COLT;
 
     private volatile boolean running;
     private Thread thread;
@@ -41,7 +38,6 @@ public class GameServer {
     private InputApplier inputApplier;
     private SnapshotBuilder snapshotBuilder;
     private KnockoutMatch match;
-    private final Map<Integer, BrawlerType> brawlerTypes = new HashMap<>();
 
     public GameServer(List<String> maps, String defaultMap, Function<String, Arena> mapLoader) {
         this.lobby = new Lobby(maps, defaultMap);
@@ -61,6 +57,12 @@ public class GameServer {
     public synchronized void chooseTeam(int playerId, Team team) {
         requireLobby();
         lobby.chooseTeam(playerId, team);
+        broadcastLobby();
+    }
+
+    public synchronized void chooseBrawler(int playerId, BrawlerType brawler) {
+        requireLobby();
+        lobby.chooseBrawler(playerId, brawler);
         broadcastLobby();
     }
 
@@ -115,10 +117,6 @@ public class GameServer {
         inputApplier = new InputApplier(world);
         snapshotBuilder = new SnapshotBuilder(world);
         match = new KnockoutMatch();
-        List<LobbyPlayer> players = lobby.players();
-        for (LobbyPlayer player : players) {
-            brawlerTypes.put(player.id(), BRAWLER);
-        }
         placePlayers();
         phase = Phase.PLAYING;
     }
@@ -129,8 +127,8 @@ public class GameServer {
         for (LobbyPlayer player : lobby.players()) {
             int place = placedPerTeam.merge(player.team(), 1, Integer::sum) - 1;
             SpawnPoint spawn = arena.getSpawnPoints(player.team()).get(place);
-            BrawlerType type = brawlerTypes.get(player.id());
-            world.addPlayer(type.create(player.id(), spawn.x(), spawn.y()), player.team());
+            // The lobby cannot change during a match: everyone keeps the brawler chosen before the start
+            world.addPlayer(player.brawler().create(player.id(), spawn.x(), spawn.y()), player.team());
         }
     }
 
@@ -148,7 +146,6 @@ public class GameServer {
         inputApplier = null;
         snapshotBuilder = null;
         match = null;
-        brawlerTypes.clear();
         phase = Phase.LOBBY;
     }
 
@@ -160,7 +157,7 @@ public class GameServer {
     private void broadcastLobby() {
         List<LobbyPlayerState> players = new ArrayList<>();
         for (LobbyPlayer player : lobby.players()) {
-            players.add(new LobbyPlayerState(player.id(), player.name(), player.team()));
+            players.add(new LobbyPlayerState(player.id(), player.name(), player.team(), player.brawler()));
         }
         LobbyState state = new LobbyState(players, lobby.leaderId(), lobby.map(), new ArrayList<>(lobby.maps()),
             lobby.canStart(), phase == Phase.PLAYING);

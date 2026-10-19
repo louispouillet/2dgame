@@ -66,6 +66,8 @@ public class NetworkServer extends NetworkEndpoint<Server> {
             client.channel.receive(input);
         } else if (message instanceof ChooseTeam choice) {
             ignoreRefusal(() -> gameServer.chooseTeam(client.playerId, choice.team()));
+        } else if (message instanceof ChooseBrawler choice) {
+            ignoreRefusal(() -> gameServer.chooseBrawler(client.playerId, choice.brawler()));
         } else if (message instanceof ChooseMap choice) {
             ignoreRefusal(() -> gameServer.chooseMap(client.playerId, choice.map()));
         } else if (message instanceof StartRequest) {

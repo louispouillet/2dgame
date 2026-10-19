@@ -16,9 +16,9 @@ import org.junit.jupiter.api.Test;
 class BulletLookTest {
     private static final LobbyState LOBBY = new LobbyState(
         List.of(
-            new LobbyPlayerState(1, "Louis", Team.BLUE),
-            new LobbyPlayerState(2, "Lilian", Team.RED),
-            new LobbyPlayerState(3, "Tom", Team.BLUE)),
+            new LobbyPlayerState(1, "Louis", Team.BLUE, BrawlerType.COLT),
+            new LobbyPlayerState(2, "Lilian", Team.RED, BrawlerType.COLT),
+            new LobbyPlayerState(3, "Tom", Team.BLUE, BrawlerType.COLT)),
         1, "maps/arena2.txt", List.of("maps/arena2.txt"), true, true);
     private static final PlayerRoster ROSTER = PlayerRoster.from(LOBBY, 1);
     private static final Set<BrawlerType> ONLY_COLT = EnumSet.of(BrawlerType.COLT);
