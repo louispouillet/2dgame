@@ -34,19 +34,20 @@ class InputSequence {
 package "Match HUD: score, countdown, result" #FDECEA {
     class MatchHud {
         .. draws over the 3D view ..
-        + draw(view)
+        + draw(view, watchingText)
     }
     class MatchView <<final>> {
         .. decides the texts (plain Java, tested) ..
         + myScore() / enemyScore()
         + centerText()
+        + {static} watchingText(followedId, roster)
     }
 }
 
 package "3D rendering: how to draw it" #F6EEFB {
     class WorldRenderer3D {
-        .. draws map, brawlers, shots ..
-        + render(snapshot, ...)
+        .. draws map, brawlers, shots,\nfollows the watched brawler ..
+        + render(snapshot, arena)
         + screenToWorld(x, y)
     }
     class BrawlerHud {

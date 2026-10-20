@@ -30,7 +30,7 @@ A top-down multiplayer arena shooter where two teams fight until one is wiped ou
 2. **Lobby**: players join the team with fewer players by default and can switch (3 players max per team), and pick their brawler. The first player is the leader: only they choose the map and start the match, once each team has between 1 and 3 players. If the leader leaves, the next player becomes leader.
 3. **Spawn**: at the start of each round, the n-th player of a team appears on the n-th spawn point of their team, with full health and ammo.
 4. **Fight**: players move, hide in bushes and shoot the enemy team.
-5. **Elimination**: a brawler reaching 0 HP is removed from the arena until the next round.
+5. **Elimination**: a brawler reaching 0 HP is removed from the arena until the next round. Their camera then follows a living teammate ("Watching …"), and they see what this teammate sees.
 6. **Round end**: when a whole team is eliminated, the other team wins the round. If the last brawlers of both teams die on the same tick, the round is a draw and is replayed.
 7. **Match end**: the first team to win 2 rounds wins the match; the end screen shows the result, then everyone goes back to the lobby.
 

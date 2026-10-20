@@ -30,6 +30,7 @@ package "Server → client: the match (UDP, 30 per second)" #FFF6E8 {
         brawlers
         projectiles
         match
+        followedId
     }
     class BrawlerState <<record>> {
         id, x, y, radius

@@ -327,17 +327,23 @@ class GameServerTest {
     }
 
     @Test
-    void everyClientReceivesTheSameSnapshot() {
+    void everyClientReceivesTheSameWorldFollowingTheirOwnBrawler() {
         LocalChannel first = new LocalChannel();
         LocalChannel second = new LocalChannel();
         int firstId = join(first);
-        join(second);
+        int secondId = join(second);
         start(firstId);
 
         server.tick();
 
-        assertNotNull(first.latestSnapshot());
-        assertEquals(first.latestSnapshot(), second.latestSnapshot());
+        WorldSnapshot mine = first.latestSnapshot();
+        WorldSnapshot theirs = second.latestSnapshot();
+        assertNotNull(mine);
+        assertEquals(mine.tick(), theirs.tick());
+        assertEquals(mine.brawlers(), theirs.brawlers());
+        assertEquals(mine.projectiles(), theirs.projectiles());
+        assertEquals(firstId, mine.followedId());
+        assertEquals(secondId, theirs.followedId());
     }
 
     @Test

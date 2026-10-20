@@ -49,7 +49,7 @@ class LocalChannelTest {
     @Test
     void sentSnapshotIsReadBackByTheClient() {
         LocalChannel channel = new LocalChannel();
-        WorldSnapshot snapshot = new WorldSnapshot(0, List.of(), List.of(), null);
+        WorldSnapshot snapshot = new WorldSnapshot(0, List.of(), List.of(), null, WorldSnapshot.NOBODY);
 
         channel.sendSnapshot(snapshot);
 
@@ -59,9 +59,9 @@ class LocalChannelTest {
     @Test
     void latestSnapshotReplacesThePreviousOne() {
         LocalChannel channel = new LocalChannel();
-        WorldSnapshot second = new WorldSnapshot(2, List.of(), List.of(), null);
+        WorldSnapshot second = new WorldSnapshot(2, List.of(), List.of(), null, WorldSnapshot.NOBODY);
 
-        channel.sendSnapshot(new WorldSnapshot(1, List.of(), List.of(), null));
+        channel.sendSnapshot(new WorldSnapshot(1, List.of(), List.of(), null, WorldSnapshot.NOBODY));
         channel.sendSnapshot(second);
 
         assertSame(second, channel.latestSnapshot());

@@ -12,7 +12,7 @@ class NetworkServerChannelTest {
     private final NetworkServerChannel channel = new NetworkServerChannel(new Client());
 
     private static WorldSnapshot snapshotAt(int tick) {
-        return new WorldSnapshot(tick, List.of(), List.of(), null);
+        return new WorldSnapshot(tick, List.of(), List.of(), null, WorldSnapshot.NOBODY);
     }
 
     @Test

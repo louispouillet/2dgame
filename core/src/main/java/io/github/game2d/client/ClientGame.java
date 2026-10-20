@@ -82,6 +82,6 @@ public class ClientGame {
         for (BrawlerState brawler : view.brawlers()) {
             brawlers.add(brawler.id() == mine.id() ? mine : brawler);
         }
-        return new WorldSnapshot(view.tick(), brawlers, view.projectiles(), view.match());
+        return new WorldSnapshot(view.tick(), brawlers, view.projectiles(), view.match(), view.followedId());
     }
 }

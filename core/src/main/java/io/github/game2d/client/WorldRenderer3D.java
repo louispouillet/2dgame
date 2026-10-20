@@ -123,11 +123,12 @@ public class WorldRenderer3D {
         updateCameraBounds();
     }
 
-    public void render(WorldSnapshot snapshot, Arena arena, int playerId) {
-        BrawlerState player = snapshot.findBrawler(playerId);
+    public void render(WorldSnapshot snapshot, Arena arena) {
+        // My brawler while I live, then the ally the server makes me watch; null when nobody is left
+        BrawlerState followed = snapshot.findBrawler(snapshot.followedId());
         float frameTime = Gdx.graphics.getDeltaTime();
-        followPlayer(player, frameTime);
-        updateBushes(arena, player);
+        followPlayer(followed, frameTime);
+        updateBushes(arena, followed);
         updateAvatars(snapshot, frameTime);
         bulletSprites.update(frameTime);
 

@@ -44,7 +44,7 @@ package "3. Translation: protocol ↔ model" #EEFBEF {
         + acknowledge(playerId, input)
     }
     class SnapshotBuilder {
-        .. world → WorldSnapshot,\nhides enemies in bushes ..
+        .. world → WorldSnapshot,\nhides enemies in bushes,\npicks whose view to show ..
         + build(tick, ..., viewerId)
     }
 }

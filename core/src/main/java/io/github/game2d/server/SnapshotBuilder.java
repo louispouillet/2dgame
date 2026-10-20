@@ -20,7 +20,7 @@ public class SnapshotBuilder {
     }
 
     public WorldSnapshot build(int tick, IntUnaryOperator lastProcessed, int viewerId, MatchState match) {
-        Brawler viewer = world.getPlayer(viewerId);
+        Brawler eyes = eyesOf(viewerId);
         List<BrawlerState> brawlerStates = new ArrayList<>();
         List<ProjectileState> projectileStates = new ArrayList<>();
         for (GameObject object : world.getGameObjects()) {
@@ -39,7 +39,7 @@ public class SnapshotBuilder {
                     )
                 );
             }
-            if (object instanceof Brawler brawler && world.isVisibleTo(brawler, viewer)) {
+            if (object instanceof Brawler brawler && world.isVisibleTo(brawler, eyes)) {
                 int lastProcessedSequence = lastProcessed.applyAsInt(brawler.getId());
                 brawlerStates.add(
                     new BrawlerState(
@@ -62,6 +62,26 @@ public class SnapshotBuilder {
                 );
             }
         }
-        return new WorldSnapshot(tick, brawlerStates, projectileStates, match);
+        int followedId = eyes == null ? WorldSnapshot.NOBODY : eyes.getId();
+        return new WorldSnapshot(tick, brawlerStates, projectileStates, match, followedId);
+    }
+
+    /**
+     * Whose eyes a player sees through: their own while alive, then those of their living ally with the
+     * smallest id, so that the watched ally does not change while it lives. Null when no ally is left.
+     */
+    private Brawler eyesOf(int viewerId) {
+        Brawler viewer = world.getPlayer(viewerId);
+        if (viewer != null && viewer.isAlive()) {
+            return viewer;
+        }
+        Brawler eyes = null;
+        for (GameObject object : world.getGameObjects()) {
+            if (object instanceof Brawler ally && ally.isAlive() && world.areAllies(ally.getId(), viewerId)
+                && (eyes == null || ally.getId() < eyes.getId())) {
+                eyes = ally;
+            }
+        }
+        return eyes;
     }
 }

@@ -105,7 +105,7 @@ class ClientGameTest {
 
     @Test
     void sendsTheInputReadAtEachTick() {
-        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(MY_ID, START_X, START_Y)), List.of(), null));
+        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(MY_ID, START_X, START_Y)), List.of(), null, WorldSnapshot.NOBODY));
 
         playOneTick();
 
@@ -114,7 +114,7 @@ class ClientGameTest {
 
     @Test
     void sendsNoInputWhileItsBrawlerIsNotInTheSnapshot() {
-        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(ENEMY_ID, START_X, START_Y)), List.of(), null));
+        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(ENEMY_ID, START_X, START_Y)), List.of(), null, WorldSnapshot.NOBODY));
 
         playOneTick();
 
@@ -123,7 +123,7 @@ class ClientGameTest {
 
     @Test
     void drawsItsOwnBrawlerAtThePredictedPosition() {
-        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(MY_ID, START_X, START_Y)), List.of(), null));
+        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(MY_ID, START_X, START_Y)), List.of(), null, WorldSnapshot.NOBODY));
 
         WorldSnapshot drawn = playOneTick();
 
@@ -133,7 +133,7 @@ class ClientGameTest {
     @Test
     void drawsOtherBrawlersAsReceived() {
         channel.sendSnapshot(new WorldSnapshot(1,
-            List.of(brawler(MY_ID, START_X, START_Y), brawler(ENEMY_ID, 8f, 6f)), List.of(), null));
+            List.of(brawler(MY_ID, START_X, START_Y), brawler(ENEMY_ID, 8f, 6f)), List.of(), null, WorldSnapshot.NOBODY));
 
         WorldSnapshot drawn = playOneTick();
 
@@ -148,7 +148,7 @@ class ClientGameTest {
     @Test
     void doesNotMoveDuringTheCountdown() {
         channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(MY_ID, START_X, START_Y)), List.of(),
-            matchIn(MatchPhase.COUNTDOWN)));
+            matchIn(MatchPhase.COUNTDOWN), WorldSnapshot.NOBODY));
 
         WorldSnapshot drawn = playOneTick();
 
@@ -160,7 +160,7 @@ class ClientGameTest {
     @Test
     void movesWhileTheRoundIsPlayed() {
         channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(MY_ID, START_X, START_Y)), List.of(),
-            matchIn(MatchPhase.PLAYING)));
+            matchIn(MatchPhase.PLAYING), WorldSnapshot.NOBODY));
 
         WorldSnapshot drawn = playOneTick();
 
@@ -169,7 +169,7 @@ class ClientGameTest {
 
     @Test
     void animatesItsOwnBrawlerFromThePrediction() {
-        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(MY_ID, START_X, START_Y)), List.of(), null));
+        channel.sendSnapshot(new WorldSnapshot(1, List.of(brawler(MY_ID, START_X, START_Y)), List.of(), null, WorldSnapshot.NOBODY));
 
         BrawlerState mine = find(playOneTick(), MY_ID);
 
@@ -180,7 +180,7 @@ class ClientGameTest {
     @Test
     void keepsFacingTheTargetOfTheServerDuringAnAttack() {
         float target = (float) Math.PI;
-        channel.sendSnapshot(new WorldSnapshot(1, List.of(attacking(MY_ID, START_X, START_Y, target)), List.of(), null));
+        channel.sendSnapshot(new WorldSnapshot(1, List.of(attacking(MY_ID, START_X, START_Y, target)), List.of(), null, WorldSnapshot.NOBODY));
 
         BrawlerState mine = find(playOneTick(), MY_ID);
 

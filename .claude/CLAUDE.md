@@ -59,8 +59,9 @@ Principes illustrés :
 - Un brawler dont le centre est sur un buisson (`~`) est caché aux adversaires à plus de 2 cases (`Arena.REVEAL_DISTANCE`). On se voit toujours soi-même, ses alliés restent visibles ; les projectiles restent visibles.
 - Un brawler qui tire ou vient d'être touché est visible de tous, même caché (`Brawler.isExposed`) : pendant toute l'attaque (rafale comprise), puis 0,3 s après la dernière balle ou le dernier dégât (`timeSinceCombat`). Ces 0,3 s laissent au moins un ou deux snapshots (30 Hz) pour que le client le voie.
 - `Arena.hidesBrawlerAt(x, y)` : la case sous le point cache-t-elle ? `GameWorld.isVisibleTo(target, viewer)` : la règle. `SnapshotBuilder` filtre selon cette règle.
+- `Arena.hidesBrawlerAt(x, y)` : la case sous le point cache-t-elle ? `GameWorld.isVisibleTo(target, viewer)` : la règle. `SnapshotBuilder` filtre selon cette règle, avec les yeux du brawler suivi (`followedId`) : une fois mort, je vois ce que voit l'allié que je regarde, et mon corps ne révèle plus rien.
 - Filtrage côté serveur : un client ne reçoit jamais la position d'un ennemi caché (anti-triche).
-- Côté client, les cases buisson dans ce même rayon autour du joueur sont dessinées transparentes (40 %) (`Arena.canSeeIntoBush`). Chaque buisson est une `ModelInstance` séparée (`ArenaModelFactory.createBush`) pour avoir sa propre opacité.
+- Côté client, les cases buisson dans ce même rayon autour du brawler suivi sont dessinées transparentes (40 %) (`Arena.canSeeIntoBush`). Chaque buisson est une `ModelInstance` séparée (`ArenaModelFactory.createBush`) pour avoir sa propre opacité.
 
 ## 7. Maps et équipes
 - Fichiers texte dans `assets/maps/` : `#` mur, `.` sol, `~` buisson, `W` eau, chiffres `1` à `6` = points d'apparition (sur du sol). La première ligne du fichier est le haut de la map.
@@ -103,6 +104,8 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 
 ## Reste à faire
 - Lobby : retour au lobby en fin de partie ; gérer la perte de connexion au serveur ; connexion sans bloquer l'écran (jusqu'à 5 s aujourd'hui)
+- Mode « Hors-jeu » : « GO! » à la fin du décompte, sons
+- Buissons : se révéler en tirant ou en étant touché
 - Mode « Hors-jeu » : caméra qui suit un allié après sa mort, « GO! » à la fin du décompte, sons
 - Caméra 3D : élargir la bande de décor pour que le joueur ne soit pas collé au coin au départ
 - `StartupHelper` ne transmet pas les arguments sur macOS (le Makefile passe `-XstartOnFirstThread`)

@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
 public class MatchHud {
     private static final float TOP_MARGIN = 20f;
+    private static final float BOTTOM_MARGIN = 40f;
     private static final float SCORE_GAP = 40f;
     private static final float PADDING = 14f;
     private static final Color ALLY_COLOR = new Color(0.45f, 0.70f, 1f, 1f);
@@ -29,7 +30,7 @@ public class MatchHud {
         shade = skin.getDrawable(UiSkin.SHADE);
     }
 
-    public void draw(MatchView view) {
+    public void draw(MatchView view, String watchingText) {
         if (!view.hasMatch()) {
             return;
         }
@@ -40,6 +41,7 @@ public class MatchHud {
         batch.begin();
         drawTopBar(view, width / 2f, height - TOP_MARGIN);
         drawCentered(titleFont, view.centerText(), toneColor(view.centerTone()), width / 2f, height / 2f);
+        drawCentered(textFont, watchingText, Color.WHITE, width / 2f, BOTTOM_MARGIN);
         batch.end();
     }
 

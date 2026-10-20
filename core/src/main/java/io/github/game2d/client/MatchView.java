@@ -2,6 +2,7 @@ package io.github.game2d.client;
 
 import io.github.game2d.model.Team;
 import io.github.game2d.protocol.MatchState;
+import io.github.game2d.protocol.WorldSnapshot;
 
 public final class MatchView {
     public enum Tone {
@@ -54,6 +55,15 @@ public final class MatchView {
             return Tone.NEUTRAL;
         }
         return winner == myTeam ? Tone.WIN : Tone.LOSS;
+    }
+
+    /** "Watching Tom" once I am dead and the camera follows an ally; empty while I watch myself or nobody. */
+    public static String watchingText(int followedId, PlayerRoster roster) {
+        if (followedId == WorldSnapshot.NOBODY || roster.isMe(followedId)) {
+            return "";
+        }
+        String name = roster.nameOf(followedId);
+        return "Watching " + (name.isEmpty() ? "an ally" : name);
     }
 
     private String countdown() {

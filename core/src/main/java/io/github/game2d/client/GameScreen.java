@@ -44,8 +44,9 @@ public class GameScreen extends ScreenAdapter {
         double now = System.nanoTime() / 1_000_000_000.0;
         WorldSnapshot snapshot = game.update(now, inputReader);
         if (snapshot != null) {
-            renderer.render(snapshot, arena, session.playerId());
-            matchHud.draw(new MatchView(snapshot.match(), roster.myTeam()));
+            renderer.render(snapshot, arena);
+            matchHud.draw(new MatchView(snapshot.match(), roster.myTeam()),
+                MatchView.watchingText(snapshot.followedId(), roster));
         }
     }
 

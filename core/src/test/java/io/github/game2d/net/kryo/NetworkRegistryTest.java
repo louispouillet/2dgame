@@ -64,14 +64,14 @@ class NetworkRegistryTest {
                 new BrawlerState(1, BrawlerType.SHELLY, 1.5f, 2.5f, 0.25f, 1.25f, 120, 120, 3, 3, 0f, true, false, 4, 7),
                 new BrawlerState(2, BrawlerType.COLT, 4.5f, 2.5f, 0.25f, -2.5f, 80, 100, 1, 3, 0.4f, false, true, 9, 5))),
             new ArrayList<>(List.of(
-                new ProjectileState(3, 1, BrawlerType.COLT, 2f, 2.5f, 1f, 0f, 0.05f))), null);
+                new ProjectileState(3, 1, BrawlerType.COLT, 2f, 2.5f, 1f, 0f, 0.05f))), null, WorldSnapshot.NOBODY);
 
         assertEquals(snapshot, roundTrip(snapshot));
     }
 
     @Test
     void emptyWorldSnapshotSurvivesTheNetwork() {
-        WorldSnapshot snapshot = new WorldSnapshot(0, new ArrayList<>(), new ArrayList<>(), null);
+        WorldSnapshot snapshot = new WorldSnapshot(0, new ArrayList<>(), new ArrayList<>(), null, WorldSnapshot.NOBODY);
 
         assertEquals(snapshot, roundTrip(snapshot));
     }
@@ -115,7 +115,7 @@ class NetworkRegistryTest {
     @Test
     void matchStateSurvivesTheNetwork() {
         WorldSnapshot snapshot = new WorldSnapshot(7, new ArrayList<>(), new ArrayList<>(),
-            new MatchState(MatchPhase.ROUND_OVER, 2, 1, 1, 2.5f, Team.RED, null));
+            new MatchState(MatchPhase.ROUND_OVER, 2, 1, 1, 2.5f, Team.RED, null), WorldSnapshot.NOBODY);
 
         assertEquals(snapshot, roundTrip(snapshot));
     }

@@ -58,7 +58,7 @@ class SnapshotBufferTest {
     }
 
     private static WorldSnapshot world(BrawlerState... brawlers) {
-        return new WorldSnapshot(0, List.of(brawlers), List.of(), null);
+        return new WorldSnapshot(0, List.of(brawlers), List.of(), null, WorldSnapshot.NOBODY);
     }
 
     @Test
@@ -148,8 +148,8 @@ class SnapshotBufferTest {
     @Test
     void projectilesAreInterpolatedToo() {
         SnapshotBuffer buffer = new SnapshotBuffer();
-        buffer.add(new WorldSnapshot(0, List.of(), List.of(new ProjectileState(7, 1, null, 0, 0, 1f, 0f, 0.1f)), null), 1.0);
-        buffer.add(new WorldSnapshot(0, List.of(), List.of(new ProjectileState(7, 1, null, 4, 2, 1f, 0f, 0.1f)), null), 1.1);
+        buffer.add(new WorldSnapshot(0, List.of(), List.of(new ProjectileState(7, 1, null, 0, 0, 1f, 0f, 0.1f)), null, WorldSnapshot.NOBODY), 1.0);
+        buffer.add(new WorldSnapshot(0, List.of(), List.of(new ProjectileState(7, 1, null, 4, 2, 1f, 0f, 0.1f)), null, WorldSnapshot.NOBODY), 1.1);
 
         ProjectileState result = buffer.interpolate(1.05).projectiles().get(0);
 
@@ -181,9 +181,18 @@ class SnapshotBufferTest {
         SnapshotBuffer buffer = new SnapshotBuffer();
         MatchState countdown = new MatchState(MatchPhase.COUNTDOWN, 1, 0, 0, 2f, null, null);
         MatchState playing = new MatchState(MatchPhase.PLAYING, 1, 0, 0, 0f, null, null);
-        buffer.add(new WorldSnapshot(0, List.of(), List.of(), countdown), 1.0);
-        buffer.add(new WorldSnapshot(1, List.of(), List.of(), playing), 2.0);
+        buffer.add(new WorldSnapshot(0, List.of(), List.of(), countdown, WorldSnapshot.NOBODY), 1.0);
+        buffer.add(new WorldSnapshot(1, List.of(), List.of(), playing, WorldSnapshot.NOBODY), 2.0);
 
         assertEquals(playing, buffer.interpolate(1.5).match());
+    }
+
+    @Test
+    void interpolationFollowsTheBrawlerOfTheLatestSnapshot() {
+        SnapshotBuffer buffer = new SnapshotBuffer();
+        buffer.add(new WorldSnapshot(0, List.of(), List.of(), null, 1), 1.0);
+        buffer.add(new WorldSnapshot(1, List.of(), List.of(), null, 3), 2.0);
+
+        assertEquals(3, buffer.interpolate(1.5).followedId());
     }
 }

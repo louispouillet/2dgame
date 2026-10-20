@@ -103,6 +103,101 @@ class SnapshotBuilderTest {
         assertTrue(sees(snapshot, hidden));
     }
 
+    private static WorldSnapshot snapshotFor(GameWorld world, Colt viewer) {
+        return new SnapshotBuilder(world).build(0, id -> 0, viewer.getId(), null);
+    }
+
+    private static void kill(GameWorld world, Colt brawler) {
+        brawler.takeDamage(brawler.getMaxHealth());
+        world.update(1 / 60f);
+    }
+
+    @Test
+    void livingPlayerFollowsThemself() {
+        GameWorld world = new GameWorld(ARENA);
+        Colt me = new Colt(world.nextId(), X0, Y0);
+        world.addPlayer(me, Team.BLUE);
+        world.addPlayer(new Colt(world.nextId(), X0 + 2, Y0), Team.BLUE);
+
+        assertEquals(me.getId(), snapshotFor(world, me).followedId());
+    }
+
+    @Test
+    void deadPlayerFollowsTheirFirstLivingAlly() {
+        GameWorld world = new GameWorld(ARENA);
+        Colt me = new Colt(world.nextId(), X0, Y0);
+        Colt enemy = new Colt(world.nextId(), X0 + 2, Y0);
+        Colt firstAlly = new Colt(world.nextId(), X0 + 4, Y0);
+        Colt secondAlly = new Colt(world.nextId(), X0 + 6, Y0);
+        world.addPlayer(me, Team.BLUE);
+        world.addPlayer(enemy, Team.RED);
+        world.addPlayer(firstAlly, Team.BLUE);
+        world.addPlayer(secondAlly, Team.BLUE);
+
+        kill(world, me);
+
+        assertEquals(firstAlly.getId(), snapshotFor(world, me).followedId());
+    }
+
+    @Test
+    void whenTheFollowedAllyDiesTheNextOneIsFollowed() {
+        GameWorld world = new GameWorld(ARENA);
+        Colt me = new Colt(world.nextId(), X0, Y0);
+        Colt firstAlly = new Colt(world.nextId(), X0 + 2, Y0);
+        Colt secondAlly = new Colt(world.nextId(), X0 + 4, Y0);
+        world.addPlayer(me, Team.BLUE);
+        world.addPlayer(firstAlly, Team.BLUE);
+        world.addPlayer(secondAlly, Team.BLUE);
+
+        kill(world, me);
+        kill(world, firstAlly);
+
+        assertEquals(secondAlly.getId(), snapshotFor(world, me).followedId());
+    }
+
+    @Test
+    void nobodyIsFollowedWhenTheWholeTeamIsDead() {
+        GameWorld world = new GameWorld(ARENA);
+        Colt me = new Colt(world.nextId(), X0, Y0);
+        world.addPlayer(me, Team.BLUE);
+        world.addPlayer(new Colt(world.nextId(), X0 + 2, Y0), Team.RED);
+
+        kill(world, me);
+
+        assertEquals(WorldSnapshot.NOBODY, snapshotFor(world, me).followedId());
+    }
+
+    @Test
+    void deadPlayerSeesTheEnemiesTheirAllyReveals() {
+        GameWorld world = new GameWorld(BUSH_ARENA);
+        Colt me = new Colt(world.nextId(), 1.5f, 1.5f);
+        Colt ally = new Colt(world.nextId(), 4.5f, 1.5f);
+        Colt hidden = new Colt(world.nextId(), 4.5f, 2.5f);
+        world.addPlayer(me, Team.BLUE);
+        world.addPlayer(ally, Team.BLUE);
+        world.addPlayer(hidden, Team.RED);
+
+        kill(world, me);
+
+        assertTrue(sees(snapshotFor(world, me), hidden));
+    }
+
+    @Test
+    void deadPlayerNoLongerRevealsEnemiesNearTheirBody() {
+        GameWorld world = new GameWorld(BUSH_ARENA);
+        Colt me = new Colt(world.nextId(), 4.5f, 1.5f);
+        Colt ally = new Colt(world.nextId(), 7.5f, 4.5f);
+        Colt hidden = new Colt(world.nextId(), 4.5f, 2.5f);
+        world.addPlayer(me, Team.BLUE);
+        world.addPlayer(ally, Team.BLUE);
+        world.addPlayer(hidden, Team.RED);
+        assertTrue(sees(snapshotFor(world, me), hidden));
+
+        kill(world, me);
+
+        assertFalse(sees(snapshotFor(world, me), hidden));
+    }
+
     @Test
     void snapshotContainsEveryLivingBrawler() {
         GameWorld world = new GameWorld(ARENA);

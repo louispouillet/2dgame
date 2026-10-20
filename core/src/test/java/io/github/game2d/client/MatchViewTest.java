@@ -4,11 +4,42 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import io.github.game2d.model.Team;
+import io.github.game2d.model.brawler.BrawlerType;
 import io.github.game2d.model.match.MatchPhase;
+import io.github.game2d.protocol.LobbyPlayerState;
+import io.github.game2d.protocol.LobbyState;
 import io.github.game2d.protocol.MatchState;
+import io.github.game2d.protocol.WorldSnapshot;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class MatchViewTest {
+    private static final PlayerRoster ROSTER = PlayerRoster.from(new LobbyState(
+        List.of(
+            new LobbyPlayerState(1, "Louis", Team.BLUE, BrawlerType.COLT),
+            new LobbyPlayerState(3, "Tom", Team.BLUE, BrawlerType.SHELLY)),
+        1, "maps/arena2.txt", List.of("maps/arena2.txt"), true, true), 1);
+
+    @Test
+    void nothingIsShownWhileIWatchMyself() {
+        assertEquals("", MatchView.watchingText(1, ROSTER));
+    }
+
+    @Test
+    void watchingAnAllyShowsTheirName() {
+        assertEquals("Watching Tom", MatchView.watchingText(3, ROSTER));
+    }
+
+    @Test
+    void nothingIsShownWhenNobodyIsFollowed() {
+        assertEquals("", MatchView.watchingText(WorldSnapshot.NOBODY, ROSTER));
+    }
+
+    @Test
+    void unknownAllyIsStillAnnounced() {
+        assertEquals("Watching an ally", MatchView.watchingText(9, ROSTER));
+    }
+
     private static MatchState match(MatchPhase phase, float timeLeft, Team roundWinner, Team matchWinner) {
         return new MatchState(phase, 2, 1, 0, timeLeft, roundWinner, matchWinner);
     }
