@@ -19,6 +19,11 @@ import io.github.game2d.protocol.LobbyState;
 import io.github.game2d.server.Lobby;
 import java.util.List;
 
+/**
+ * The lobby: the two teams, the choice of brawler and map, and the start button.
+ * It sends the commands of the player to the session and shows the lobby state it receives.
+ * The match screen replaces it as soon as the lobby says the match started.
+ */
 public class LobbyScreen extends ScreenAdapter {
     private static final float PANEL_WIDTH = 320f;
     private static final float PANEL_HEIGHT = 200f;
@@ -43,6 +48,13 @@ public class LobbyScreen extends ScreenAdapter {
     // Set while the screen itself changes a selection, so that this change is not sent back to the server
     private boolean updatingBoxes;
 
+    /**
+     * Creates the screen.
+     *
+     * @param main    the application, to change screen
+     * @param skin    the UI skin
+     * @param session the session, already joined
+     */
     public LobbyScreen(Main main, Skin skin, GameSession session) {
         this.main = main;
         this.skin = skin;
@@ -79,6 +91,7 @@ public class LobbyScreen extends ScreenAdapter {
         stage.addActor(root);
     }
 
+    /** Builds the box of a team: a title and the list of its players. */
     private Table panel(Label title, Table players) {
         Table panel = new Table();
         panel.setBackground(skin.getDrawable(UiSkin.PANEL));
@@ -88,6 +101,7 @@ public class LobbyScreen extends ScreenAdapter {
         return panel;
     }
 
+    /** Returns the names of all the brawler types, in the order of {@link BrawlerType#values()}. */
     private static Array<String> brawlerLabels() {
         Array<String> labels = new Array<>();
         for (BrawlerType type : BrawlerType.values()) {
@@ -96,6 +110,7 @@ public class LobbyScreen extends ScreenAdapter {
         return labels;
     }
 
+    /** Builds a label followed by a list box. */
     private Table choice(String title, SelectBox<String> box) {
         Table choice = new Table();
         choice.add(new Label(title, skin)).padRight(SPACING);
@@ -103,6 +118,7 @@ public class LobbyScreen extends ScreenAdapter {
         return choice;
     }
 
+    /** Returns a listener that runs an action when the widget changes. */
     private static ChangeListener onClick(Runnable action) {
         return new ChangeListener() {
             @Override
@@ -112,6 +128,7 @@ public class LobbyScreen extends ScreenAdapter {
         };
     }
 
+    /** Sends the brawler selected by the player (not the changes made by {@link #refresh}). */
     private void chooseBrawler() {
         int index = brawlerBox.getSelectedIndex();
         if (!updatingBoxes && index >= 0) {
@@ -119,6 +136,7 @@ public class LobbyScreen extends ScreenAdapter {
         }
     }
 
+    /** Sends the map selected by the player (not the changes made by {@link #refresh}). */
     private void chooseMap() {
         int index = mapBox.getSelectedIndex();
         if (!updatingBoxes && index >= 0 && index < maps.size()) {
@@ -126,6 +144,7 @@ public class LobbyScreen extends ScreenAdapter {
         }
     }
 
+    /** Updates every widget from a new lobby state. */
     private void refresh(LobbyState state) {
         LobbyView view = new LobbyView(state, session.playerId());
         blueTitle.setText("BLUE " + view.count(Team.BLUE) + "/" + Lobby.MAX_TEAM_SIZE);
@@ -142,6 +161,7 @@ public class LobbyScreen extends ScreenAdapter {
         updatingBoxes = false;
     }
 
+    /** Replaces the content of a team list. */
     private void fill(Table players, List<String> labels) {
         players.clear();
         for (String label : labels) {
@@ -149,12 +169,14 @@ public class LobbyScreen extends ScreenAdapter {
         }
     }
 
+    /** Selects my brawler in the list. */
     private void updateBrawlerBox(BrawlerType myBrawler) {
         if (myBrawler != null) {
             brawlerBox.setSelectedIndex(myBrawler.ordinal());
         }
     }
 
+    /** Updates the map list and its selection; only the leader can use it. */
     private void updateMapBox(LobbyState state, boolean enabled) {
         if (!state.maps().equals(maps)) {
             maps = List.copyOf(state.maps());

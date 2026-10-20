@@ -7,10 +7,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+/**
+ * The waiting room before a match: players, teams, brawlers and map.
+ * Pure Java without network. Not thread-safe: {@link GameServer} calls it under its lock.
+ */
 public final class Lobby {
+    /** Players per team, at most. */
     public static final int MAX_TEAM_SIZE = 3;
+    /** Longest nickname. */
     public static final int MAX_NAME_LENGTH = 16;
+    /** Leader id when the lobby is empty. */
     public static final int NO_LEADER = -1;
+    /** Brawler given to a player who enters. */
     public static final BrawlerType DEFAULT_BRAWLER = BrawlerType.COLT;
 
     private static final int MAX_PLAYERS = 2 * MAX_TEAM_SIZE;
@@ -20,6 +28,13 @@ public final class Lobby {
     private final List<String> maps;
     private String map;
 
+    /**
+     * Creates an empty lobby.
+     *
+     * @param maps       the maps the leader can choose from
+     * @param defaultMap map chosen at the start, one of {@code maps}
+     * @throws IllegalArgumentException if the default map is not in the list
+     */
     public Lobby(List<String> maps, String defaultMap) {
         this.maps = List.copyOf(maps);
         if (!this.maps.contains(defaultMap)) {
@@ -28,6 +43,12 @@ public final class Lobby {
         this.map = defaultMap;
     }
 
+    /**
+     * Adds a player in the team with the fewest players (blue when equal).
+     *
+     * @param name nickname; surrounding spaces are removed, 1 to 16 letters, digits, {@code _} or {@code -}, unique ignoring case
+     * @throws LobbyException if the lobby is full or the nickname is invalid or taken
+     */
     public LobbyPlayer join(int id, String name) {
         if (players.size() >= MAX_PLAYERS) {
             throw new LobbyException(RefusalReason.LOBBY_FULL);
@@ -44,10 +65,16 @@ public final class Lobby {
         return player;
     }
 
+    /** Removes a player. If it was the leader, the next player becomes leader. */
     public void leave(int id) {
         players.removeIf(player -> player.id() == id);
     }
 
+    /**
+     * Moves a player to a team (nothing if it is already there).
+     *
+     * @throws LobbyException if the team is full
+     */
     public void chooseTeam(int id, Team team) {
         int index = indexOf(id);
         LobbyPlayer player = players.get(index);
@@ -69,6 +96,11 @@ public final class Lobby {
         players.set(index, players.get(index).withBrawler(brawler));
     }
 
+    /**
+     * Changes the map.
+     *
+     * @throws LobbyException if the requester is not the leader or the map is unknown
+     */
     public void chooseMap(int requesterId, String map) {
         if (!isLeader(requesterId)) {
             throw new LobbyException(RefusalReason.NOT_LEADER);
@@ -79,42 +111,56 @@ public final class Lobby {
         this.map = map;
     }
 
+    /** Whether each team has between 1 and 3 players. */
     public boolean canStart() {
         return isPlayable(teamSize(Team.BLUE)) && isPlayable(teamSize(Team.RED));
     }
 
+    /** Returns a copy of the players, in order of arrival. */
     public List<LobbyPlayer> players() {
         return List.copyOf(players);
     }
 
+    /** Returns the id of the leader (the first player), or {@link #NO_LEADER}. */
     public int leaderId() {
         return players.isEmpty() ? NO_LEADER : players.getFirst().id();
     }
 
+    /** Whether this player is the leader. */
     public boolean isLeader(int id) {
         return !players.isEmpty() && leaderId() == id;
     }
 
+    /** Returns the chosen map. */
     public String map() {
         return map;
     }
 
+    /** Returns the maps that can be chosen. */
     public List<String> maps() {
         return maps;
     }
 
+    /** Whether a team of this size can play. */
     private static boolean isPlayable(int teamSize) {
         return teamSize >= 1 && teamSize <= MAX_TEAM_SIZE;
     }
 
+    /** Returns the team with the fewest players, blue when equal. */
     private Team smallestTeam() {
         return teamSize(Team.BLUE) <= teamSize(Team.RED) ? Team.BLUE : Team.RED;
     }
 
+    /** Returns the number of players in a team. */
     private int teamSize(Team team) {
         return (int) players.stream().filter(player -> player.team() == team).count();
     }
 
+    /**
+     * Returns the position of a player in the list.
+     *
+     * @throws IllegalArgumentException if the player is unknown
+     */
     private int indexOf(int id) {
         for (int index = 0; index < players.size(); index++) {
             if (players.get(index).id() == id) {

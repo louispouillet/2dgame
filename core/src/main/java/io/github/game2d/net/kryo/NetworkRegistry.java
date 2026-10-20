@@ -21,10 +21,14 @@ import io.github.game2d.protocol.StartRequest;
 import io.github.game2d.protocol.WorldSnapshot;
 import java.util.ArrayList;
 
+/** The list of classes that can travel on the network. Client and server must register the same ones. */
 public class NetworkRegistry {
+    /** TCP port of the server, used for the lobby. */
     public static final int DEFAULT_TCP_PORT = 54555;
+    /** UDP port of the server, used for the inputs and snapshots. */
     public static final int DEFAULT_UDP_PORT = 54777;
 
+    /** Registers every protocol class in a Kryo instance. */
     public static void register(Kryo kryo) {
         kryo.register(PlayerInput.class);
         kryo.register(WorldSnapshot.class);

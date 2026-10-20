@@ -11,6 +11,7 @@ import io.github.game2d.server.GameServer;
 import io.github.game2d.server.LobbyException;
 import java.util.List;
 
+/** A solo game: an in-memory server on a single map, the player, and a still opponent to shoot at. */
 public class LocalSession implements GameSession {
     private static final String MAP = ArenaLoader.DEFAULT_MAP;
     private static final String TARGET_NAME = "Target";
@@ -21,6 +22,11 @@ public class LocalSession implements GameSession {
     private int playerId = NOT_JOINED;
     private RefusalReason rejection;
 
+    /**
+     * Creates and starts the in-memory server.
+     *
+     * @param arena the map, returned whatever map is asked
+     */
     public LocalSession(Arena arena) {
         server = new GameServer(List.of(MAP), MAP, map -> arena);
         server.start();
@@ -78,6 +84,7 @@ public class LocalSession implements GameSession {
         server.stop();
     }
 
+    /** Runs a request and drops its refusal. */
     private static void ignoreRefusal(Runnable request) {
         try {
             request.run();

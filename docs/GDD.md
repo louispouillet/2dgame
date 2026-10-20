@@ -55,8 +55,8 @@ Additional rules:
 
 | Brawler | Role | HP | Speed (tiles/s) | Weapon | Range (tiles) | Damage per attack | Cooldown (s) | Reload (s/charge) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Shelly | Close range, spread | 120 | 3.5 | Shotgun: 5 pellets fired at once in a 28° cone | 4 | 5 × 15 | 0.6 | 1.5 |
-| Colt | Long range, burst | 100 | 3.0 | Two revolvers: a burst of 6 bullets over 0.5 s, alternating right and left gun | 8 | 6 × 10 | 1.0 | 2.0 |
+| Shelly | Close range, spread | 7800 | 3.0 | Shotgun: 5 pellets fired at once in a 28° cone | 4 | 5 × 600 | 0.5 | 1.5 |
+| Colt | Long range, burst | 6200 | 3.5 | Two revolvers: a burst of 6 bullets over 0.5 s, alternating right and left gun | 8 | 6 × 720 | 1.0 | 1.5 |
 
 Starting values, to be balanced through playtesting. Landing all of Shelly's pellets up close deals 75 damage; a full Colt burst deals 60.
 
@@ -120,7 +120,7 @@ When loading, the game checks that the border is closed by walls, that only know
 - Bushes close to your brawler are drawn see-through, so you can see who hides in them.
 - When you are hit, the edges of your screen flash red for a moment.
 - Bullets are drawn with their brawler's image, tilted towards the camera and pulsing: blue for yours and your allies', red for enemies' (Colt and Shelly; a brawler without images shoots white spheres the size of the bullet's hitbox).
-- Top of the screen: round score and remaining players in each team.
+- Top of the screen: your team's score on the left (blue), the round number, and the enemy score on the right (red). The countdown and the round or match result appear at the center.
 
 ## Technical overview
 
@@ -130,4 +130,4 @@ When loading, the game checks that the border is closed by walls, that only know
 - **Smooth client**: the client interpolates the other brawlers between snapshots, and predicts its own movement immediately before correcting it with the server's answer (reconciliation).
 - **Networking**: KryoNet (TCP for the lobby, UDP for inputs and snapshots). Solo games run the same server in memory.
 - **OOP**: a class hierarchy for game objects (`GameObject` → `Brawler` → `Shelly` / `Colt`, `GameObject` → `Projectile`), composition (a `Brawler` has a `Weapon`), the Strategy pattern for attack shapes (`AttackPattern` → `SpreadPattern` / `BurstPattern`), and interfaces for interchangeable sessions, network channels and brawler avatars. UML class diagrams are in `docs/uml/`.
-- **Quality**: JUnit tests on the model, the server, the lobby, the network layer and the animation logic, with JaCoCo coverage, and Javadoc on all public classes and methods.
+- **Quality**: JUnit tests on the model, the server, the lobby, the network layer and the animation logic, and Javadoc on every class and method of the game (`make doc` generates it in `core/build/docs/javadoc`).

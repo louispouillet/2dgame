@@ -7,6 +7,7 @@ package io.github.game2d.client;
 public class InputSequence {
     private int last;
 
+    /** Returns the next input number. */
     public int next() {
         return ++last;
     }

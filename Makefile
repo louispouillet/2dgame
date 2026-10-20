@@ -13,7 +13,7 @@ JAVA ?= $(shell for j in "$$JAVA_HOME/bin/java" java $$HOME/.gradle/jdks/*/Conte
 	v=$$("$$j" -version 2>&1 | head -n 1 | sed -E 's/[^"]*"([0-9]+).*/\1/'); \
 	if [ "$$v" -ge 21 ] 2>/dev/null; then echo "$$j"; break; fi; done)
 
-.PHONY: help solo server client duo build test clean check-java
+.PHONY: help solo server client duo build test doc clean check-java
 
 help:
 	@echo "Available commands:"
@@ -22,11 +22,15 @@ help:
 	@echo "  make client [HOST=address] client connected to the server (localhost by default)"
 	@echo "  make duo                   two players on this computer: server + 2 windows"
 	@echo "  make test                  runs the tests"
+	@echo "  make doc                   generates the Javadoc (core/build/docs/javadoc/index.html)"
 	@echo "  make build                 builds the game ($(JAR))"
 	@echo "  make clean                 deletes the build files"
 
 solo:
 	$(GRADLE) lwjgl3:run
+
+doc:
+	$(GRADLE) core:javadoc
 
 build:
 	$(GRADLE) lwjgl3:jar

@@ -7,6 +7,13 @@ import java.util.List;
 public class SpreadPattern implements AttackPattern {
     private final List<Shot> shots;
 
+    /**
+     * Creates a fan.
+     *
+     * @param count       number of bullets
+     * @param spreadAngle angle between two neighbour bullets, in degrees
+     * @throws IllegalArgumentException if there is no bullet
+     */
     public SpreadPattern(int count, float spreadAngle) {
         if (count < 1) {
             throw new IllegalArgumentException("A pattern needs at least one shot");

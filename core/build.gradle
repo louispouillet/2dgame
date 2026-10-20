@@ -34,3 +34,12 @@ tasks.register('runServer', JavaExec) {
   mainClass = 'io.github.game2d.server.ServerLauncher'
   workingDir = rootProject.projectDir
 }
+
+// HTML documentation of the code: ./gradlew core:javadoc (output in core/build/docs/javadoc)
+javadoc {
+  options.encoding = 'UTF-8'
+  options.addStringOption('Xdoclint:all,-missing', '-quiet')
+  options.addBooleanOption('html5', true)
+  options.windowTitle = '2DGame'
+  options.docTitle = '2DGame'
+}

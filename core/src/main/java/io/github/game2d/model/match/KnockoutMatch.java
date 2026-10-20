@@ -5,10 +5,18 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.ToIntFunction;
 
+/**
+ * The rounds of a Knockout match: countdown, play, round over, until a team wins {@value #ROUNDS_TO_WIN} rounds.
+ * Pure state machine: the caller gives the elapsed time and the number of living brawlers.
+ */
 public final class KnockoutMatch {
+    /** Rounds a team must win to win the match. */
     public static final int ROUNDS_TO_WIN = 2;
+    /** Seconds of countdown before each round, nobody can move. */
     public static final float COUNTDOWN_TIME = 3f;
+    /** Seconds shown after a round, before the next countdown. */
     public static final float ROUND_OVER_TIME = 3f;
+    /** Seconds shown after the match, before going back to the lobby. */
     public static final float MATCH_OVER_TIME = 5f;
 
     private final Map<Team, Integer> scores = new EnumMap<>(Team.class);
@@ -18,12 +26,20 @@ public final class KnockoutMatch {
     private Team roundWinner;
     private Team matchWinner;
 
+    /** Starts a match at round 1, in the countdown. */
     public KnockoutMatch() {
         for (Team team : Team.values()) {
             scores.put(team, 0);
         }
     }
 
+    /**
+     * Advances the match.
+     *
+     * @param dt         elapsed time, in seconds
+     * @param aliveCount gives the number of living brawlers of a team
+     * @return what the server has to do now, or {@link MatchEvent#NONE}
+     */
     public MatchEvent update(float dt, ToIntFunction<Team> aliveCount) {
         return switch (phase) {
             case COUNTDOWN -> countDown(dt);
@@ -33,6 +49,11 @@ public final class KnockoutMatch {
         };
     }
 
+    /**
+     * Ends the match now: the other team wins. Does nothing when the match is already over.
+     *
+     * @param team the team that gives up
+     */
     public void forfeit(Team team) {
         if (phase == MatchPhase.MATCH_OVER) {
             return;
@@ -41,26 +62,32 @@ public final class KnockoutMatch {
         startPhase(MatchPhase.MATCH_OVER, MATCH_OVER_TIME);
     }
 
+    /** Returns the current phase. */
     public MatchPhase phase() {
         return phase;
     }
 
+    /** Returns the current round number, starting at 1. */
     public int round() {
         return round;
     }
 
+    /** Returns the rounds won by a team. */
     public int score(Team team) {
         return scores.get(team);
     }
 
+    /** Returns the seconds left in the current timed phase. */
     public float timeLeft() {
         return timeLeft;
     }
 
+    /** Returns the winner of the last round, or {@code null} (no round over yet, or a draw). */
     public Team roundWinner() {
         return roundWinner;
     }
 
+    /** Returns the winner of the match, or {@code null} while it is not decided. */
     public Team matchWinner() {
         return matchWinner;
     }

@@ -12,13 +12,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntUnaryOperator;
 
+/** Turns the world into the snapshot one player is allowed to see (hidden enemies are left out). */
 public class SnapshotBuilder {
     private final GameWorld world;
 
+    /** Creates a builder for a world. */
     public SnapshotBuilder(GameWorld world) {
         this.world = world;
     }
 
+    /**
+     * Builds the snapshot of one player.
+     *
+     * @param tick          server tick number
+     * @param lastProcessed gives the last input number applied for a brawler id
+     * @param viewerId      id of the player who receives the snapshot
+     * @param match         state of the match to copy in the snapshot
+     */
     public WorldSnapshot build(int tick, IntUnaryOperator lastProcessed, int viewerId, MatchState match) {
         Brawler eyes = eyesOf(viewerId);
         List<BrawlerState> brawlerStates = new ArrayList<>();

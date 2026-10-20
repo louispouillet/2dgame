@@ -7,6 +7,9 @@ import io.github.game2d.protocol.BrawlerState;
 import io.github.game2d.protocol.LobbyState;
 import io.github.game2d.protocol.WorldSnapshot;
 
+/**
+ * The match screen: 3D view, HUD and hit flash. Goes back to the {@link LobbyScreen} when the match is over.
+ */
 public class GameScreen extends ScreenAdapter {
     private final Main main;
     private final Skin skin;
@@ -20,6 +23,15 @@ public class GameScreen extends ScreenAdapter {
     private final HitFlash hitFlash = new HitFlash();
     private final HitOverlay hitOverlay = new HitOverlay();
 
+    /**
+     * Creates the screen.
+     *
+     * @param main          the application, to change screen
+     * @param skin          the UI skin
+     * @param session       the session, which stays open when the screen changes
+     * @param arena         the map being played
+     * @param inputSequence numbering of the inputs, shared by the whole session
+     */
     public GameScreen(Main main, Skin skin, GameSession session, Arena arena, InputSequence inputSequence) {
         this.main = main;
         this.skin = skin;

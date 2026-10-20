@@ -6,7 +6,9 @@ import io.github.game2d.net.kryo.NetworkServer;
 import io.github.game2d.server.GameServer;
 import java.io.IOException;
 
+/** Starts a multiplayer server alone, without window ({@code make server}). */
 public class ServerLauncher {
+    /** Starts the game server and the network server, then waits until Ctrl+C. */
     public static void main(String[] args) throws IOException, InterruptedException {
         GameServer gameServer = new GameServer(ArenaLoader.availableMaps(), ArenaLoader.DEFAULT_MAP, ArenaLoader::loadResource);
         NetworkServer networkServer = new NetworkServer(gameServer);

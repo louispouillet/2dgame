@@ -78,6 +78,7 @@ public class BulletSprites {
         modelBatch.render(sprite.instance(), environment);
     }
 
+    /** Frees the textures and the models. */
     public void dispose() {
         for (Sprite sprite : sprites.values()) {
             sprite.model().dispose();
@@ -86,11 +87,13 @@ public class BulletSprites {
         sprites.clear();
     }
 
+    /** Returns the image path of a brawler type: blue for allies, red for enemies. */
     private static String fileName(BrawlerType type, boolean ally) {
         String team = ally ? "blue" : "red";
         return "textures/" + type.name().toLowerCase() + "_bullet_" + team + ".png";
     }
 
+    /** Loads the image of a bullet and builds its quad. */
     private static Sprite load(String path) {
         Texture texture = new Texture(Gdx.files.internal(path));
         texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);

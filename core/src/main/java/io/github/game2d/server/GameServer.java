@@ -22,6 +22,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * The authority of the game. It has two phases: {@code LOBBY} (players choose, no world) and {@code PLAYING}
+ * (the world exists and a Knockout match runs). Every public method is synchronized: the network threads call
+ * them while the game thread ticks.
+ */
 public class GameServer {
     private enum Phase { LOBBY, PLAYING }
 
@@ -39,11 +44,26 @@ public class GameServer {
     private SnapshotBuilder snapshotBuilder;
     private KnockoutMatch match;
 
+    /**
+     * Creates a server in the lobby phase.
+     *
+     * @param maps       paths of the available maps
+     * @param defaultMap map chosen at the start, one of {@code maps}
+     * @param mapLoader  turns a map path into an arena (injected, so that tests can use small maps)
+     */
     public GameServer(List<String> maps, String defaultMap, Function<String, Arena> mapLoader) {
         this.lobby = new Lobby(maps, defaultMap);
         this.mapLoader = mapLoader;
     }
 
+    /**
+     * Adds a player to the lobby and sends the new lobby state to everybody.
+     *
+     * @param connection how to reach this player
+     * @param name       nickname asked
+     * @return the id of the player, also the id of its brawler
+     * @throws LobbyException if the player is refused
+     */
     public synchronized int join(ClientChannel connection, String name) {
         requireLobby();
         int id = nextPlayerId;
@@ -54,24 +74,44 @@ public class GameServer {
         return id;
     }
 
+    /**
+     * Moves a player to a team.
+     *
+     * @throws LobbyException if the team is full or a match is running
+     */
     public synchronized void chooseTeam(int playerId, Team team) {
         requireLobby();
         lobby.chooseTeam(playerId, team);
         broadcastLobby();
     }
 
+    /**
+     * Changes the brawler of a player.
+     *
+     * @throws LobbyException if the brawler is unknown or a match is running
+     */
     public synchronized void chooseBrawler(int playerId, BrawlerType brawler) {
         requireLobby();
         lobby.chooseBrawler(playerId, brawler);
         broadcastLobby();
     }
 
+    /**
+     * Changes the map.
+     *
+     * @throws LobbyException if the player is not the leader, the map is unknown or a match is running
+     */
     public synchronized void chooseMap(int playerId, String map) {
         requireLobby();
         lobby.chooseMap(playerId, map);
         broadcastLobby();
     }
 
+    /**
+     * Starts the match.
+     *
+     * @throws LobbyException if the player is not the leader, the teams are not ready or a match is running
+     */
     public synchronized void requestStart(int playerId) {
         requireLobby();
         if (!lobby.isLeader(playerId)) {
@@ -84,6 +124,10 @@ public class GameServer {
         broadcastLobby();
     }
 
+    /**
+     * Removes a player. In a match, its brawler disappears and a team left without player forfeits;
+     * when nobody remains the server goes back to the lobby.
+     */
     public synchronized void leave(int playerId) {
         if (connections.remove(playerId) == null) {
             return;
@@ -101,16 +145,19 @@ public class GameServer {
         broadcastLobby();
     }
 
+    /** Runs exactly one tick, without waiting (used by the tests). */
     public synchronized void tick() {
         clock.step(this::simulate);
     }
 
+    /** Refuses lobby changes while a match is running. */
     private void requireLobby() {
         if (phase == Phase.PLAYING) {
             throw new LobbyException(RefusalReason.GAME_IN_PROGRESS);
         }
     }
 
+    /** Loads the chosen map and creates the world and the match. */
     private void startMatch() {
         arena = mapLoader.apply(lobby.map());
         world = new GameWorld(arena);
@@ -121,6 +168,9 @@ public class GameServer {
         phase = Phase.PLAYING;
     }
 
+    /**
+     * Empties the world and puts every player back on the spawn point of its team, with the brawler chosen in the lobby.
+     */
     private void placePlayers() {
         world.clear();
         Map<Team, Integer> placedPerTeam = new EnumMap<>(Team.class);
@@ -132,6 +182,7 @@ public class GameServer {
         }
     }
 
+    /** Makes lose a team that has no player left. */
     private void forfeitEmptyTeams() {
         for (Team team : Team.values()) {
             if (lobby.players().stream().noneMatch(player -> player.team() == team)) {
@@ -140,6 +191,7 @@ public class GameServer {
         }
     }
 
+    /** Throws the world away and goes back to the lobby phase. */
     private void endMatch() {
         arena = null;
         world = null;
@@ -149,11 +201,13 @@ public class GameServer {
         phase = Phase.LOBBY;
     }
 
+    /** Copies the state of the match into a protocol message. */
     private MatchState matchState() {
         return new MatchState(match.phase(), match.round(), match.score(Team.BLUE), match.score(Team.RED),
             match.timeLeft(), match.roundWinner(), match.matchWinner());
     }
 
+    /** Sends the lobby state to every connected player. */
     private void broadcastLobby() {
         List<LobbyPlayerState> players = new ArrayList<>();
         for (LobbyPlayer player : lobby.players()) {
@@ -166,6 +220,10 @@ public class GameServer {
         }
     }
 
+    /**
+     * One tick: applies the inputs, advances the world while the round is played, updates the match,
+     * then sends one snapshot per player.
+     */
     private synchronized void simulate(int tick) {
         if (phase != Phase.PLAYING) {
             return;
@@ -196,6 +254,7 @@ public class GameServer {
         }
     }
 
+    /** Starts the game thread, which ticks at 30 Hz. */
     public void start() {
         if (running) {
             return;
@@ -206,6 +265,7 @@ public class GameServer {
         thread.start();
     }
 
+    /** Stops the game thread and waits for it. */
     public void stop() {
         if (thread == null) {
             return;
@@ -218,6 +278,7 @@ public class GameServer {
         }
     }
 
+    /** Loop of the game thread. */
     private void run() {
         long last = System.nanoTime();
         while (running) {

@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.game2d.server.Lobby;
 import java.io.IOException;
 
+/** The first screen: nickname and server address, then {@code Join} (network lobby) or {@code Solo}. */
 public class NameScreen extends ScreenAdapter {
     private static final float FIELD_WIDTH = 360f;
     private static final float SPACING = 16f;
@@ -31,6 +32,13 @@ public class NameScreen extends ScreenAdapter {
     private String connectedAddress;
     private boolean waitingForAnswer;
 
+    /**
+     * Creates the screen.
+     *
+     * @param main    the application, to change screen
+     * @param skin    the UI skin
+     * @param address address pre-filled in the server field
+     */
     public NameScreen(Main main, Skin skin, String address) {
         this.main = main;
         this.skin = skin;
@@ -68,6 +76,7 @@ public class NameScreen extends ScreenAdapter {
         stage.addActor(root);
     }
 
+    /** Returns a listener that runs an action when the widget changes. */
     private static ChangeListener onClick(Runnable action) {
         return new ChangeListener() {
             @Override
@@ -77,6 +86,9 @@ public class NameScreen extends ScreenAdapter {
         };
     }
 
+    /**
+     * Connects to the server (only if needed) and asks to enter the lobby; the answer is read in {@link #render}.
+     */
     private void join() {
         String address = addressField.getText().strip();
         if (session == null || !address.equals(connectedAddress)) {
@@ -94,6 +106,7 @@ public class NameScreen extends ScreenAdapter {
         waitingForAnswer = true;
     }
 
+    /** Starts a solo game, or shows why the nickname was refused. */
     private void playSolo() {
         GameSession solo = main.startSolo(nameField.getText());
         if (solo.rejection() != null) {

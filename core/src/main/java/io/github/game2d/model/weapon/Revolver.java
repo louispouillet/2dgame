@@ -2,6 +2,7 @@ package io.github.game2d.model.weapon;
 
 import io.github.game2d.model.Projectile;
 
+/** Long range weapon: each attack is a burst of fast, thin bullets. */
 public class Revolver extends Weapon {
     private static final int MAX_AMMO = 3;
     private static final float COOLDOWN = 1f;
@@ -15,6 +16,7 @@ public class Revolver extends Weapon {
     private static final float SIDE_OFFSET = 0.25f;
     private static final float MUZZLE_DISTANCE = 1f;
 
+    /** Creates a full revolver. */
     public Revolver() {
         super(MAX_AMMO, COOLDOWN, RELOAD_TIME, new BurstPattern(BULLETS_PER_BURST, BULLET_INTERVAL, SIDE_OFFSET), MUZZLE_DISTANCE);
     }
