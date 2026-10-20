@@ -31,19 +31,6 @@ class InputSequence {
     + next()
 }
 
-package "Match HUD: score, countdown, result" #FDECEA {
-    class MatchHud {
-        .. draws over the 3D view ..
-        + draw(view, watchingText)
-    }
-    class MatchView <<final>> {
-        .. decides the texts (plain Java, tested) ..
-        + myScore() / enemyScore()
-        + centerText()
-        + {static} watchingText(followedId, roster)
-    }
-}
-
 package "3D rendering: how to draw it" #F6EEFB {
     class WorldRenderer3D {
         .. draws map, brawlers, shots,\nfollows the watched brawler ..
@@ -67,11 +54,36 @@ package "3D rendering: how to draw it" #F6EEFB {
     }
 }
 
+package "Match HUD: drawn over the 3D view" #FDECEA {
+    class MatchHud {
+        .. score, countdown, result ..
+        + draw(view, watchingText)
+    }
+    class MatchView <<final>> {
+        .. decides the texts (plain Java, tested) ..
+        + myScore() / enemyScore()
+        + centerText()
+        + {static} watchingText(followedId, roster)
+    }
+    class HitOverlay {
+        .. red screen edges ..
+        + draw(intensity)
+    }
+    class HitFlash <<final>> {
+        .. decides the red flash when I am hit\n(plain Java, tested) ..
+        + update(health, frameTime)
+        + reset() / intensity()
+    }
+}
+
 interface GameSession <<external>>
 
 GameScreen *-down- ClientGame : owns
 GameScreen *-down- InputReader : owns
 GameScreen *-down- WorldRenderer3D : owns
+GameScreen *-down- MatchHud : owns
+GameScreen *-down- HitOverlay : owns
+GameScreen *-down- HitFlash : owns
 
 ClientGame -left-> GameSession : reads snapshots,\nsends inputs
 ClientGame *-down- PredictedPlayer : owns
@@ -79,14 +91,15 @@ ClientGame *-down- SnapshotBuffer : owns
 ClientGame *-down- ClientClock : owns
 
 InputReader -right-> WorldRenderer3D : where does\nthe mouse aim?
+ClientClock -[hidden]right- InputReader
+ArenaModelFactory -[hidden]right- MatchHud
 InputReader -down-> InputSequence : next number
 
 WorldRenderer3D *-down- BrawlerHud : owns
 WorldRenderer3D .down.> ArenaModelFactory : uses
 WorldRenderer3D *-down- BulletSprites : owns\n(sphere if no image)
 BrawlerHud -down-> PlayerRoster : reads nicknames
-GameScreen *-down- MatchHud : owns
 MatchHud ..> MatchView : asks what to show
 
-$legend("<b>Every frame</b>: ClientGame gives the world to show, WorldRenderer3D draws it,", "MatchHud draws the match over it, InputReader reads what the player does.")
+$legend("<b>Every frame</b>: ClientGame gives the world to show, WorldRenderer3D draws it,", "HitOverlay and MatchHud draw over it, InputReader reads what the player does.")
 @enduml
