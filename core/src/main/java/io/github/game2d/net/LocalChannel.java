@@ -5,6 +5,10 @@ import io.github.game2d.protocol.PlayerInput;
 import io.github.game2d.protocol.WorldSnapshot;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * In-memory transport for the solo mode: client and server share this object, nothing goes through the network.
+ * Each direction keeps only the latest value.
+ */
 public class LocalChannel implements ClientChannel, ServerChannel {
     private final AtomicReference<PlayerInput> input = new AtomicReference<>(new PlayerInput(0, 0, 0, 0, 0, false));
     private final AtomicReference<WorldSnapshot> snapshot = new AtomicReference<>();

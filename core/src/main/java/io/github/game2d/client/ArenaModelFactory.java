@@ -14,7 +14,12 @@ import io.github.game2d.model.arena.TileType;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Builds the 3D models of a map: the ground, the walls and the water in one model, and the bush as a separate model
+ * (each bush tile gets its own instance, so that it can have its own opacity).
+ */
 public final class ArenaModelFactory {
+    /** Width, in tiles, of the decor drawn around the map. */
     static final float OUTSIDE_MARGIN = 12f;
 
     private static final String TEXTURE_FOLDER = "textures/arena/";
@@ -28,6 +33,10 @@ public final class ArenaModelFactory {
     private ArenaModelFactory() {
     }
 
+    /**
+     * Builds the model of the ground, the walls and the water of an arena. Needs the OpenGL context.
+     * The textures belong to the model and are freed with it.
+     */
     public static Model create(Arena arena) {
         List<Texture> textures = new ArrayList<>();
         float width = arena.getWidth();
@@ -53,6 +62,7 @@ public final class ArenaModelFactory {
         return finish(builder, textures);
     }
 
+    /** Builds the model of one bush tile, placed at the origin. */
     public static Model createBush() {
         List<Texture> textures = new ArrayList<>();
         ModelBuilder builder = new ModelBuilder();
@@ -62,6 +72,7 @@ public final class ArenaModelFactory {
         return finish(builder, textures);
     }
 
+    /** Ends the model and hands it the textures to free. */
     private static Model finish(ModelBuilder builder, List<Texture> textures) {
         Model model = builder.end();
         for (Texture texture : textures) {
@@ -70,6 +81,7 @@ public final class ArenaModelFactory {
         return model;
     }
 
+    /** Loads a repeating, mipmapped texture of the arena folder. */
     private static Texture load(List<Texture> textures, String file) {
         Texture texture = new Texture(Gdx.files.internal(TEXTURE_FOLDER + file), true);
         texture.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
@@ -78,10 +90,14 @@ public final class ArenaModelFactory {
         return texture;
     }
 
+    /** Starts a part of the model with a texture. */
     private static MeshPartBuilder part(ModelBuilder builder, String name, Texture texture) {
         return builder.part(name, GL20.GL_TRIANGLES, ATTRIBUTES, new Material(TextureAttribute.createDiffuse(texture)));
     }
 
+    /**
+     * Adds a shape for each tile of one type, in a single part (nothing is added if the map has none).
+     */
     private static void addTiles(ModelBuilder builder, Arena arena, TileType type, String name, Texture texture, TileShape shape) {
         MeshPartBuilder part = null;
         for (int row = 0; row < arena.getHeight(); row++) {
@@ -96,6 +112,7 @@ public final class ArenaModelFactory {
         }
     }
 
+    /** Adds a horizontal rectangle at a given height, from map coordinates. */
     private static void addFlat(MeshPartBuilder part, float left, float bottom, float right, float top, float level) {
         part.rect(
             left, level, -bottom,
@@ -106,10 +123,12 @@ public final class ArenaModelFactory {
         );
     }
 
+    /** Adds the top face of a tile block. */
     private static void addTop(MeshPartBuilder part, int col, int row, float height) {
         addFlat(part, col, row, col + 1f, row + 1f, height);
     }
 
+    /** Adds the four side faces of a tile block. */
     private static void addSides(MeshPartBuilder part, int col, int row, float height) {
         float left = col;
         float right = col + 1f;
@@ -121,6 +140,7 @@ public final class ArenaModelFactory {
         part.rect(left, 0f, far, left, 0f, near, left, height, near, left, height, far, -1f, 0f, 0f);
     }
 
+    /** Builds the faces of one tile. */
     @FunctionalInterface
     private interface TileShape {
         void build(MeshPartBuilder part, int col, int row);

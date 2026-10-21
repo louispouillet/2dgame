@@ -11,6 +11,10 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import io.github.game2d.protocol.BrawlerState;
 import java.util.List;
 
+/**
+ * Draws, under each brawler, its ammo segments, its health bar with the value and its nickname.
+ * Green is me, blue my allies, red my enemies.
+ */
 public class BrawlerHud {
     private static final float BAR_WIDTH = 0.8f;
     private static final float BAR_HEIGHT = 0.1f;
@@ -36,11 +40,17 @@ public class BrawlerHud {
     private final GlyphLayout layout = new GlyphLayout();
     private final PlayerRoster roster;
 
+    /**
+     * Creates a HUD; it loads its own font.
+     *
+     * @param roster gives the nicknames and the teams
+     */
     public BrawlerHud(PlayerRoster roster) {
         this.roster = roster;
         font.setUseIntegerPositions(false);
     }
 
+    /** Generates the font with a dark outline. */
     private static BitmapFont createFont() {
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal(FONT_FILE));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
@@ -55,6 +65,13 @@ public class BrawlerHud {
         return generated;
     }
 
+    /**
+     * Draws the HUD of every brawler.
+     *
+     * @param shapes  renderer for the bars, with its projection already set to the screen
+     * @param batch   renderer for the texts, with its projection already set to the screen
+     * @param anchors where to draw each brawler
+     */
     public void draw(ShapeRenderer shapes, SpriteBatch batch, List<HudAnchor> anchors) {
         shapes.setAutoShapeType(true);
         shapes.begin(ShapeRenderer.ShapeType.Filled);
@@ -77,6 +94,7 @@ public class BrawlerHud {
         batch.end();
     }
 
+    /** Draws the health value on the bar. */
     private void drawHealthText(SpriteBatch batch, HudAnchor anchor) {
         font.getData().setScale(FONT_SCALE * anchor.unit());
         font.setColor(Color.WHITE);
@@ -87,6 +105,7 @@ public class BrawlerHud {
         font.draw(batch, layout, x, y);
     }
 
+    /** Draws the nickname above the health bar, if the roster knows it. */
     private void drawName(SpriteBatch batch, HudAnchor anchor) {
         int id = anchor.brawler().id();
         String name = roster.nameOf(id);
@@ -111,22 +130,27 @@ public class BrawlerHud {
         return roster.isAlly(brawlerId) ? ally : enemy;
     }
 
+    /** Returns the width of the bars, in pixels. */
     private static float barWidth(HudAnchor anchor) {
         return BAR_WIDTH * anchor.unit();
     }
 
+    /** Returns the left edge of the bars, in pixels. */
     private static float barLeft(HudAnchor anchor) {
         return anchor.centerX() - barWidth(anchor) / 2;
     }
 
+    /** Returns the bottom of the ammo bar, in pixels. */
     private static float ammoBarBottom(HudAnchor anchor) {
         return anchor.bottomY() + BAR_GAP * anchor.unit();
     }
 
+    /** Returns the bottom of the health bar, in pixels. */
     private static float healthBarBottom(HudAnchor anchor) {
         return ammoBarBottom(anchor) + (AMMO_BAR_HEIGHT + BAR_GAP / 2) * anchor.unit();
     }
 
+    /** Draws the background and the filled part of the health bar. */
     private void drawHealthBar(ShapeRenderer shapes, HudAnchor anchor) {
         BrawlerState brawler = anchor.brawler();
         float ratio = (float) brawler.health() / brawler.maxHealth();
@@ -137,11 +161,13 @@ public class BrawlerHud {
         shapes.rect(barLeft(anchor), healthBarBottom(anchor), barWidth(anchor) * ratio, height);
     }
 
+    /** Draws the outline of the health bar. */
     private static void drawHealthOutline(ShapeRenderer shapes, HudAnchor anchor) {
         shapes.setColor(BAR_OUTLINE);
         shapes.rect(barLeft(anchor), healthBarBottom(anchor), barWidth(anchor), BAR_HEIGHT * anchor.unit());
     }
 
+    /** Draws the full ammo segments, and the progress of the reload in the next one. */
     private static void drawAmmoFill(ShapeRenderer shapes, HudAnchor anchor) {
         BrawlerState brawler = anchor.brawler();
         float segmentWidth = barWidth(anchor) / brawler.maxAmmo();
@@ -157,6 +183,7 @@ public class BrawlerHud {
         }
     }
 
+    /** Draws the outline of each ammo segment. */
     private static void drawAmmoOutline(ShapeRenderer shapes, HudAnchor anchor) {
         float segmentWidth = barWidth(anchor) / anchor.brawler().maxAmmo();
         shapes.setColor(BAR_OUTLINE);
@@ -166,6 +193,7 @@ public class BrawlerHud {
         }
     }
 
+    /** Frees the font. */
     public void dispose() {
         font.dispose();
     }

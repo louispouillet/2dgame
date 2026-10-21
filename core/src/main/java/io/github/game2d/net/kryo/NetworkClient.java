@@ -9,9 +9,13 @@ import io.github.game2d.protocol.LobbyState;
 import io.github.game2d.protocol.WorldSnapshot;
 import java.io.IOException;
 
+/**
+ * Client side of the KryoNet transport. Incoming messages are stored in a {@link NetworkServerChannel}.
+ */
 public class NetworkClient extends NetworkEndpoint<Client> {
     private final NetworkServerChannel channel;
 
+    /** Creates a client that is not connected yet. */
     public NetworkClient() {
         super(new Client());
         channel = new NetworkServerChannel(endPoint());
@@ -31,10 +35,17 @@ public class NetworkClient extends NetworkEndpoint<Client> {
         });
     }
 
+    /** Returns the channel used to talk to the server. */
     public NetworkServerChannel channel() {
         return channel;
     }
 
+    /**
+     * Connects to a server and starts listening (waits at most 5 seconds).
+     * Does nothing when already running.
+     *
+     * @throws IOException if the server cannot be reached
+     */
     public void connect(String host, int tcpPort, int udpPort) throws IOException {
         if (isRunning()) {
             return;
@@ -48,6 +59,7 @@ public class NetworkClient extends NetworkEndpoint<Client> {
         }
     }
 
+    /** Releases the KryoNet resources. */
     @Override
     protected void dispose() throws IOException {
         endPoint().dispose();

@@ -17,6 +17,11 @@ public class HitOverlay {
     private final Color edge = new Color();
     private final Color center = new Color(1f, 0f, 0f, 0f);
 
+    /**
+     * Draws the red edges.
+     *
+     * @param intensity strength from 0 (nothing drawn) to 1
+     */
     public void draw(float intensity) {
         if (intensity <= 0f) {
             return;
@@ -40,6 +45,7 @@ public class HitOverlay {
         Gdx.gl.glDisable(GL20.GL_BLEND);
     }
 
+    /** Frees the graphics resources. */
     public void dispose() {
         shapes.dispose();
     }

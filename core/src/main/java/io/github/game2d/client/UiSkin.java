@@ -16,12 +16,21 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.BaseDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
+/**
+ * Builds the Scene2D skin of the game in code: FreeType fonts and plain tinted backgrounds, no skin file.
+ */
 public final class UiSkin {
+    /** Name of the big label style (and of its font, {@code title-font}). */
     public static final String TITLE = "title";
+    /** Name of the blue button style. */
     public static final String BLUE = "blue";
+    /** Name of the red button style. */
     public static final String RED = "red";
+    /** Name of the panel background. */
     public static final String PANEL = "panel";
+    /** Name of the translucent dark background used behind the HUD texts. */
     public static final String SHADE = "shade";
+    /** Color of the menu screens. */
     public static final Color BACKGROUND = new Color(0.10f, 0.11f, 0.15f, 1f);
 
     private static final String FONT_FILE = "fonts/LiberationSans-Bold.ttf";
@@ -43,6 +52,7 @@ public final class UiSkin {
     private UiSkin() {
     }
 
+    /** Builds the skin. Needs the OpenGL context; the caller disposes it. */
     public static Skin create() {
         Skin skin = new Skin();
         skin.add(WHITE, whiteTexture());
@@ -64,6 +74,7 @@ public final class UiSkin {
         return skin;
     }
 
+    /** Returns a 1 pixel white texture, tinted to make every plain background. */
     private static Texture whiteTexture() {
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.WHITE);
@@ -73,6 +84,7 @@ public final class UiSkin {
         return texture;
     }
 
+    /** Generates the game font at a size, with the French accents. */
     private static BitmapFont font(int size) {
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal(FONT_FILE));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
@@ -85,6 +97,7 @@ public final class UiSkin {
         return font;
     }
 
+    /** Returns a plain background of a color, with inner margins. */
     private static Drawable padded(Skin skin, Color color) {
         Drawable drawable = skin.newDrawable(WHITE, color);
         if (drawable instanceof BaseDrawable base) {
@@ -96,6 +109,7 @@ public final class UiSkin {
         return drawable;
     }
 
+    /** Builds a button style: lighter when hovered, darker when pressed, gray when disabled. */
     private static TextButton.TextButtonStyle button(Skin skin, BitmapFont font, Color color) {
         TextButton.TextButtonStyle style = new TextButton.TextButtonStyle();
         style.font = font;
@@ -108,6 +122,7 @@ public final class UiSkin {
         return style;
     }
 
+    /** Builds the style of text fields. */
     private static TextField.TextFieldStyle textField(Skin skin, BitmapFont font) {
         TextField.TextFieldStyle style = new TextField.TextFieldStyle();
         style.font = font;
@@ -123,6 +138,7 @@ public final class UiSkin {
         return style;
     }
 
+    /** Builds the style of drop down lists. */
     private static SelectBox.SelectBoxStyle selectBox(Skin skin, BitmapFont font) {
         List.ListStyle list = new List.ListStyle(font, Color.WHITE, Color.LIGHT_GRAY, padded(skin, SELECTION_COLOR));
         list.background = padded(skin, FIELD_COLOR);

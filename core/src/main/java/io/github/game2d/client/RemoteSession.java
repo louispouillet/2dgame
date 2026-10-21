@@ -8,9 +8,15 @@ import io.github.game2d.net.kryo.NetworkRegistry;
 import io.github.game2d.protocol.RefusalReason;
 import java.io.IOException;
 
+/** A game on a distant server, through KryoNet. */
 public class RemoteSession implements GameSession {
     private final NetworkClient client = new NetworkClient();
 
+    /**
+     * Connects to a server on the default ports.
+     *
+     * @throws IOException if the server cannot be reached
+     */
     public RemoteSession(String host) throws IOException {
         client.connect(host, NetworkRegistry.DEFAULT_TCP_PORT, NetworkRegistry.DEFAULT_UDP_PORT);
     }

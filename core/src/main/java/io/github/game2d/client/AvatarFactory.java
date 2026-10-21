@@ -15,8 +15,14 @@ import net.mgsx.gltf.loaders.glb.GLBLoader;
 import net.mgsx.gltf.scene3d.attributes.PBRTextureAttribute;
 import net.mgsx.gltf.scene3d.scene.SceneAsset;
 
+/**
+ * Loads the 3D models once and creates one {@link BrawlerAvatar} per brawler.
+ * A brawler type without model gets a capsule.
+ */
 public class AvatarFactory implements Disposable {
+    /** Radius of the models, in model units: avatars are scaled to the radius of the hitbox. */
     public static final float MODEL_RADIUS = 0.5f;
+    /** Height of the models, in model units. */
     public static final float MODEL_HEIGHT = 2f;
 
     private static final Map<BrawlerType, String> MODELS = Map.of(
@@ -27,6 +33,7 @@ public class AvatarFactory implements Disposable {
     private final Model capsule;
     private final Map<BrawlerType, SceneAsset> assets = new EnumMap<>(BrawlerType.class);
 
+    /** Loads the models. Needs the OpenGL context. */
     public AvatarFactory() {
         capsule = new ModelBuilder().createCapsule(MODEL_RADIUS, MODEL_HEIGHT, 16, new Material(), Usage.Position | Usage.Normal);
         capsule.nodes.first().translation.set(0f, MODEL_HEIGHT / 2f, 0f);
@@ -39,6 +46,7 @@ public class AvatarFactory implements Disposable {
         });
     }
 
+    /** Creates the avatar of a brawler, according to its type. */
     public BrawlerAvatar create(BrawlerState state) {
         if (!MODELS.containsKey(state.type())) {
             return new CapsuleAvatar(capsule);

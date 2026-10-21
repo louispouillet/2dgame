@@ -2,6 +2,7 @@ package io.github.game2d.model.weapon;
 
 import io.github.game2d.model.Projectile;
 
+/** Short range weapon: each attack is a fan of large, slow pellets. */
 public class Shotgun extends Weapon {
     private static final int DAMAGE = 600;
     private static final int MAX_AMMO = 3;
@@ -14,6 +15,7 @@ public class Shotgun extends Weapon {
     private static final float PROJECTILE_SPEED = 10f;
     private static final float MUZZLE_DISTANCE = 0.5f;
 
+    /** Creates a full shotgun. */
     public Shotgun() {
         super(MAX_AMMO, COOLDOWN, RELOAD_TIME, new SpreadPattern(NUM_PROJECTILES, SPREAD_ANGLE), MUZZLE_DISTANCE);
     }

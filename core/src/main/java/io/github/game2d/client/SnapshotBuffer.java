@@ -9,6 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Keeps the last snapshots with their time and blends two of them for any time in between,
+ * so that the other players move smoothly at 60 FPS although the server sends 30 snapshots per second.
+ */
 public class SnapshotBuffer {
     private static final int MAX_SNAPSHOTS = 30;
     private static final float SNAP_DISTANCE = 5f;
@@ -16,6 +20,11 @@ public class SnapshotBuffer {
     private record TimedSnapshot (WorldSnapshot snapshot, double time) {}
     private final List<TimedSnapshot> snapshots = new ArrayList<>();
 
+    /**
+     * Stores a snapshot, forgetting the oldest ones.
+     *
+     * @param time server time of the snapshot, in seconds
+     */
     public void add (WorldSnapshot snapshot, double time) {
         TimedSnapshot timeSnapshot = new TimedSnapshot(snapshot, time);
         snapshots.add(timeSnapshot);
@@ -24,10 +33,18 @@ public class SnapshotBuffer {
         }
     }
 
+    /** Returns the number of snapshots kept. */
     public int size () {
         return snapshots.size();
     }
 
+    /**
+     * Returns the world at a given time, blending the two snapshots around it.
+     * Before the first snapshot it returns the first one, after the last one it returns the last one.
+     *
+     * @param renderTime server time to show, in seconds
+     * @return the blended world, or {@code null} if no snapshot was added
+     */
     public WorldSnapshot interpolate(double renderTime) {
         if (snapshots.isEmpty()) {
             return null;
@@ -73,12 +90,17 @@ public class SnapshotBuffer {
         return new WorldSnapshot(to.snapshot.tick(), brawlers, projectiles, to.snapshot.match(), to.snapshot.followedId());
     }
 
+    /** Whether two positions are so far apart that it is a teleport (new round) and not a movement. */
     private static boolean tooFar(float ax, float ay, float bx, float by) {
         float dx = bx - ax;
         float dy = by - ay;
         return dx * dx + dy * dy > SNAP_DISTANCE * SNAP_DISTANCE;
     }
 
+    /**
+     * Blends the position and the direction of a brawler; the other values come from the later state.
+     * A teleport is not blended.
+     */
     private static BrawlerState blend(BrawlerState a, BrawlerState b, float t) {
         if (tooFar(a.x(), a.y(), b.x(), b.y())) {
             return b;
@@ -97,6 +119,7 @@ public class SnapshotBuffer {
         return (float) (a + difference * t);
     }
 
+    /** Blends the position of a projectile; a teleport is not blended. */
     private static ProjectileState blend(ProjectileState a, ProjectileState b, float t) {
         if (tooFar(a.x(), a.y(), b.x(), b.y())) {
             return b;
@@ -106,6 +129,7 @@ public class SnapshotBuffer {
         return new ProjectileState(b.id(), b.ownerId(), b.ownerType(), x, y, b.dirX(), b.dirY(), b.radius());
     }
 
+    /** Linear interpolation from {@code a} (at 0) to {@code b} (at 1). */
     private static float lerp(float a, float b, float t) {
         return a + (b - a) * t;
     }

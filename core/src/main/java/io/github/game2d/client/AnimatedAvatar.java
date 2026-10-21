@@ -9,6 +9,10 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import io.github.game2d.protocol.BrawlerState;
 
+/**
+ * A brawler drawn from a glTF model. It picks its own clips from the state it receives:
+ * idle or run for the body, the same for the upper body, and a shoot clip on top at each new shot.
+ */
 public class AnimatedAvatar implements BrawlerAvatar {
     private static final String IDLE = "Idle";
     private static final String RUN = "Run";
@@ -28,6 +32,7 @@ public class AnimatedAvatar implements BrawlerAvatar {
     private String upperClip;
     private int lastShotsFired = -1;
 
+    /** Creates an avatar from the model of a brawler type. Each avatar has its own animation state. */
     public AnimatedAvatar(Model model) {
         this.instance = new ModelInstance(model);
         this.body = new AnimationController(instance);
@@ -52,6 +57,7 @@ public class AnimatedAvatar implements BrawlerAvatar {
         upper.update(frameTime);
     }
 
+        /** Switches the body clip (idle or run) with a short blend, only when it changes. */
         private void playBody(boolean moving) {
         String clip = moving ? RUN : IDLE;
         if (!clip.equals(bodyClip)) {
@@ -60,6 +66,7 @@ public class AnimatedAvatar implements BrawlerAvatar {
         }
     }
 
+    /** Switches the upper body clip, and plays the shoot clip once on a new shot. */
     private void playUpper(boolean moving, boolean newShot) {
         String clip = moving ? RUN_UPPER : IDLE_UPPER;
         if (!clip.equals(upperClip)) {

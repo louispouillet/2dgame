@@ -28,6 +28,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Draws the world in 3D: map, bushes, brawlers, bullets and their HUD. The camera looks from behind at the brawler
+ * the snapshot says to follow (me, then an ally when I am dead) and stays inside the map.
+ * The game plays in a 2D plane: a position {@code (x, y)} is drawn at {@code (x, 0, -y)}.
+ */
 public class WorldRenderer3D {
     private static final float FIELD_OF_VIEW = 28f;
     private static final float CAMERA_HEIGHT = 22.1f;
@@ -45,6 +50,7 @@ public class WorldRenderer3D {
     // Imported skeletons have up to 64 bones; the default shader only handles 12.
     private static final int MAX_BONES = 64;
 
+    /** A bush tile with its own model instance, so that it can be made transparent alone. */
     private record Bush(int col, int row, ModelInstance instance) {
     }
 
@@ -79,6 +85,12 @@ public class WorldRenderer3D {
     private float minTargetZ;
     private float maxTargetZ;
 
+    /**
+     * Creates the renderer; needs the OpenGL context.
+     *
+     * @param arena  the map to draw
+     * @param roster nicknames and teams, for the HUD and the color of the bullets
+     */
     public WorldRenderer3D(Arena arena, PlayerRoster roster) {
         this.roster = roster;
         hud = new BrawlerHud(roster);
@@ -111,18 +123,26 @@ public class WorldRenderer3D {
         projectileInstance = new ModelInstance(projectileModel);
     }
 
+    /** Creates a model batch whose shader accepts the bones of the imported characters. */
     private static ModelBatch createModelBatch() {
         DefaultShader.Config config = new DefaultShader.Config();
         config.numBones = MAX_BONES;
         return new ModelBatch(new DefaultShaderProvider(config));
     }
 
+    /** Adapts the camera to the new window size. */
     public void resize(int width, int height) {
         camera.viewportWidth = width;
         camera.viewportHeight = height;
         updateCameraBounds();
     }
 
+    /**
+     * Draws one frame.
+     *
+     * @param snapshot the world to draw
+     * @param arena    the map, used to find which bushes to make transparent
+     */
     public void render(WorldSnapshot snapshot, Arena arena) {
         // My brawler while I live, then the ally the server makes me watch; null when nobody is left
         BrawlerState followed = snapshot.findBrawler(snapshot.followedId());
@@ -155,6 +175,7 @@ public class WorldRenderer3D {
         drawHud(snapshot);
     }
 
+    /** Computes where each brawler is on the screen and draws its HUD. */
     private void drawHud(WorldSnapshot snapshot) {
         List<HudAnchor> anchors = new ArrayList<>();
         for (BrawlerState brawler : snapshot.brawlers()) {
@@ -172,6 +193,7 @@ public class WorldRenderer3D {
         hud.draw(shapes, batch, anchors);
     }
 
+    /** Moves the camera smoothly towards a brawler. Does nothing when there is nobody to follow. */
     private void followPlayer(BrawlerState player, float frameTime) {
         if (player == null) {
             return;
@@ -187,6 +209,7 @@ public class WorldRenderer3D {
         placeCamera();
     }
 
+    /** Makes transparent the bushes close to the followed brawler. */
     private void updateBushes(Arena arena, BrawlerState player) {
         for (Bush bush : bushes) {
             boolean seeThrough = player != null && arena.canSeeIntoBush(bush.col(), bush.row(), player.x(), player.y());
@@ -200,6 +223,9 @@ public class WorldRenderer3D {
         }
     }
 
+    /**
+     * Computes the area where the camera target can be, so that the view never goes far outside the map.
+     */
     private void updateCameraBounds() {
         camera.position.set(0f, CAMERA_HEIGHT, CAMERA_BACK);
         camera.up.set(Vector3.Y);
@@ -231,6 +257,7 @@ public class WorldRenderer3D {
         placeCamera();
     }
 
+    /** Returns the point of the ground seen at a screen position. */
     private Vector3 groundPoint(float screenX, float screenY) {
         Ray ray = camera.getPickRay(screenX, screenY, 0f, 0f, camera.viewportWidth, camera.viewportHeight);
         Vector3 point = new Vector3();
@@ -240,11 +267,13 @@ public class WorldRenderer3D {
         return point;
     }
 
+    /** Keeps a camera target inside the allowed area. */
     private void clampToBounds(Vector3 target) {
         target.x = MathUtils.clamp(target.x, minTargetX, maxTargetX);
         target.z = MathUtils.clamp(target.z, minTargetZ, maxTargetZ);
     }
 
+    /** Puts the camera above and behind its target. */
     private void placeCamera() {
         camera.position.set(cameraTarget.x, CAMERA_HEIGHT, cameraTarget.z + CAMERA_BACK);
         camera.up.set(Vector3.Y);
@@ -268,6 +297,9 @@ public class WorldRenderer3D {
         }
     }
 
+    /**
+     * Converts a screen position to a position on the map, at the height of the bullets (used to aim).
+     */
     public Vector2 screenToWorld(int screenX, int screenY) {
         Ray ray = camera.getPickRay(screenX, screenY, 0f, 0f, camera.viewportWidth, camera.viewportHeight);
         if (!Intersector.intersectRayPlane(ray, AIM_PLANE, aimPoint)) {
@@ -276,6 +308,7 @@ public class WorldRenderer3D {
         return new Vector2(aimPoint.x, -aimPoint.z);
     }
 
+    /** Frees every model, batch and font. */
     public void dispose() {
         modelBatch.dispose();
         arenaModel.dispose();

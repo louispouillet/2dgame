@@ -6,6 +6,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.IntSupplier;
 
+/**
+ * What a {@link io.github.game2d.model.brawler.Brawler} shoots with: ammo, cooldown and reload.
+ * The shape of the attack comes from an {@link AttackPattern}; subclasses only define the projectile
+ * (Strategy pattern).
+ */
 public abstract class Weapon {
     private final int maxAmmo;
     private final float cooldown;
@@ -23,6 +28,15 @@ public abstract class Weapon {
     private float aimX;
     private float aimY;
 
+    /**
+     * Creates a full weapon.
+     *
+     * @param maxAmmo        ammo capacity
+     * @param cooldown       seconds between two attacks
+     * @param reloadTime     seconds to get one ammo back
+     * @param pattern        the bullets fired by one attack
+     * @param muzzleDistance distance between the brawler center and the bullet start, in tiles
+     */
     protected Weapon(int maxAmmo, float cooldown, float reloadTime, AttackPattern pattern, float muzzleDistance) {
         this.maxAmmo = maxAmmo;
         this.cooldown = cooldown;
@@ -32,14 +46,17 @@ public abstract class Weapon {
         this.ammo = maxAmmo;
     }
 
+    /** Returns the ammo left. */
     public int getAmmo() {
         return ammo;
     }
 
+    /** Returns the ammo capacity. */
     public int getMaxAmmo() {
         return maxAmmo;
     }
 
+    /** Returns the progress of the current reload, from 0 to 1. */
     public float getReloadProgress() {
         return reloadTimer / reloadTime;
     }
@@ -49,6 +66,7 @@ public abstract class Weapon {
         return !pendingShots.isEmpty();
     }
 
+    /** Creates one bullet of this weapon, with its own size, speed, range and damage. */
     protected abstract Projectile createProjectile(int id, int ownerId, float x, float y, float dirX, float dirY);
 
     /** Uses one ammo and fires the immediate bullets of the attack; the others leave through {@link #releaseShots}. */
@@ -88,6 +106,11 @@ public abstract class Weapon {
         return released;
     }
 
+    /**
+     * Advances the cooldown, the delayed bullets and the reload.
+     *
+     * @param dt elapsed time, in seconds
+     */
     public void update(float dt) {
         cooldownTimer = Math.max(0, cooldownTimer - dt);
         if (!pendingShots.isEmpty()) {

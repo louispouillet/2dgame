@@ -101,16 +101,15 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 
 ## 10. Lancement (Makefile)
 - `make solo` : partie locale ; `make server` : serveur multijoueur (TCP 54555 / UDP 54777) ; `make client [HOST=ip]` : client ; `make duo` : serveur + 2 fenêtres sur la même machine. Chaque client démarre sur l'écran du pseudo.
-- `make test`, `make build`, `make clean`.
+- `make test`, `make doc` (Javadoc dans `core/build/docs/javadoc`), `make build`, `make clean`.
 - Maps lues dans le classpath par `ArenaLoader.loadResource` (fonctionne aussi depuis le jar seul). Le serveur propose `ArenaLoader.availableMaps()` (par défaut `DEFAULT_MAP`, `maps/Etoile-Filante.txt`) et charge celle choisie dans le lobby ; le client charge la map de `LobbyState` au lancement (le solo utilise `DEFAULT_MAP`).
 
 ## Reste à faire
-- Lobby : retour au lobby en fin de partie ; gérer la perte de connexion au serveur ; connexion sans bloquer l'écran (jusqu'à 5 s aujourd'hui)
+- Lobby : gérer la perte de connexion au serveur ; connexion sans bloquer l'écran (jusqu'à 5 s aujourd'hui)
 - Mode « Hors-jeu » : « GO! » à la fin du décompte, sons
-- Mode « Hors-jeu » : caméra qui suit un allié après sa mort, « GO! » à la fin du décompte, sons
 - Caméra 3D : élargir la bande de décor pour que le joueur ne soit pas collé au coin au départ
 - `StartupHelper` ne transmet pas les arguments sur macOS (le Makefile passe `-XstartOnFirstThread`)
-- Soutenance : Javadoc, couverture JaCoCo, diagrammes UML, mise à jour du GDD (`docs/GDD.md`)
+- Soutenance : couverture JaCoCo, diagrammes UML à jour, relecture du GDD (`docs/GDD.md`)
 - 3D : type et visée dans `BrawlerState`, puis gdx-gltf, personnages animés, ombres
 
 ## Structure du projet généré
@@ -120,4 +119,5 @@ Racine `io.github.game2d`. Dépendances : `model` ne dépend de rien ; `protocol
 
 ## Règles
 - Ne jamais créer de commit sans demande explicite de l'utilisateur.
-- Tout le texte du code est en anglais : interface du jeu, messages d'erreur, commentaires, Makefile (seules exceptions : des données de test comme un pseudo accentué).
+- Tout le texte du code est en anglais : interface du jeu, messages d'erreur, commentaires, Javadoc, Makefile (seules exceptions : des données de test comme un pseudo accentué).
+- Javadoc : chaque classe, interface, enum, record, constructeur et méthode (sauf les `@Override`) a un commentaire `/** ... */` court, avec `@param`, `@return` et `@throws` quand ils apportent quelque chose. Vérifier avec `make doc` (aucun avertissement attendu).

@@ -2,6 +2,7 @@ package io.github.game2d.client;
 
 /** Tells how strong the red flash on my screen is: it starts when my health drops, then fades out quickly. */
 public final class HitFlash {
+    /** Length of the flash, in seconds. */
     public static final float DURATION = 0.1f;
     private static final int UNKNOWN = -1;
 

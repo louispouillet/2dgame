@@ -10,6 +10,10 @@ import io.github.game2d.time.TickClock;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The client logic of a match, without rendering: reads the snapshots, interpolates the others,
+ * predicts my own brawler and sends my inputs.
+ */
 public class ClientGame {
     private static final float INTERPOLATION_DELAY = 0.1f;
 
@@ -20,11 +24,24 @@ public class ClientGame {
     private WorldSnapshot lastReceived;
     private PredictedPlayer predicted;
 
+    /**
+     * Creates the logic of a match.
+     *
+     * @param arena   the map, used by the prediction
+     * @param session the connection to the server
+     */
     public ClientGame(Arena arena, GameSession session) {
         this.arena = arena;
         this.session = session;
     }
 
+    /**
+     * Runs one frame.
+     *
+     * @param now    local time, in seconds
+     * @param inputs where my inputs come from
+     * @return the world to draw (others interpolated, my brawler predicted), or {@code null} before the first snapshot
+     */
     public WorldSnapshot update(double now, InputReader inputs) {
         clock.update(now);
         WorldSnapshot snapshot = session.channel().latestSnapshot();
@@ -45,10 +62,15 @@ public class ClientGame {
         return withOwnBrawler(interpolated, predictedState(mine));
     }
 
+    /** Whether the round is being played (otherwise nobody moves). */
     private static boolean isPlaying(WorldSnapshot snapshot) {
         return snapshot.match() == null || snapshot.match().phase() == MatchPhase.PLAYING;
     }
 
+    /**
+     * Corrects the prediction with the server state, then sends and simulates the inputs of this frame.
+     * Outside of the play phase the input is neutral.
+     */
     private void predict(BrawlerState mine, boolean isNew, InputReader inputs, boolean playing) {
         if (predicted == null) {
             Brawler copy = mine.type().create(mine.id(), mine.x(), mine.y());
@@ -64,6 +86,9 @@ public class ClientGame {
         });
     }
 
+    /**
+     * Builds my brawler state with the predicted position, or {@code null} if I am not in the snapshot.
+     */
     private BrawlerState predictedState(BrawlerState mine) {
         if (mine == null) {
             return null;
@@ -74,6 +99,7 @@ public class ClientGame {
             predicted.isMoving(), mine.attacking(), mine.shotsFired(), mine.lastProcessedInput());
     }
 
+    /** Replaces my brawler in a snapshot with its predicted state. */
     private static WorldSnapshot withOwnBrawler(WorldSnapshot view, BrawlerState mine) {
         if (mine == null) {
             return view;

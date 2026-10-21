@@ -2,10 +2,12 @@ package io.github.game2d.client;
 
 import io.github.game2d.protocol.RefusalReason;
 
+/** Texts shown to the player when the lobby refuses a request. */
 public final class RefusalMessages {
     private RefusalMessages() {
     }
 
+    /** Returns the message for a reason. */
     public static String describe(RefusalReason reason) {
         return switch (reason) {
             case INVALID_NAME -> "Invalid nickname: 1 to 16 letters, digits, _ or -";

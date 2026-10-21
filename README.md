@@ -30,6 +30,7 @@ make server                 # multiplayer server (TCP 54555 / UDP 54777)
 make client [HOST=address]  # client connected to a server (localhost by default)
 make duo                    # server and two clients on this computer
 make test                   # runs the tests
+make doc                   # generates the Javadoc (core/build/docs/javadoc)
 make build                  # builds the runnable jar (lwjgl3/build/libs)
 make clean                  # deletes the build files
 ```
@@ -70,8 +71,9 @@ Packages of `core`: `model` (rules, plain Java), `protocol` (messages), `time` (
 ## Documentation
 
 - [Game design document](docs/GDD.md)
+- Javadoc: `make doc`, then open `core/build/docs/javadoc/index.html`
 - UML diagrams in [`docs/uml`](docs/uml): `overview`, `model`, `server`, `net`, `protocol`, `client-screens`, `client-game`
 
 ## Gradle
 
-The Gradle wrapper is included (`./gradlew`). Useful tasks: `lwjgl3:run` (starts the game), `lwjgl3:jar` (runnable jar), `core:test` (tests), `clean`, `idea`, `eclipse`. Tasks that are not specific to one project can be run with a `name:` prefix, for example `core:clean`.
+The Gradle wrapper is included (`./gradlew`). Useful tasks: `lwjgl3:run` (starts the game), `lwjgl3:jar` (runnable jar), `core:test` (tests), `core:javadoc` (documentation), `clean`, `idea`, `eclipse`. Tasks that are not specific to one project can be run with a `name:` prefix, for example `core:clean`.
