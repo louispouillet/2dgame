@@ -52,6 +52,24 @@ package "3D rendering: how to draw it" #F6EEFB {
     class ArenaModelFactory <<utility>> {
         .. builds the 3D map ..
     }
+    class HudAnchor <<record>> {
+        .. where a brawler's HUD goes\non the screen ..
+    }
+    class AvatarFactory {
+        .. loads the glTF models once,\ncreates one avatar per brawler ..
+        + create(state) : BrawlerAvatar
+    }
+    interface BrawlerAvatar {
+        .. the 3D look of one brawler ..
+        + update(state, frameTime)
+        + render(batch, environment)
+    }
+    class AnimatedAvatar {
+        .. glTF model, picks its own clips ..
+    }
+    class CapsuleAvatar {
+        .. white capsule: brawler without model ..
+    }
 }
 
 package "Match HUD: drawn over the 3D view" #FDECEA {
@@ -96,6 +114,13 @@ ArenaModelFactory -[hidden]right- MatchHud
 InputReader -down-> InputSequence : next number
 
 WorldRenderer3D *-down- BrawlerHud : owns
+WorldRenderer3D *-down- AvatarFactory : owns
+WorldRenderer3D o-down- "0..*" BrawlerAvatar : one per\nbrawler seen
+AvatarFactory .right.> BrawlerAvatar : creates
+BrawlerAvatar <|.down. AnimatedAvatar : implements
+BrawlerAvatar <|.down. CapsuleAvatar : implements
+WorldRenderer3D .down.> HudAnchor : builds
+BrawlerHud .down.> HudAnchor : draws at
 WorldRenderer3D .down.> ArenaModelFactory : uses
 WorldRenderer3D *-down- BulletSprites : owns\n(sphere if no image)
 BrawlerHud -down-> PlayerRoster : reads nicknames

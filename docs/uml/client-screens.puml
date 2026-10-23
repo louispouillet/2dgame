@@ -25,6 +25,16 @@ class LobbyView <<final>> {
     .. decides what the lobby shows\n(plain Java, tested) ..
 }
 
+class RefusalMessages <<final>> {
+    .. refusal reason → message for the player ..
+    + {static} describe(reason)
+}
+
+class UiSkin <<final>> {
+    .. Scene2D skin built in code:\nFreeType font, tinted flat backgrounds ..
+    + {static} create() : Skin
+}
+
 package "Connection: solo or network" #EEFBEF {
     interface GameSession {
         .. "a match I take part in" ..
@@ -47,6 +57,8 @@ GameScreen -[#1E64C8,bold,dashed]up-> LobbyScreen : <color:#1E64C8>match finishe
 LobbyScreen -down-> LobbyView : asks what to show
 
 Main *-right- "0..1" GameSession : owns
+Main *-down- UiSkin : creates the skin
+NameScreen .right.> RefusalMessages : explains a refusal
 LobbyScreen -down-> GameSession : join, team, brawler,\nmap, start
 GameSession <|.down. LocalSession : implements
 GameSession <|.down. RemoteSession : implements
