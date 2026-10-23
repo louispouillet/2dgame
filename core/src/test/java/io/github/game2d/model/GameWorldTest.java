@@ -80,7 +80,7 @@ class GameWorldTest {
         world.attack(shooter, 1, 0);
         world.update(1 / 60f);
 
-        assertEquals(100, shooter.getHealth());
+        assertEquals(shooter.getMaxHealth(), shooter.getHealth());
     }
 
     @Test
@@ -89,7 +89,7 @@ class GameWorldTest {
         Colt target = new Colt(world.nextId(), X0, Y0);
         world.addPlayer(target, Team.BLUE);
 
-        target.takeDamage(100);
+        target.takeDamage(target.getMaxHealth());
         world.update(1 / 60f);
 
         assertFalse(world.getGameObjects().contains(target));
@@ -108,7 +108,7 @@ class GameWorldTest {
             world.update(1 / 60f);
         }
 
-        assertEquals(120, target.getHealth());
+        assertEquals(target.getMaxHealth(), target.getHealth());
     }
 
     @Test
@@ -139,7 +139,7 @@ class GameWorldTest {
         Colt p1 = new Colt(world.nextId(), X0, Y0);
         world.addPlayer(p1, Team.BLUE);
 
-        p1.takeDamage(100);
+        p1.takeDamage(p1.getMaxHealth());
         world.update(1 / 60f);
 
         assertFalse(world.getGameObjects().contains(p1));

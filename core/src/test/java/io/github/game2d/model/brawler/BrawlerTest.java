@@ -24,8 +24,8 @@ class BrawlerTest {
         Shelly shelly = new Shelly(1, 0, 0);
         Colt colt = new Colt(2, 0, 0);
 
-        assertEquals(120, shelly.getMaxHealth());
-        assertEquals(100, colt.getMaxHealth());
+        assertEquals(7800, shelly.getMaxHealth());
+        assertEquals(6200, colt.getMaxHealth());
         assertEquals(shelly.getMaxHealth(), shelly.getHealth());
     }
 
@@ -76,7 +76,7 @@ class BrawlerTest {
 
         colt.takeDamage(30);
 
-        assertEquals(70, colt.getHealth());
+        assertEquals(colt.getMaxHealth() - 30, colt.getHealth());
         assertTrue(colt.isAlive());
     }
 
@@ -84,7 +84,7 @@ class BrawlerTest {
     void healthNeverGoesBelowZero() {
         Colt colt = new Colt(1, 0, 0);
 
-        colt.takeDamage(1000);
+        colt.takeDamage(colt.getMaxHealth() + 1000);
 
         assertEquals(0, colt.getHealth());
         assertFalse(colt.isAlive());
@@ -102,7 +102,7 @@ class BrawlerTest {
     void deadBrawlerDoesNotMove() {
         Colt colt = new Colt(1, X0, Y0);
         colt.setDirection(1, 0);
-        colt.takeDamage(100);
+        colt.takeDamage(colt.getMaxHealth());
 
         colt.update(1f, ARENA);
 
@@ -112,7 +112,7 @@ class BrawlerTest {
     @Test
     void deadBrawlerCannotAttack() {
         Colt colt = new Colt(1, 0, 0);
-        colt.takeDamage(100);
+        colt.takeDamage(colt.getMaxHealth());
 
         assertTrue(colt.attack(ids::incrementAndGet, 1, 0).isEmpty());
     }
@@ -135,7 +135,7 @@ class BrawlerTest {
 
         colt.update(2.9f, ARENA);
 
-        assertEquals(50, colt.getHealth());
+        assertEquals(colt.getMaxHealth() - 50, colt.getHealth());
     }
 
     @Test
@@ -146,7 +146,7 @@ class BrawlerTest {
         colt.update(3f, ARENA);
         colt.update(1f, ARENA);
 
-        assertTrue(colt.getHealth() > 50);
+        assertTrue(colt.getHealth() > colt.getMaxHealth() - 50);
     }
 
     @Test

@@ -1,3 +1,5 @@
+apply plugin: 'jacoco'
+
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 eclipse.project.name = appName + '-core'
 
@@ -22,6 +24,18 @@ sourceSets.test.resources.srcDirs += [ rootProject.file('assets').path ]
 test {
   useJUnitPlatform()
   systemProperty 'assets.dir', rootProject.file('assets').absolutePath
+  // A finalizer runs even when a test fails: the coverage report is written after every test run
+  finalizedBy jacocoTestReport
+}
+
+// Test coverage report, written by ./gradlew core:test (output in core/build/reports/jacoco/test/html).
+// No dependsOn test: a finalizer that depends on the failed task would be skipped.
+jacocoTestReport {
+  reports {
+    html.required = true
+    xml.required = false
+    csv.required = false
+  }
 }
 
 jar {

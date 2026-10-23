@@ -213,8 +213,8 @@ class SnapshotBuilderTest {
         assertEquals(X0 + 3, state.x());
         assertEquals(Y0 + 4, state.y());
         assertEquals(0.4f, state.radius());
-        assertEquals(120, state.health());
-        assertEquals(120, state.maxHealth());
+        assertEquals(shelly.getMaxHealth(), state.health());
+        assertEquals(shelly.getMaxHealth(), state.maxHealth());
         assertEquals(3, state.ammo());
         assertEquals(3, state.maxAmmo());
     }
@@ -263,7 +263,7 @@ class SnapshotBuilderTest {
         world.addPlayer(alive, Team.BLUE);
         world.addPlayer(dead, Team.RED);
 
-        dead.takeDamage(100);
+        dead.takeDamage(dead.getMaxHealth());
         world.update(1 / 60f);
 
         assertEquals(1, builder.build(0, id -> 0, 1, null).brawlers().size());

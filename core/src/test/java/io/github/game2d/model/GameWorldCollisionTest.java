@@ -43,7 +43,7 @@ class GameWorldCollisionTest {
         run(world, 3f);
 
         assertFalse(hasProjectiles(world));
-        assertEquals(120, target.getHealth());
+        assertEquals(target.getMaxHealth(), target.getHealth());
     }
 
     @Test
@@ -57,7 +57,7 @@ class GameWorldCollisionTest {
         world.attack(shooter, 1, 0);
         run(world, 1f);
 
-        assertTrue(target.getHealth() < 120);
+        assertTrue(target.getHealth() < target.getMaxHealth());
     }
 
     @Test
@@ -71,6 +71,6 @@ class GameWorldCollisionTest {
         world.attack(shooter, 1, 0);
         run(world, 1f);
 
-        assertTrue(target.getHealth() < 120);
+        assertTrue(target.getHealth() < target.getMaxHealth());
     }
 }
