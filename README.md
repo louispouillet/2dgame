@@ -2,6 +2,8 @@
 
 A simplified Brawl Stars clone: a top-down 2D game shown in 3D, with online multiplayer for 2 to 6 players in two teams. Written in Java with [libGDX](https://libgdx.com/) as an object-oriented programming project.
 
+> **Disclaimer:** this is an unofficial fan project made for a school assignment at Epitech, with no commercial purpose. It is not affiliated with, endorsed, sponsored or approved by Supercell. Brawl Stars, its characters and its 3D models are trademarks and property of Supercell.
+
 ## Game
 
 - **Mode**: Knockout. Two teams (up to 3 against 3) fight in rounds, the first team to win 2 rounds wins the match. A round is won when the other team has no brawler left alive.
